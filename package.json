@@ -9,7 +9,9 @@
   },
   "dependencies": {
     "react": "16.8.6",
-    "react-native": "0.60.0"
+    "react-native": "0.60.0",
+    "react-native-webview": "^5.12.1",
+    "redux": "^4.0.4"
   },
   "devDependencies": {
     "@babel/core": "7.5.4",
