@@ -6,8 +6,8 @@ class Browser extends Component {
   render() {
     return (
       <WebView
-        originWhitelist={["*"]}
-        source={{ html: "<h1>Hello world</h1>" }}
+        source={{ uri: "https://www.wazaterm.com" }}
+        hideKeyboardAccessoryView={true}
       />
     );
   }

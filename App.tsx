@@ -20,7 +20,11 @@ let RootStack = createStackNavigator({
   Home: {
     screen: Browser
   }  
-});
+},
+{
+  headerMode: 'none'
+ }
+);
 let Navigation = createAppContainer(RootStack);
 
 
