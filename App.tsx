@@ -9,18 +9,30 @@
  */
 
 import React, { Fragment } from "react";
-import {
-  SafeAreaView,
-  StyleSheet,
-  ScrollView,
-  View,
-  Text,
-  StatusBar
-} from "react-native";
+import { Provider } from "react-redux";
+import { createStackNavigator, createAppContainer } from "react-navigation";
 import Browser from "./app/containers/Browser";
+import configureStore from "./app/configureStore";
 
-const App = () => {
-  return <Browser />;
-};
+const store = configureStore();
+
+let RootStack = createStackNavigator({
+  Home: {
+    screen: Browser
+  }  
+});
+let Navigation = createAppContainer(RootStack);
+
+
+class App extends React.Component {
+  render() {
+    return (
+      <Provider store={store}>
+        <Navigation />
+      </Provider>
+    );
+  }
+}
+
 
 export default App;

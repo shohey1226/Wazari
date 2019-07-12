@@ -3,6 +3,7 @@
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
+    "noImplicitAny": false,
     "isolatedModules": true,
     "jsx": "react",
     "lib": ["es6"],
