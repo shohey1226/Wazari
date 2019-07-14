@@ -6,7 +6,7 @@ import RNFS from "react-native-fs";
 // *) Added Line#482 to avoid duplicated alphabet
 //
 //
-module.exports = {
+export default {
   async init(f) {
     this.sVimHint = await RNFS.readFile(`${RNFS.MainBundlePath}/sVimHint.js`);
     this.sVimTab = await RNFS.readFile(`${RNFS.MainBundlePath}/sVimTab.js`);
