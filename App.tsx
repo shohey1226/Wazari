@@ -14,19 +14,19 @@ import { createStackNavigator, createAppContainer } from "react-navigation";
 import Browser from "./app/containers/Browser";
 import configureStore from "./app/configureStore";
 
-const store = configureStore();
+const store: any = configureStore({});
 
-let RootStack = createStackNavigator({
-  Home: {
-    screen: Browser
-  }  
-},
-{
-  headerMode: 'none'
- }
+let RootStack = createStackNavigator(
+  {
+    Home: {
+      screen: Browser
+    }
+  },
+  {
+    headerMode: "none"
+  }
 );
 let Navigation = createAppContainer(RootStack);
-
 
 class App extends React.Component {
   render() {
@@ -37,6 +37,5 @@ class App extends React.Component {
     );
   }
 }
-
 
 export default App;

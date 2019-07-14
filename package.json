@@ -8,6 +8,7 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@shoutem/ui": "^0.24.1",
     "immutable": "^4.0.0-rc.12",
     "react": "16.8.6",
     "react-native": "0.60.0",
