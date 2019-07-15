@@ -11,6 +11,7 @@ const DAVKeyManagerEmitter = new NativeEventEmitter(DAVKeyManager);
 
 interface IState {
   isLoading: boolean;
+  isActive: boolean;
 }
 
 class Browser extends Component<{}, IState, any> {
@@ -18,7 +19,7 @@ class Browser extends Component<{}, IState, any> {
 
   constructor(props) {
     super(props);
-    this.state = { isLoading: true };
+    this.state = { isLoading: true, isActive: true };
     this.subscriptions = [];
   }
 
@@ -35,6 +36,10 @@ class Browser extends Component<{}, IState, any> {
 
   initKeymaps() {
     const { keymap, modifiers } = this.props;
+    DAVKeyManager.setWindow("browser");
+    DAVKeyManager.turnOnKeymap();
+    console.log(keymap);
+    console.log(modifiers);
     this.subscriptions.push(
       DAVKeyManagerEmitter.addListener(
         "RNBrowserKeyEvent",
@@ -96,6 +101,7 @@ class Browser extends Component<{}, IState, any> {
         case "hitAHint":
           this.webref !== null &&
             this.webref.injectJavaScript(`sVimHint.start()`);
+          break;
         case "scrollDown":
           this._browserRefs[activeTabIndex] &&
             this._browserRefs[activeTabIndex].evaluateJavaScript(

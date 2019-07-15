@@ -187,7 +187,7 @@ const defaultKeymap = {
         capslockKey: false,
         shiftKey: false,
         altKey: false,
-        ctrlKey: false,
+        ctrlKey: true,
         metaKey: false
       }
     },
