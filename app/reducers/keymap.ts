@@ -182,13 +182,13 @@ const defaultKeymap = {
       }
     },
     hitAHint: {
-      key: "i",
+      key: "f",
       modifiers: {
         capslockKey: false,
         shiftKey: false,
         altKey: false,
         ctrlKey: false,
-        metaKey: true
+        metaKey: false
       }
     },
     zoomIn: {
