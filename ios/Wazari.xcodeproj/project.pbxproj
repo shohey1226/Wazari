@@ -26,6 +26,7 @@
 		60E6F6B022DB00A400814118 /* sVimHint.js in Resources */ = {isa = PBXBuildFile; fileRef = 60E6F6AF22DB00A400814118 /* sVimHint.js */; };
 		60E6F6B322DB74CA00814118 /* sVimTab.js in Resources */ = {isa = PBXBuildFile; fileRef = 60E6F6B122DB74CA00814118 /* sVimTab.js */; };
 		60E6F6B422DB74CA00814118 /* sVimHelper.js in Resources */ = {isa = PBXBuildFile; fileRef = 60E6F6B222DB74CA00814118 /* sVimHelper.js */; };
+		60E6F6B722DC027600814118 /* DVAApplication.m in Sources */ = {isa = PBXBuildFile; fileRef = 60E6F6B622DC027600814118 /* DVAApplication.m */; };
 		6CB3913A01AADAB9D5B009CE /* libPods-Wazari-tvOSTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8863D9FF38AC9BBEA797AE5C /* libPods-Wazari-tvOSTests.a */; };
 		73A0E1F7FA18E2AA7844FCCD /* libPods-Wazari.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5F3A161D7B4976592FD071EF /* libPods-Wazari.a */; };
 		7956D7BE5FA9460A93FC1D49 /* Rubik-MediumItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 051FFA09BA6142FDB7A0731A /* Rubik-MediumItalic.ttf */; };
@@ -85,6 +86,8 @@
 		60E6F6AF22DB00A400814118 /* sVimHint.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = sVimHint.js; sourceTree = "<group>"; };
 		60E6F6B122DB74CA00814118 /* sVimTab.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = sVimTab.js; sourceTree = "<group>"; };
 		60E6F6B222DB74CA00814118 /* sVimHelper.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = sVimHelper.js; sourceTree = "<group>"; };
+		60E6F6B522DC027600814118 /* DVAApplication.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DVAApplication.h; sourceTree = "<group>"; };
+		60E6F6B622DC027600814118 /* DVAApplication.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DVAApplication.m; sourceTree = "<group>"; };
 		7AED6A83B28541ECA19A9F29 /* Rubik-Light.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Rubik-Light.ttf"; path = "../node_modules/@shoutem/ui/fonts/Rubik-Light.ttf"; sourceTree = "<group>"; };
 		7E5087614F2F4FAE82D06BF2 /* Rubik-Black.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Rubik-Black.ttf"; path = "../node_modules/@shoutem/ui/fonts/Rubik-Black.ttf"; sourceTree = "<group>"; };
 		82C6B94B674B2C3DB9DF048A /* Pods-Wazari-tvOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Wazari-tvOS.debug.xcconfig"; path = "Target Support Files/Pods-Wazari-tvOS/Pods-Wazari-tvOS.debug.xcconfig"; sourceTree = "<group>"; };
@@ -159,6 +162,8 @@
 				60E6F6AE22DB009300814118 /* web */,
 				60E6F69822DAFFD400814118 /* DAVKeyManager.h */,
 				60E6F69922DAFFDE00814118 /* DAVKeyManager.m */,
+				60E6F6B522DC027600814118 /* DVAApplication.h */,
+				60E6F6B622DC027600814118 /* DVAApplication.m */,
 				008F07F21AC5B25A0029DE68 /* main.jsbundle */,
 				13B07FAF1A68108700A75B9A /* AppDelegate.h */,
 				13B07FB01A68108700A75B9A /* AppDelegate.m */,
@@ -610,6 +615,7 @@
 			files = (
 				13B07FBC1A68108700A75B9A /* AppDelegate.m in Sources */,
 				60E6F69A22DAFFDE00814118 /* DAVKeyManager.m in Sources */,
+				60E6F6B722DC027600814118 /* DVAApplication.m in Sources */,
 				13B07FC11A68108700A75B9A /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -11,6 +11,10 @@
 
 int main(int argc, char * argv[]) {
   @autoreleasepool {
-    return UIApplicationMain(argc, argv, nil, NSStringFromClass([AppDelegate class]));
+    NSString *appName = @"DVAApplication";
+    return UIApplicationMain(argc, argv, appName, NSStringFromClass([AppDelegate class]));
   }
+//  @autoreleasepool {
+//    return UIApplicationMain(argc, argv, nil, NSStringFromClass([AppDelegate class]));
+//  }
 }

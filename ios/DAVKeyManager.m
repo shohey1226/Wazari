@@ -132,17 +132,17 @@ RCT_EXPORT_METHOD(setBrowserKeymap:(NSDictionary *)keymap)
   [[NSNotificationCenter defaultCenter] postNotificationName:@"browserKeymap" object:self userInfo:browserKeymap];
 }
 
-RCT_EXPORT_METHOD(setEditorKeymap:(NSDictionary *)keymap)
-{
-  NSDictionary *editorKeymap = @{@"editorKeymap": keymap};
-  [[NSNotificationCenter defaultCenter] postNotificationName:@"editorKeymap" object:self userInfo:editorKeymap];
-}
-
-RCT_EXPORT_METHOD(setTerminalKeymap:(NSDictionary *)keymap)
-{
-  NSDictionary *terminalKeymap = @{@"terminalKeymap": keymap};
-  [[NSNotificationCenter defaultCenter] postNotificationName:@"terminalKeymap" object:self userInfo:terminalKeymap];
-}
+//RCT_EXPORT_METHOD(setEditorKeymap:(NSDictionary *)keymap)
+//{
+//  NSDictionary *editorKeymap = @{@"editorKeymap": keymap};
+//  [[NSNotificationCenter defaultCenter] postNotificationName:@"editorKeymap" object:self userInfo:editorKeymap];
+//}
+//
+//RCT_EXPORT_METHOD(setTerminalKeymap:(NSDictionary *)keymap)
+//{
+//  NSDictionary *terminalKeymap = @{@"terminalKeymap": keymap};
+//  [[NSNotificationCenter defaultCenter] postNotificationName:@"terminalKeymap" object:self userInfo:terminalKeymap];
+//}
 
 
 RCT_EXPORT_METHOD(turnOnKeymap)
