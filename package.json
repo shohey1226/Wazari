@@ -5,11 +5,13 @@
   "scripts": {
     "start": "react-native start",
     "test": "jest",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "postinstall": "sh ./fix.sh"
   },
   "dependencies": {
     "@shoutem/ui": "^0.24.1",
     "immutable": "^4.0.0-rc.12",
+    "is-equal-shallow": "^0.1.3",
     "react": "16.8.6",
     "react-native": "0.60.0",
     "react-native-fs": "^2.13.3",

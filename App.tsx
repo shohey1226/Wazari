@@ -9,23 +9,42 @@
  */
 
 import React, { Fragment } from "react";
+import { Text, View } from "react-native";
 import { Provider } from "react-redux";
-import { createStackNavigator, createAppContainer } from "react-navigation";
+import {
+  createStackNavigator,
+  createAppContainer,
+  StackActions
+} from "react-navigation";
+import { Button, Icon } from "@shoutem/ui";
 import Browser from "./app/containers/Browser";
+import KeySetting from "./app/containers/KeySetting";
 import configureStore from "./app/configureStore";
 
 const store: any = configureStore({});
 
-let RootStack = createStackNavigator(
-  {
-    Home: {
-      screen: Browser
-    }
+let RootStack = createStackNavigator({
+  Home: {
+    screen: Browser,
+    navigationOptions: ({ navigation }) => ({
+      title: "",
+      headerRight: (
+        <Button
+          styleName="clear"
+          onPress={() => navigation.navigate({ routeName: "Setting" })}
+        >
+          <Icon name="settings" />
+        </Button>
+      )
+    })
   },
-  {
-    headerMode: "none"
+  Setting: {
+    screen: KeySetting,
+    navigationOptions: () => ({
+      title: "Setting"
+    })
   }
-);
+});
 let Navigation = createAppContainer(RootStack);
 
 class App extends React.Component {
