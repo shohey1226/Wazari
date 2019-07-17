@@ -18,7 +18,7 @@ import {
 } from "react-navigation";
 import { Button, Icon } from "@shoutem/ui";
 import Browser from "./app/containers/Browser";
-import KeySetting from "./app/containers/KeySetting";
+import Setting from "./app/components/Setting";
 import configureStore from "./app/configureStore";
 
 const store: any = configureStore({});
@@ -39,7 +39,7 @@ let RootStack = createStackNavigator({
     })
   },
   Setting: {
-    screen: KeySetting,
+    screen: Setting,
     navigationOptions: () => ({
       title: "Setting"
     })
