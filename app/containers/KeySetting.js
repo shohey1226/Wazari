@@ -10,16 +10,28 @@ import {
 } from "react-native";
 import { connect } from "react-redux";
 import {
-  Button,
-  Text,
+  //  Button,
+  //  Text,
   View,
   Subtitle,
   Caption,
   Divider,
   Row,
-  TouchableOpacity,
-  Icon
+  TouchableOpacity
 } from "@shoutem/ui";
+
+import {
+  Button,
+  List,
+  ListItem,
+  Separator,
+  Text,
+  Body,
+  Right,
+  Left,
+  Icon
+} from "native-base";
+
 import {
   selectModifiers,
   selectDesktopKeymap,
@@ -54,7 +66,8 @@ class KeySetting extends Component {
       modalVisible: false,
       modalType: null,
       window: null,
-      action: null
+      action: null,
+      selected2: undefined
     };
   }
 
@@ -113,6 +126,27 @@ class KeySetting extends Component {
     this.setState({ modalVisible: false });
   }
 
+  //// Rendering
+
+  renderModifiers() {
+    const { modifiers } = this.props;
+    let items = [];
+    for (let mod in ModifierNames) {
+      items.push(
+        <ListItem icon onPress={() => this.toggleModifiersModal(mod)}>
+          <Body>
+            <Text>{ModifierNames[mod]}</Text>
+          </Body>
+          <Right>
+            <Text>{ModifierNames[mod]}</Text>
+            <Icon active name="arrow-forward" />
+          </Right>
+        </ListItem>
+      );
+    }
+    return items;
+  }
+
   renderModifierPickerItems() {
     const { modifiers } = this.props;
     let items = [];
@@ -152,21 +186,23 @@ class KeySetting extends Component {
     let rows = [];
     for (let action in keymap) {
       rows.push(
-        <TouchableOpacity
+        <ListItem
+          icon
           onPress={() => this.toggleActionsModal(window, action)}
           key={`keymap-${window}-${action}`}
         >
-          <Row>
+          <Body>
             <Text>{this._toCapitalizedWords(action)}</Text>
+          </Body>
+          <Right>
             <Text>
               {this._key(keymap[action].key, keymap[action].modifiers)}
             </Text>
-            <Icon styleName="disclosure" name="right-arrow" />
-          </Row>
-        </TouchableOpacity>
+            <Icon active name="arrow-forward" />
+          </Right>
+        </ListItem>
       );
     }
-    rows.push(<Divider key={`dividerActionKeys`} />);
     return rows;
   }
 
@@ -238,11 +274,13 @@ class KeySetting extends Component {
         <View
           style={{
             flex: 1,
-            justifyContent: "center"
+            justifyContent: "center",
+            alignItems: "center"
           }}
         >
           <View
             style={{
+              width: 300,
               backgroundColor: "white",
               justifyContent: "center",
               margin: 10,
@@ -252,7 +290,8 @@ class KeySetting extends Component {
                 height: 3
               },
               shadowRadius: 5,
-              shadowOpacity: 1.0
+              shadowOpacity: 1.0,
+              padding: 10
             }}
           >
             <Picker
@@ -261,7 +300,10 @@ class KeySetting extends Component {
             >
               {this.renderModifierPickerItems()}
             </Picker>
-            <Button onPress={() => this.setState({ modalVisible: false })}>
+            <Button
+              block
+              onPress={() => this.setState({ modalVisible: false })}
+            >
               <Text>CANCEL</Text>
             </Button>
           </View>
@@ -282,11 +324,13 @@ class KeySetting extends Component {
         <View
           style={{
             flex: 1,
-            justifyContent: "center"
+            justifyContent: "center",
+            alignItems: "center"
           }}
         >
           <View
             style={{
+              width: 300,
               backgroundColor: "white",
               justifyContent: "center",
               margin: 10,
@@ -296,7 +340,8 @@ class KeySetting extends Component {
                 height: 3
               },
               shadowRadius: 5,
-              shadowOpacity: 1.0
+              shadowOpacity: 1.0,
+              padding: 10
             }}
           >
             <Picker
@@ -305,43 +350,62 @@ class KeySetting extends Component {
             >
               {this.renderActionKeyPickerItems()}
             </Picker>
-            <Row>
-              <Text>Control(^)</Text>
-              <Switch
-                onValueChange={value =>
-                  this._actionModifierValueChanged(value, "ctrlKey")
-                }
-                value={keymap.modifiers.ctrlKey}
-              />
-            </Row>
-            <Row>
-              <Text>Alt/Option(⌥)</Text>
-              <Switch
-                onValueChange={value =>
-                  this._actionModifierValueChanged(value, "altKey")
-                }
-                value={keymap.modifiers.altKey}
-              />
-            </Row>
-            <Row>
-              <Text>Meta/Command(⌘)</Text>
-              <Switch
-                onValueChange={value =>
-                  this._actionModifierValueChanged(value, "metaKey")
-                }
-                value={keymap.modifiers.metaKey}
-              />
-            </Row>
-            <Row>
-              <Text>Shift(⇧)</Text>
-              <Switch
-                onValueChange={value =>
-                  this._actionModifierValueChanged(value, "shiftKey")
-                }
-                value={keymap.modifiers.shiftKey}
-              />
-            </Row>
-            <Button onPress={() => this.setState({ modalVisible: false })}>
+            <ListItem icon>
+              <Body>
+                <Text>Control(^)</Text>
+              </Body>
+              <Right>
+                <Switch
+                  onValueChange={value =>
+                    this._actionModifierValueChanged(value, "ctrlKey")
+                  }
+                  value={keymap.modifiers.ctrlKey}
+                />
+              </Right>
+            </ListItem>
+            <ListItem icon>
+              <Body>
+                <Text>Alt/Option(⌥)</Text>
+              </Body>
+              <Right>
+                <Switch
+                  onValueChange={value =>
+                    this._actionModifierValueChanged(value, "altKey")
+                  }
+                  value={keymap.modifiers.altKey}
+                />
+              </Right>
+            </ListItem>
+            <ListItem icon>
+              <Body>
+                <Text>Meta/Command(⌘)</Text>
+              </Body>
+              <Right>
+                <Switch
+                  onValueChange={value =>
+                    this._actionModifierValueChanged(value, "metaKey")
+                  }
+                  value={keymap.modifiers.metaKey}
+                />
+              </Right>
+            </ListItem>
+            <ListItem icon>
+              <Body>
+                <Text>Shift(⇧)</Text>
+              </Body>
+              <Right>
+                <Switch
+                  onValueChange={value =>
+                    this._actionModifierValueChanged(value, "shiftKey")
+                  }
+                  value={keymap.modifiers.shiftKey}
+                />
+              </Right>
+            </ListItem>
+            <Button
+              block
+              onPress={() => this.setState({ modalVisible: false })}
+            >
               <Text>CLOSE</Text>
             </Button>
           </View>
@@ -354,63 +418,26 @@ class KeySetting extends Component {
     const { modifiers } = this.props;
     return (
       <ScrollView>
-        <Divider />
-        <Caption styleName="h-center">Caps Lock Key(⇪)</Caption>
-        <TouchableOpacity
-          onPress={() => this.toggleModifiersModal("capslockKey")}
-        >
-          <Row styleName="small">
-            <Text>{ModifierNames[modifiers.capslockKey]}</Text>
-            <Icon styleName="disclosure" name="right-arrow" />
-          </Row>
-        </TouchableOpacity>
-
-        <Divider />
-        <Caption styleName="h-center">Control Key(^)</Caption>
-        <TouchableOpacity onPress={() => this.toggleModifiersModal("ctrlKey")}>
-          <Row styleName="small">
-            <Text>{ModifierNames[modifiers.ctrlKey]}</Text>
-            <Icon styleName="disclosure" name="right-arrow" />
-          </Row>
-        </TouchableOpacity>
-        <Divider />
-        <Caption styleName="h-center">Alt/Option Key(⌥)</Caption>
-        <TouchableOpacity onPress={() => this.toggleModifiersModal("altKey")}>
-          <Row styleName="small">
-            <Text>{ModifierNames[modifiers.altKey]}</Text>
-            <Icon styleName="disclosure" name="right-arrow" />
-          </Row>
-        </TouchableOpacity>
-        <Divider />
-        <Caption styleName="h-center">Meta/Command Key(⌘)</Caption>
-        <TouchableOpacity onPress={() => this.toggleModifiersModal("metaKey")}>
-          <Row styleName="small">
-            <Text>{ModifierNames[modifiers.metaKey]}</Text>
-            <Icon styleName="disclosure" name="right-arrow" />
-          </Row>
-        </TouchableOpacity>
-        <Divider />
-        <Divider />
-        <Subtitle styleName="h-center">Action Keys</Subtitle>
-        <Divider />
-        <Caption styleName="h-center">Desktop</Caption>
+        <Separator bordered>
+          <Text>Modifier keys</Text>
+        </Separator>
+        {this.renderModifiers()}
+        <Separator bordered>
+          <Text>Shortcuts</Text>
+        </Separator>
         {this.renderActionKeys("desktop", this.props.desktopKeymap)}
-
-        <Divider />
-        <Caption styleName="h-center">Browser</Caption>
         {this.renderActionKeys("browser", this.props.browserKeymap)}
-
-        <Divider />
-        <Divider />
-        <TouchableOpacity onPress={this.setDefault.bind(this)}>
-          <Row styleName="small">
-            <Text style={{ marginLeft: 10 }}>Set back to default</Text>
-            <Icon styleName="disclosure" name="right-arrow" />
-          </Row>
-        </TouchableOpacity>
-        <Divider />
-        <Divider />
-
+        <Separator bordered>
+          <Text style={{ color: "red" }}>Danger zone</Text>
+        </Separator>
+        <ListItem onPress={this.setDefault.bind(this)} icon>
+          <Body>
+            <Text>Set back to default</Text>
+          </Body>
+          <Right>
+            <Icon active name="arrow-forward" />
+          </Right>
+        </ListItem>
         <Modal
           visible={this.state.modalVisible}
           animationType="fade"
