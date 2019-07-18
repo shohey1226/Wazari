@@ -165,6 +165,7 @@ class Browser extends Component<{}, IState, any> {
         <WebView
           ref={r => (this.webref = r as any)}
           source={{ uri: "https://www.wazaterm.com" }}
+          keyboardDisplayRequiresUser={false}
           hideKeyboardAccessoryView={true}
           injectedJavaScript={injectingJs
             .replace("SVIM_PREDEFINE", sVim.sVimPredefine)
