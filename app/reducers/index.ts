@@ -4,19 +4,14 @@ import keymap from "./keymap";
 // import config from "./config";
 // import browser from "./browser";
 // import error from "./error";
-import * as storage from "redux-storage";
-import merger from "redux-storage-merger-immutablejs";
 
-const appReducer = storage.reducer(
-  combineReducers({
-    // navigation,
-    keymap,
-    // config,
-    // browser,
-    // error
-  }),
-  merger
-);
+const appReducer = combineReducers({
+  // navigation,
+  keymap
+  // config,
+  // browser,
+  // error
+});
 
 const rootReducer = (state, action) => {
   if (action.type === "RESET_ALL_SETTINGS") {

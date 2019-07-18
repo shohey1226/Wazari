@@ -20,6 +20,8 @@ import { Button, Icon } from "native-base";
 import Browser from "./app/containers/Browser";
 import Setting from "./app/components/Setting";
 import configureStore from "./app/configureStore";
+import { PersistGate } from "redux-persist/integration/react";
+import { persistStore } from "redux-persist";
 
 const store: any = configureStore({});
 
@@ -52,7 +54,9 @@ class App extends React.Component {
   render() {
     return (
       <Provider store={store}>
-        <Navigation />
+        <PersistGate loading={null} persistor={persistStore(store)}>
+          <Navigation />
+        </PersistGate>
       </Provider>
     );
   }

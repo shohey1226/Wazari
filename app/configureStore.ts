@@ -2,19 +2,20 @@ import { createStore, applyMiddleware } from "redux";
 import thunkMiddleware from "redux-thunk";
 import { createLogger } from "redux-logger";
 import reducer from "./reducers/index";
-import * as storage from "redux-storage";
-import createEngine from "redux-storage-engine-reactnativeasyncstorage";
 import { isCollection } from "immutable";
-const engine = createEngine("Wazari");
-const storageMiddleware = storage.createMiddleware(engine);
+import { persistStore, persistReducer } from "redux-persist";
+import AsyncStorage from "@react-native-community/async-storage";
+
+const persistConfig = {
+  key: "root",
+  storage: AsyncStorage
+};
+const persistedReducer = persistReducer(persistConfig, reducer);
 
 let createStoreWithMiddleware;
 if (!__DEV__) {
   // production
-  createStoreWithMiddleware = applyMiddleware(
-    thunkMiddleware,
-    storageMiddleware
-  )(createStore);
+  createStoreWithMiddleware = applyMiddleware(thunkMiddleware)(createStore);
 } else {
   // To deal with immutable to chrome console
   const loggerMiddleware = createLogger({
@@ -36,11 +37,10 @@ if (!__DEV__) {
 
   createStoreWithMiddleware = applyMiddleware(
     thunkMiddleware,
-    storageMiddleware,
     loggerMiddleware
   )(createStore);
 }
 
 export default function configureStore(initialState) {
-  return createStoreWithMiddleware(reducer, initialState);
+  return createStoreWithMiddleware(persistedReducer, initialState);
 }
