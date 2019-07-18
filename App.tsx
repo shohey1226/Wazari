@@ -16,7 +16,7 @@ import {
   createAppContainer,
   StackActions
 } from "react-navigation";
-import { Button, Icon } from "native-base";
+import { Button, Icon, Header, Item, Input } from "native-base";
 import Browser from "./app/containers/Browser";
 import Setting from "./app/components/Setting";
 import configureStore from "./app/configureStore";
@@ -30,14 +30,21 @@ let RootStack = createStackNavigator({
     screen: Browser,
     navigationOptions: ({ navigation }) => ({
       title: "",
-      headerRight: (
-        <Button
-          transparent
-          dark
-          onPress={() => navigation.navigate({ routeName: "Setting" })}
-        >
-          <Icon name="settings" />
-        </Button>
+      header: (
+        <Header searchBar rounded>
+          <Item>
+            <Icon name="ios-search" />
+            <Input placeholder="Search" />
+            <Icon name="ios-people" />
+          </Item>
+          <Button
+            transparent
+            dark
+            onPress={() => navigation.navigate({ routeName: "Setting" })}
+          >
+            <Icon name="settings" />
+          </Button>
+        </Header>
       )
     })
   },
