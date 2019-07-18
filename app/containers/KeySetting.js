@@ -3,23 +3,12 @@ import {
   Picker,
   ScrollView,
   NativeModules,
-  TextInput,
   Modal,
   Switch,
-  Alert
+  Alert,
+  View
 } from "react-native";
 import { connect } from "react-redux";
-import {
-  //  Button,
-  //  Text,
-  View,
-  Subtitle,
-  Caption,
-  Divider,
-  Row,
-  TouchableOpacity
-} from "@shoutem/ui";
-
 import {
   Button,
   List,
@@ -31,12 +20,10 @@ import {
   Left,
   Icon
 } from "native-base";
-
 import {
   selectModifiers,
   selectDesktopKeymap,
-  selectBrowserKeymap,
-  selectTerminalKeymap
+  selectBrowserKeymap
 } from "../selectors/keymap";
 import {
   updateModifier,
@@ -44,7 +31,6 @@ import {
   updateActionKey,
   setDefault
 } from "../actions/keymap";
-
 import equals from "is-equal-shallow";
 import { isEqual } from "lodash"; // deep comparison
 import keymapper from "../utils/Keymapper";
@@ -66,38 +52,32 @@ class KeySetting extends Component {
       modalVisible: false,
       modalType: null,
       window: null,
-      action: null,
-      selected2: undefined
+      action: null
     };
   }
 
-  componentWillReceiveProps(nextProps) {
-    const {
-      modifiers,
-      desktopKeymap,
-      browserKeymap,
-      terminalKeymap
-    } = this.props;
+  componentDidUpdate(prevProps) {
+    const { modifiers, desktopKeymap, browserKeymap } = this.props;
 
     // Update modifiers
-    if (!equals(this.props.modifiers, nextProps.modifiers)) {
-      DAVKeyManager.updateModifiers(nextProps.modifiers);
+    if (!equals(this.props.modifiers, prevProps.modifiers)) {
+      DAVKeyManager.updateModifiers(this.props.modifiers);
     }
 
-    if (!isEqual(this.props.desktopKeymap, nextProps.desktopKeymap)) {
+    if (!isEqual(this.props.desktopKeymap, prevProps.desktopKeymap)) {
       DAVKeyManager.setDesktopKeymap(
         keymapper.convertToNativeFormat(
-          nextProps.desktopKeymap,
-          nextProps.modifiers
+          this.props.desktopKeymap,
+          this.props.modifiers
         )
       );
     }
 
-    if (!isEqual(this.props.browserKeymap, nextProps.browserKeymap)) {
+    if (!isEqual(this.props.browserKeymap, prevProps.browserKeymap)) {
       DAVKeyManager.setBrowserKeymap(
         keymapper.convertToNativeFormat(
-          nextProps.browserKeymap,
-          nextProps.modifiers
+          this.props.browserKeymap,
+          this.props.modifiers
         )
       );
     }
@@ -262,12 +242,7 @@ class KeySetting extends Component {
   }
 
   renderModalContent() {
-    const {
-      modifiers,
-      desktopKeymap,
-      browserKeymap,
-      terminalKeymap
-    } = this.props;
+    const { modifiers, desktopKeymap, browserKeymap } = this.props;
 
     if (this.state.modalType === "modifiers") {
       return (

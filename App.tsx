@@ -16,7 +16,7 @@ import {
   createAppContainer,
   StackActions
 } from "react-navigation";
-import { Button, Icon } from "@shoutem/ui";
+import { Button, Icon } from "native-base";
 import Browser from "./app/containers/Browser";
 import Setting from "./app/components/Setting";
 import configureStore from "./app/configureStore";
@@ -30,7 +30,8 @@ let RootStack = createStackNavigator({
       title: "",
       headerRight: (
         <Button
-          styleName="clear"
+          transparent
+          dark
           onPress={() => navigation.navigate({ routeName: "Setting" })}
         >
           <Icon name="settings" />
