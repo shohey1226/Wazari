@@ -113,7 +113,11 @@ class KeySetting extends Component {
     let items = [];
     for (let mod in ModifierNames) {
       items.push(
-        <ListItem icon onPress={() => this.toggleModifiersModal(mod)}>
+        <ListItem
+          key={`modifiers-${mod}`}
+          icon
+          onPress={() => this.toggleModifiersModal(mod)}
+        >
           <Body>
             <Text>{ModifierNames[mod]}</Text>
           </Body>

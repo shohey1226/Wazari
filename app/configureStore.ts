@@ -4,7 +4,7 @@ import { createLogger } from "redux-logger";
 import reducer from "./reducers/index";
 import * as storage from "redux-storage";
 import createEngine from "redux-storage-engine-reactnativeasyncstorage";
-
+import { isCollection } from "immutable";
 const engine = createEngine("Wazari");
 const storageMiddleware = storage.createMiddleware(engine);
 
@@ -15,24 +15,23 @@ if (!__DEV__) {
     thunkMiddleware,
     storageMiddleware
   )(createStore);
-
 } else {
   // To deal with immutable to chrome console
   const loggerMiddleware = createLogger({
     collapsed: true,
-    stateTransformer: state => state.toJS()    
-    // stateTransformer: state => {
-    //   let newState = {};
+    //    stateTransformer: state => state.toJS()
+    stateTransformer: state => {
+      let newState = {};
 
-    //   for (var i of Object.keys(state)) {
-    //     if (Iterable.isIterable(state[i])) {
-    //       newState[i] = state[i].toJS();
-    //     } else {
-    //       newState[i] = state[i];
-    //     }
-    //   }
-    //   return newState;
-    // }
+      for (var i of Object.keys(state)) {
+        if (isCollection(state[i])) {
+          newState[i] = state[i].toJS();
+        } else {
+          newState[i] = state[i];
+        }
+      }
+      return newState;
+    }
   });
 
   createStoreWithMiddleware = applyMiddleware(
