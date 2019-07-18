@@ -5,9 +5,11 @@ import reducer from "./reducers/index";
 import { isCollection } from "immutable";
 import { persistStore, persistReducer } from "redux-persist";
 import AsyncStorage from "@react-native-community/async-storage";
+import immutableTransform from "redux-persist-transform-immutable";
 
 const persistConfig = {
   key: "root",
+  transforms: [immutableTransform()],
   storage: AsyncStorage
 };
 const persistedReducer = persistReducer(persistConfig, reducer);
@@ -42,5 +44,6 @@ if (!__DEV__) {
 }
 
 export default function configureStore(initialState) {
-  return createStoreWithMiddleware(persistedReducer, initialState);
+  const store = createStoreWithMiddleware(persistedReducer, initialState);
+  return { store, persistor: persistStore(store) };
 }

@@ -21,9 +21,9 @@ import Browser from "./app/containers/Browser";
 import Setting from "./app/components/Setting";
 import configureStore from "./app/configureStore";
 import { PersistGate } from "redux-persist/integration/react";
-import { persistStore } from "redux-persist";
+//import { persistStore } from "redux-persist";
 
-const store: any = configureStore({});
+const { store, persistor } = configureStore({});
 
 let RootStack = createStackNavigator({
   Home: {
@@ -54,7 +54,7 @@ class App extends React.Component {
   render() {
     return (
       <Provider store={store}>
-        <PersistGate loading={null} persistor={persistStore(store)}>
+        <PersistGate loading={null} persistor={persistor}>
           <Navigation />
         </PersistGate>
       </Provider>
