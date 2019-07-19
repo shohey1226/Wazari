@@ -63,11 +63,18 @@ class Browser extends Component {
     dispatch(selectTab(tab.i));
   }
 
+  // https://qiita.com/hirocueki2/items/137400e236189a0a6b3e
+  _truncate(str, len) {
+    return str.length <= len ? str : str.substr(0, len) + "...";
+  }
+
   renderTabs() {
     const { sites } = this.props;
     let tabs = [];
     for (let i = 0; i < sites.length; i++) {
-      const tabTitle = sites[i].title || sites[i].url;
+      const tabTitle = sites[i].title
+        ? this._truncate(sites[i].title, 12)
+        : sites[i].url;
       tabs.push(
         <Tab key={`tab-${i}`} heading={tabTitle}>
           <Window url={sites[i].url} tabNumber={i} />

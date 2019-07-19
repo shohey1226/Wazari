@@ -4,6 +4,7 @@ import { WebView } from "react-native-webview";
 import { connect } from "react-redux";
 import sVim from "../utils/sVim";
 import { selectBrowserKeymap, selectModifiers } from "../selectors/keymap";
+import { addNewTab, selectTab, updateSite } from "../actions/ui";
 
 const { DAVKeyManager } = NativeModules;
 const DAVKeyManagerEmitter = new NativeEventEmitter(DAVKeyManager);
@@ -158,6 +159,11 @@ class Window extends Component<{}, IState, any> {
     }
   }
 
+  onNavigationStateChange(event) {
+    const { dispatch, activeTabIndex } = this.props;
+    dispatch(updateSite(activeTabIndex, event.title, event.url));
+  }
+
   render() {
     const { url } = this.props;
     if (this.state.isLoading) {
@@ -170,6 +176,7 @@ class Window extends Component<{}, IState, any> {
           keyboardDisplayRequiresUserAction={false}
           hideKeyboardAccessoryView={true}
           onLoadEnd={this.onLoadEnd.bind(this)}
+          onNavigationStateChange={this.onNavigationStateChange.bind(this)}
           injectedJavaScript={injectingJs
             .replace("SVIM_PREDEFINE", sVim.sVimPredefine)
             .replace("SVIM_GLOBAL", sVim.sVimGlobal)
