@@ -11,7 +11,7 @@ import { Map, fromJS } from "immutable";
 const initialState = fromJS({
   // sites = [{ url: "xx", title: ""},{},,,]
   sites: [],
-  activeTabIndex: null,
+  activeTabIndex: 0,
   isUpdatingUrlForATS: false
 });
 

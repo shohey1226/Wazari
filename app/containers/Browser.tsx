@@ -4,7 +4,8 @@ import {
   TouchableOpacity,
   View,
   NativeModules,
-  NativeEventEmitter
+  NativeEventEmitter,
+  TextInput
 } from "react-native";
 import { connect } from "react-redux";
 import {
@@ -32,13 +33,14 @@ class Browser extends Component {
   }
 
   componentDidMount() {
-    const { dispatch, sites } = this.props;
+    const { dispatch, sites, activeTabIndex } = this.props;
     if (sites.length === 0) {
       dispatch(addNewTab("https://www.wazaterm.com"));
       dispatch(addNewTab("https://www.google.com"));
     }
     this.initKeymaps();
-    //setTimeout(() => this.tabsRef.goToPage(1), 3000);
+    dispatch(selectTab(activeTabIndex));
+    this.tabsRef.goToPage(activeTabIndex);
   }
 
   initKeymaps() {
@@ -92,10 +94,9 @@ class Browser extends Component {
 function mapStateToProps(state, ownProps) {
   const keymap = selectBrowserKeymap(state);
   const modifiers = selectModifiers(state);
-  // const activeTabIndex = state.ui.get("activeTabIndex");
+  const activeTabIndex = state.ui.get("activeTabIndex");
   const sites = selectSites(state);
-  // return { activeTabIndex, sites };
-  return { sites, keymap, modifiers };
+  return { sites, keymap, modifiers, activeTabIndex };
 }
 
 export default connect(mapStateToProps)(Browser);

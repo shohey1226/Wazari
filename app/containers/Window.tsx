@@ -32,20 +32,22 @@ class Window extends Component<{}, IState, any> {
         this.handleBrowserActions
       )
     );
-
-    // setTimeout(() => {
-    //   this.webref !== null && this.webref.injectJavaScript(`sVimHint.start()`);
-    // }, 3000);
   }
 
   componentDidUpdate(prevProp) {
     if (prevProp.activeTabIndex !== this.props.activeTabIndex)
       if (this.props.tabNumber === this.props.activeTabIndex) {
-        this.setState({ isActive: true });
-        this.webref.injectJavaScript(focusJS);
+        this.focusWindow();
       } else {
         this.setState({ isActive: false });
+        this.webref &&
+          this.webref.injectJavaScript(`document.activeElement.blur();`);
       }
+  }
+
+  focusWindow() {
+    this.setState({ isActive: true });
+    this.webref && this.webref.injectJavaScript(focusJS);
   }
 
   handleBrowserActions = event => {
@@ -149,6 +151,13 @@ class Window extends Component<{}, IState, any> {
     }
   };
 
+  onLoadEnd(syntheticEvent) {
+    const { tabNumber, activeTabIndex } = this.props;
+    if (tabNumber === activeTabIndex) {
+      this.focusWindow();
+    }
+  }
+
   render() {
     const { url } = this.props;
     if (this.state.isLoading) {
@@ -158,8 +167,9 @@ class Window extends Component<{}, IState, any> {
         <WebView
           ref={r => (this.webref = r as any)}
           source={{ uri: url }}
-          keyboardDisplayRequiresUser={false}
+          keyboardDisplayRequiresUserAction={false}
           hideKeyboardAccessoryView={true}
+          onLoadEnd={this.onLoadEnd.bind(this)}
           injectedJavaScript={injectingJs
             .replace("SVIM_PREDEFINE", sVim.sVimPredefine)
             .replace("SVIM_GLOBAL", sVim.sVimGlobal)
@@ -232,13 +242,13 @@ true
 const focusJS = `
 setTimeout(function(){
   var input = document.createElement("input");
-  input.type = "text";
+  input.type = "text";  
   input.style.position = "absolute";
-  input.style.top = window.pageYOffset + screen.height*BROWSER_SCALE + 'px';
+  input.style.top = '0px';
   document.body.appendChild(input);
   input.focus();
   input.blur();
   input.setAttribute("style", "display:none");
   delete input;
-}, 5);
+}, 500);
 `;
