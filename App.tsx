@@ -21,9 +21,10 @@ import Browser from "./app/containers/Browser";
 import Setting from "./app/components/Setting";
 import configureStore from "./app/configureStore";
 import { PersistGate } from "redux-persist/integration/react";
-//import { persistStore } from "redux-persist";
 
 const { store, persistor } = configureStore({});
+
+persistor.purge();
 
 let RootStack = createStackNavigator({
   Home: {

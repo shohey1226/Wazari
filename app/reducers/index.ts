@@ -1,15 +1,16 @@
 import { combineReducers } from "redux";
 // import navigation from "./navigation";
 import keymap from "./keymap";
+import ui from "./ui";
 // import config from "./config";
-// import browser from "./browser";
+
 // import error from "./error";
 
 const appReducer = combineReducers({
   // navigation,
-  keymap
+  keymap,
   // config,
-  // browser,
+  ui
   // error
 });
 
