@@ -16,9 +16,10 @@ import {
   createAppContainer,
   StackActions
 } from "react-navigation";
-import { Button, Icon, Header, Item, Input } from "native-base";
+
 import Browser from "./app/containers/Browser";
 import Setting from "./app/components/Setting";
+import NaviBar from "./app/containers/NaviBar";
 import configureStore from "./app/configureStore";
 import { PersistGate } from "redux-persist/integration/react";
 
@@ -32,20 +33,9 @@ let RootStack = createStackNavigator({
     navigationOptions: ({ navigation }) => ({
       title: "",
       header: (
-        <Header searchBar rounded>
-          <Item>
-            <Icon name="ios-search" />
-            <Input placeholder="Search" />
-            <Icon name="ios-people" />
-          </Item>
-          <Button
-            transparent
-            dark
-            onPress={() => navigation.navigate({ routeName: "Setting" })}
-          >
-            <Icon name="settings" />
-          </Button>
-        </Header>
+        <NaviBar
+          onPressSetting={() => navigation.navigate({ routeName: "Setting" })}
+        />
       )
     })
   },
