@@ -19,13 +19,13 @@ import {
 
 import Browser from "./app/containers/Browser";
 import Setting from "./app/components/Setting";
-import NaviBar from "./app/containers/NaviBar";
+import NavBar from "./app/containers/NavBar";
 import configureStore from "./app/configureStore";
 import { PersistGate } from "redux-persist/integration/react";
 
 const { store, persistor } = configureStore({});
 
-//persistor.purge();
+persistor.purge();
 
 let RootStack = createStackNavigator({
   Home: {
@@ -33,7 +33,7 @@ let RootStack = createStackNavigator({
     navigationOptions: ({ navigation }) => ({
       title: "",
       header: (
-        <NaviBar
+        <NavBar
           onPressSetting={() => navigation.navigate({ routeName: "Setting" })}
         />
       )

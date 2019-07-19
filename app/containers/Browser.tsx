@@ -39,8 +39,8 @@ class Browser extends Component {
       dispatch(addNewTab("https://www.google.com"));
     }
     this.initKeymaps();
-    dispatch(selectTab(activeTabIndex));
-    this.tabsRef.goToPage(activeTabIndex);
+    //dispatch(selectTab(activeTabIndex));
+    //this.tabsRef.goToPage(activeTabIndex);
   }
 
   initKeymaps() {
@@ -50,6 +50,12 @@ class Browser extends Component {
     DAVKeyManager.setBrowserKeymap(
       keymapper.convertToNativeFormat(keymap, modifiers)
     );
+  }
+
+  componentDidUpdate(prevProp) {
+    if (prevProp.activeTabIndex !== this.props.activeTabIndex) {
+      this.tabsRef.goToPage(this.props.activeTabIndex);
+    }
   }
 
   // onPressTab(index) {
