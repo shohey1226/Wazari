@@ -34,14 +34,20 @@ class TabBar extends Component {
   //   dispatch(selectTab(index));
   // }
 
+  onChangeTab(tab) {
+    // tab = {i: 0, ref: {…}, from: 1}
+    const { dispatch } = this.props;
+    dispatch(selectTab(tab.i));
+  }
+
   renderTabs() {
     const { sites } = this.props;
     let tabs = [];
     for (let i = 0; i < sites.length; i++) {
       const tabTitle = sites[i].title || sites[i].url;
       tabs.push(
-        <Tab heading={tabTitle}>
-          <Window key={`tab-${i}`} url={sites[i].url} />
+        <Tab key={`tab-${i}`} heading={tabTitle}>
+          <Window url={sites[i].url} tabNumber={i} />
         </Tab>
       );
     }
@@ -54,6 +60,7 @@ class TabBar extends Component {
       <Tabs
         ref={r => (this.tabsRef = r as any)}
         renderTabBar={() => <ScrollableTab />}
+        onChangeTab={this.onChangeTab.bind(this)}
       >
         {this.renderTabs()}
       </Tabs>

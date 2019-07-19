@@ -34,6 +34,17 @@ class Window extends Component<{}, IState, any> {
     // }, 3000);
   }
 
+  // componentDidUpdate(prevProp) {
+  //   if (prevProp.activeTabIndex !== this.props.activeTabIndex) {
+  //     //this.focusWindow();
+  //   }
+  // }
+
+  focusWindow() {
+    this.props.activeTabIndex === this.props.tabNumber &&
+      this.webref.injectJavaScript(focusJS);
+  }
+
   initKeymaps() {
     const { keymap, modifiers } = this.props;
     DAVKeyManager.setWindow("browser");
@@ -99,6 +110,8 @@ class Window extends Component<{}, IState, any> {
           this.rebuildBrowser(activeTabIndex, isFullScreen);
           break;
         case "hitAHint":
+          // this.props.activeTabIndex === this.props.tabNumber &&
+          //   console.log(this.props.tabNumber, this.props.activeTabIndex);
           this.webref !== null &&
             this.webref.injectJavaScript(`sVimHint.start()`);
           break;
@@ -188,7 +201,7 @@ function mapStateToProps(state, ownProps) {
   // const isHelp = state.navigation.get("isHelp");
   const keymap = selectBrowserKeymap(state);
   const modifiers = selectModifiers(state);
-  // const activeTabIndex = state.browser.get("activeTabIndex");
+  const activeTabIndex = state.ui.get("activeTabIndex");
   // const isUpdatingUrlForATS = state.browser.get("isUpdatingUrlForATS");
   // const sites = selectSites(state);
   // const {
@@ -201,9 +214,9 @@ function mapStateToProps(state, ownProps) {
     // activeWindow,
     // isHelp,
     keymap,
-    modifiers
+    modifiers,
     // sites,
-    // activeTabIndex,
+    activeTabIndex
     // fontSize,
     // isFullScreen,
     // isSecured,
@@ -235,4 +248,18 @@ window.receivedScrollUpFromReactNative = function() {
   sVimTab.commands.scrollUp();
 }
 true
+`;
+
+const focusJS = `
+setTimeout(function(){
+  var input = document.createElement("input");
+  input.type = "text";
+  input.style.position = "absolute";
+  input.style.top = window.pageYOffset + screen.height*BROWSER_SCALE + 'px';
+  document.body.appendChild(input);
+  input.focus();
+  input.blur();
+  input.setAttribute("style", "display:none");
+  delete input;
+}, 5);
 `;
