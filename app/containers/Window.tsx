@@ -1,9 +1,8 @@
 import React, { Component } from "react";
+import { View, NativeModules, NativeEventEmitter } from "react-native";
 import { WebView } from "react-native-webview";
-import { Text, View, NativeModules, NativeEventEmitter } from "react-native";
 import { connect } from "react-redux";
 import sVim from "../utils/sVim";
-import keymapper from "../utils/Keymapper";
 import { selectBrowserKeymap, selectModifiers } from "../selectors/keymap";
 
 const { DAVKeyManager } = NativeModules;
@@ -19,7 +18,7 @@ class Window extends Component<{}, IState, any> {
 
   constructor(props) {
     super(props);
-    this.state = { isLoading: true, isActive: true };
+    this.state = { isLoading: true, isActive: false };
     this.subscriptions = [];
   }
 
@@ -27,46 +26,26 @@ class Window extends Component<{}, IState, any> {
     sVim.init(() => {
       this.setState({ isLoading: false });
     });
-    this.initKeymaps();
-
-    // setTimeout(() => {
-    //   this.webref !== null && this.webref.injectJavaScript(`sVimHint.start()`);
-    // }, 3000);
-  }
-
-  // componentDidUpdate(prevProp) {
-  //   if (prevProp.activeTabIndex !== this.props.activeTabIndex) {
-  //     //this.focusWindow();
-  //   }
-  // }
-
-  focusWindow() {
-    this.props.activeTabIndex === this.props.tabNumber &&
-      this.webref.injectJavaScript(focusJS);
-  }
-
-  initKeymaps() {
-    const { keymap, modifiers } = this.props;
-    DAVKeyManager.setWindow("browser");
-    DAVKeyManager.turnOnKeymap();
-    console.log(keymap);
-    console.log(modifiers);
     this.subscriptions.push(
       DAVKeyManagerEmitter.addListener(
         "RNBrowserKeyEvent",
         this.handleBrowserActions
       )
     );
-    // this.subscriptions.push(
-    //   DAVKeyManagerEmitter.addListener(
-    //     "RNDesktopKeyEvent",
-    //     this.handleDesktopActions
-    //   )
-    // );
 
-    DAVKeyManager.setBrowserKeymap(
-      keymapper.convertToNativeFormat(keymap, modifiers)
-    );
+    // setTimeout(() => {
+    //   this.webref !== null && this.webref.injectJavaScript(`sVimHint.start()`);
+    // }, 3000);
+  }
+
+  componentDidUpdate(prevProp) {
+    if (prevProp.activeTabIndex !== this.props.activeTabIndex)
+      if (this.props.tabNumber === this.props.activeTabIndex) {
+        this.setState({ isActive: true });
+        this.webref.injectJavaScript(focusJS);
+      } else {
+        this.setState({ isActive: false });
+      }
   }
 
   handleBrowserActions = event => {
