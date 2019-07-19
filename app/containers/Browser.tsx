@@ -1,5 +1,11 @@
 import React, { Component } from "react";
-import { ScrollView, TouchableOpacity, View } from "react-native";
+import {
+  ScrollView,
+  TouchableOpacity,
+  View,
+  NativeModules,
+  NativeEventEmitter
+} from "react-native";
 import { connect } from "react-redux";
 import {
   Button,
@@ -12,9 +18,14 @@ import {
 } from "native-base";
 import Window from "./Window";
 import { selectSites } from "../selectors/ui";
+import { selectBrowserKeymap, selectModifiers } from "../selectors/keymap";
 import { addNewTab, selectTab } from "../actions/ui";
+import keymapper from "../utils/Keymapper";
 
-class TabBar extends Component {
+const { DAVKeyManager } = NativeModules;
+const DAVKeyManagerEmitter = new NativeEventEmitter(DAVKeyManager);
+
+class Browser extends Component {
   constructor(props) {
     super(props);
     //this.onPressTab = this.onPressTab.bind(this);
@@ -26,7 +37,17 @@ class TabBar extends Component {
       dispatch(addNewTab("https://www.wazaterm.com"));
       dispatch(addNewTab("https://www.google.com"));
     }
+    this.initKeymaps();
     //setTimeout(() => this.tabsRef.goToPage(1), 3000);
+  }
+
+  initKeymaps() {
+    const { keymap, modifiers } = this.props;
+    DAVKeyManager.setWindow("browser");
+    DAVKeyManager.turnOnKeymap();
+    DAVKeyManager.setBrowserKeymap(
+      keymapper.convertToNativeFormat(keymap, modifiers)
+    );
   }
 
   // onPressTab(index) {
@@ -34,14 +55,20 @@ class TabBar extends Component {
   //   dispatch(selectTab(index));
   // }
 
+  onChangeTab(tab) {
+    // tab = {i: 0, ref: {…}, from: 1}
+    const { dispatch } = this.props;
+    dispatch(selectTab(tab.i));
+  }
+
   renderTabs() {
     const { sites } = this.props;
     let tabs = [];
     for (let i = 0; i < sites.length; i++) {
       const tabTitle = sites[i].title || sites[i].url;
       tabs.push(
-        <Tab heading={tabTitle}>
-          <Window key={`tab-${i}`} url={sites[i].url} />
+        <Tab key={`tab-${i}`} heading={tabTitle}>
+          <Window url={sites[i].url} tabNumber={i} />
         </Tab>
       );
     }
@@ -54,6 +81,7 @@ class TabBar extends Component {
       <Tabs
         ref={r => (this.tabsRef = r as any)}
         renderTabBar={() => <ScrollableTab />}
+        onChangeTab={this.onChangeTab.bind(this)}
       >
         {this.renderTabs()}
       </Tabs>
@@ -62,10 +90,12 @@ class TabBar extends Component {
 }
 
 function mapStateToProps(state, ownProps) {
+  const keymap = selectBrowserKeymap(state);
+  const modifiers = selectModifiers(state);
   // const activeTabIndex = state.ui.get("activeTabIndex");
   const sites = selectSites(state);
   // return { activeTabIndex, sites };
-  return { sites };
+  return { sites, keymap, modifiers };
 }
 
-export default connect(mapStateToProps)(TabBar);
+export default connect(mapStateToProps)(Browser);
