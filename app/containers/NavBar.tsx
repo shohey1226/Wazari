@@ -24,7 +24,11 @@ class NavBar extends Component<{}, IState, any> {
 
   onEndEditing() {
     const { dispatch, activeTabIndex, sites } = this.props;
-    dispatch(addNewTab(this.state.text));
+    if (/^http/.test(this.state.text)) {
+      dispatch(addNewTab(this.state.text));
+    } else {
+      dispatch(addNewTab(`https://www.google.com/search?q=${this.state.text}`));
+    }
     this.setState({ text: "" });
   }
 
@@ -34,7 +38,7 @@ class NavBar extends Component<{}, IState, any> {
         <Item>
           <Icon name="ios-search" />
           <Input
-            placeholder="Search"
+            placeholder="URL or Search with Google"
             onChangeText={text => this.setState({ text })}
             value={this.state.text}
             autoCorrect={false}

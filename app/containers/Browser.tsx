@@ -39,8 +39,6 @@ class Browser extends Component {
       dispatch(addNewTab("https://www.google.com"));
     }
     this.initKeymaps();
-    //dispatch(selectTab(activeTabIndex));
-    //this.tabsRef.goToPage(activeTabIndex);
   }
 
   initKeymaps() {
