@@ -161,7 +161,7 @@ class Window extends Component<{}, IState, any> {
 
   onNavigationStateChange(event) {
     const { dispatch, activeTabIndex } = this.props;
-    dispatch(updateSite(activeTabIndex, event.title, event.url));
+    //    dispatch(updateSite(activeTabIndex, event.title, event.url));
   }
 
   render() {

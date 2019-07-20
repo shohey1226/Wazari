@@ -25,7 +25,6 @@ class NavBar extends Component<{}, IState, any> {
   onEndEditing() {
     const { dispatch, activeTabIndex, sites } = this.props;
     dispatch(addNewTab(this.state.text));
-    dispatch(selectTab(sites.length + 1));
     this.setState({ text: "" });
   }
 

@@ -54,7 +54,10 @@ class Browser extends Component {
 
   componentDidUpdate(prevProp) {
     if (prevProp.activeTabIndex !== this.props.activeTabIndex) {
-      this.tabsRef.goToPage(this.props.activeTabIndex);
+      // https://github.com/ptomasroos/react-native-scrollable-tab-view/issues/818
+      setTimeout(() => {
+        this.tabsRef.goToPage(this.props.activeTabIndex);
+      }, 300);
     }
   }
 
@@ -62,12 +65,6 @@ class Browser extends Component {
   //   const { dispatch } = this.props;
   //   dispatch(selectTab(index));
   // }
-
-  onChangeTab(tab) {
-    // tab = {i: 0, ref: {…}, from: 1}
-    const { dispatch } = this.props;
-    dispatch(selectTab(tab.i));
-  }
 
   // https://qiita.com/hirocueki2/items/137400e236189a0a6b3e
   _truncate(str, len) {
@@ -91,12 +88,11 @@ class Browser extends Component {
   }
 
   render() {
-    const {} = this.props;
+    const { activeTabIndex } = this.props;
     return (
       <Tabs
         ref={r => (this.tabsRef = r as any)}
         renderTabBar={() => <ScrollableTab />}
-        onChangeTab={this.onChangeTab.bind(this)}
       >
         {this.renderTabs()}
       </Tabs>
