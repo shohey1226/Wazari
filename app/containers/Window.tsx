@@ -88,8 +88,6 @@ class Window extends Component<{}, IState, any> {
         //   this.setState({ scrollEnabled: !this.state.scrollEnabled });
         //   break;
         case "hitAHint":
-          // this.props.activeTabIndex === this.props.tabNumber &&
-          //   console.log(this.props.tabNumber, this.props.activeTabIndex);
           this.webref.injectJavaScript(`sVimHint.start()`);
           break;
         case "scrollDown":

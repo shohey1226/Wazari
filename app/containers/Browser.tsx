@@ -15,7 +15,9 @@ import {
   Header,
   Tab,
   Tabs,
-  ScrollableTab
+  ScrollableTab,
+  TabHeading,
+  Icon
 } from "native-base";
 import Window from "./Window";
 import { selectSites } from "../selectors/ui";
@@ -64,6 +66,13 @@ class Browser extends Component {
     return str.length <= len ? str : str.substr(0, len) + "...";
   }
 
+  onPressTab(index) {
+    const { dispatch } = this.props;
+    dispatch(selectTab(index));
+  }
+
+  tabHeading;
+
   renderTabs() {
     const { sites } = this.props;
     let tabs = [];
@@ -72,7 +81,19 @@ class Browser extends Component {
         ? this._truncate(sites[i].title, 12)
         : sites[i].url;
       tabs.push(
-        <Tab key={`tab-${i}`} heading={tabTitle}>
+        <Tab
+          key={`tab-${i}`}
+          heading={
+            <TabHeading>
+              <Button transparent onPress={() => this.onPressTab(i)}>
+                <Text>{tabTitle}</Text>
+              </Button>
+              <Button transparent>
+                <Icon name="ios-close-circle" />
+              </Button>
+            </TabHeading>
+          }
+        >
           <Window url={sites[i].url} tabNumber={i} />
         </Tab>
       );
