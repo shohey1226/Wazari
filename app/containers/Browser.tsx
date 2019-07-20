@@ -59,11 +59,6 @@ class Browser extends Component {
     }
   }
 
-  // onPressTab(index) {
-  //   const { dispatch } = this.props;
-  //   dispatch(selectTab(index));
-  // }
-
   // https://qiita.com/hirocueki2/items/137400e236189a0a6b3e
   _truncate(str, len) {
     return str.length <= len ? str : str.substr(0, len) + "...";

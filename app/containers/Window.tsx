@@ -60,15 +60,13 @@ class Window extends Component<{}, IState, any> {
       browserWidth,
       homePage
     } = this.props;
-    if (this.state.isActive) {
+    if (this.webref && this.state.isActive) {
       switch (event.action) {
         case "goBack":
-          this._browserRefs[activeTabIndex] &&
-            this._browserRefs[activeTabIndex].goBack();
+          this.webref.goBack();
           break;
         case "goForward":
-          this._browserRefs[activeTabIndex] &&
-            this._browserRefs[activeTabIndex].goForward();
+          this.webref.goForward();
           break;
         case "newTab":
           dispatch(addNewTab(homePage));
@@ -84,42 +82,21 @@ class Window extends Component<{}, IState, any> {
           dispatch(selectTab(prevIndex));
           break;
         case "reload":
-          this._browserRefs[activeTabIndex] &&
-            this._browserRefs[activeTabIndex].reload();
+          this.webref.reload();
           break;
-        case "lockScroll":
-          this.setState({ scrollEnabled: !this.state.scrollEnabled });
-          this.rebuildBrowser(activeTabIndex, isFullScreen);
-          break;
+        // case "lockScroll":
+        //   this.setState({ scrollEnabled: !this.state.scrollEnabled });
+        //   break;
         case "hitAHint":
           // this.props.activeTabIndex === this.props.tabNumber &&
           //   console.log(this.props.tabNumber, this.props.activeTabIndex);
-          this.webref !== null &&
-            this.webref.injectJavaScript(`sVimHint.start()`);
+          this.webref.injectJavaScript(`sVimHint.start()`);
           break;
         case "scrollDown":
-          this._browserRefs[activeTabIndex] &&
-            this._browserRefs[activeTabIndex].evaluateJavaScript(
-              "receivedScrollDownFromReactNative()"
-            );
+          this.webref.injectJavaScript(`sVimTab.commands.scrollDown()`);
           break;
         case "scrollUp":
-          this._browserRefs[activeTabIndex] &&
-            this._browserRefs[activeTabIndex].evaluateJavaScript(
-              "receivedScrollUpFromReactNative()"
-            );
-          break;
-        case "find":
-          if (this.state.isSearchVisiable === true) {
-            this._backToNormal();
-            this._browserRefs[activeTabIndex] &&
-              this._browserRefs[activeTabIndex].evaluateJavaScript(
-                `receivedFocusFromReactNative()`
-              );
-          } else {
-            this.setState({ isSearchVisiable: true });
-            this.refs.search.focus();
-          }
+          this.webref.injectJavaScript(`sVimTab.commands.scrollUp()`);
           break;
         case "deleteLine":
           this._browserRefs[activeTabIndex] &&
