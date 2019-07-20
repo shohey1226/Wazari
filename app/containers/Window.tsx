@@ -5,6 +5,7 @@ import { connect } from "react-redux";
 import sVim from "../utils/sVim";
 import { selectBrowserKeymap, selectModifiers } from "../selectors/keymap";
 import { addNewTab, selectTab, updateSite } from "../actions/ui";
+import { selectSites } from "../selectors/ui";
 
 const { DAVKeyManager } = NativeModules;
 const DAVKeyManagerEmitter = new NativeEventEmitter(DAVKeyManager);
@@ -174,7 +175,7 @@ function mapStateToProps(state, ownProps) {
   const modifiers = selectModifiers(state);
   const activeTabIndex = state.ui.get("activeTabIndex");
   // const isUpdatingUrlForATS = state.browser.get("isUpdatingUrlForATS");
-  // const sites = selectSites(state);
+  const sites = selectSites(state);
   // const {
   //   fontSize: fontSize,
   //   isSecured: isSecured,
@@ -186,7 +187,7 @@ function mapStateToProps(state, ownProps) {
     // isHelp,
     keymap,
     modifiers,
-    // sites,
+    sites,
     activeTabIndex
     // fontSize,
     // isFullScreen,
@@ -226,7 +227,7 @@ setTimeout(function(){
   var input = document.createElement("input");
   input.type = "text";  
   input.style.position = "absolute";
-  input.style.top = '0px';
+  input.style.top = window.pageYOffset + 'px';
   document.body.appendChild(input);
   input.focus();
   input.blur();
