@@ -209,16 +209,6 @@ SVIM_TAB
 SVIM_GLOBAL
 SVIM_HINT
 sVimTab.bind();
-
-window.receivedHitAHintFromReactNative = function() {
-  sVimHint.start();
-}
-window.receivedScrollDownFromReactNative = function() {
-  sVimTab.commands.scrollDown();
-}
-window.receivedScrollUpFromReactNative = function() {
-  sVimTab.commands.scrollUp();
-}
 true
 `;
 

@@ -102,14 +102,17 @@ class Browser extends Component {
         <Tab
           key={`tab-${i}`}
           heading={
-            <TabHeading style={{ paddingLeft: 3, paddingRight: 0 }}>
-              <Text style={{ fontSize: 12 }}>{tabTitle}</Text>
+            <TabHeading style={{ paddingLeft: 0, paddingRight: 0 }}>
+              <Text style={{ fontSize: 12, marginLeft: 1 }}>{tabTitle}</Text>
               <Button
                 transparent
                 onPress={() => this.pressCloseTab(i)}
                 style={{ marginTop: 3 }}
               >
-                <Icon name="md-close" />
+                <Icon
+                  name="md-close"
+                  style={{ marginLeft: 5, marginRight: 1 }}
+                />
               </Button>
             </TabHeading>
           }
