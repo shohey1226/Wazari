@@ -102,10 +102,14 @@ class Browser extends Component {
         <Tab
           key={`tab-${i}`}
           heading={
-            <TabHeading>
-              <Text>{tabTitle}</Text>
-              <Button transparent onPress={() => this.pressCloseTab(i)}>
-                <Icon name="ios-close-circle" />
+            <TabHeading style={{ paddingLeft: 3, paddingRight: 0 }}>
+              <Text style={{ fontSize: 12 }}>{tabTitle}</Text>
+              <Button
+                transparent
+                onPress={() => this.pressCloseTab(i)}
+                style={{ marginTop: 3 }}
+              >
+                <Icon name="md-close" />
               </Button>
             </TabHeading>
           }

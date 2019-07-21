@@ -19,26 +19,6 @@ const defaultKeymap = {
     metaKey: "metaKey"
   },
   desktop: {
-    nextWindow: {
-      key: "Tab",
-      modifiers: {
-        capslockKey: false,
-        shiftKey: false,
-        altKey: false,
-        ctrlKey: false,
-        metaKey: true
-      }
-    },
-    previousWindow: {
-      key: "Tab",
-      modifiers: {
-        capslockKey: false,
-        shiftKey: true,
-        altKey: false,
-        ctrlKey: false,
-        metaKey: true
-      }
-    },
     fullWindow: {
       key: "?",
       modifiers: {
