@@ -4,7 +4,7 @@ import { WebView } from "react-native-webview";
 import { connect } from "react-redux";
 import sVim from "../utils/sVim";
 import { selectBrowserKeymap, selectModifiers } from "../selectors/keymap";
-import { addNewTab, selectTab, updateSite } from "../actions/ui";
+import { addNewTab, selectTab, updateSite, closeTab } from "../actions/ui";
 import { selectSites } from "../selectors/ui";
 
 const { DAVKeyManager } = NativeModules;
