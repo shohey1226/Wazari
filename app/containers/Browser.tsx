@@ -22,7 +22,7 @@ import {
 import Window from "./Window";
 import { selectSites } from "../selectors/ui";
 import { selectBrowserKeymap, selectModifiers } from "../selectors/keymap";
-import { addNewTab, selectTab } from "../actions/ui";
+import { addNewTab, selectTab, closeTab } from "../actions/ui";
 import keymapper from "../utils/Keymapper";
 
 const { DAVKeyManager } = NativeModules;
@@ -31,6 +31,7 @@ const DAVKeyManagerEmitter = new NativeEventEmitter(DAVKeyManager);
 class Browser extends Component {
   constructor(props) {
     super(props);
+    this.state = { activeIndex: props.activeTabIndex };
     //this.onPressTab = this.onPressTab.bind(this);
   }
 
@@ -54,10 +55,12 @@ class Browser extends Component {
 
   componentDidUpdate(prevProp) {
     if (prevProp.activeTabIndex !== this.props.activeTabIndex) {
-      // https://github.com/ptomasroos/react-native-scrollable-tab-view/issues/818
-      setTimeout(() => {
-        this.tabsRef.goToPage(this.props.activeTabIndex);
-      }, 300);
+      if (this.state.activeIndex !== this.props.activeTabIndex) {
+        // https://github.com/ptomasroos/react-native-scrollable-tab-view/issues/818
+        setTimeout(() => {
+          this.tabsRef.goToPage(this.props.activeTabIndex);
+        }, 300);
+      }
     }
   }
 
@@ -66,12 +69,27 @@ class Browser extends Component {
     return str.length <= len ? str : str.substr(0, len) + "...";
   }
 
-  onPressTab(index) {
-    const { dispatch } = this.props;
-    dispatch(selectTab(index));
+  onPressCloseTab(i) {
+    const { dispatch, sites } = this.props;
+    dispatch(closeTab(i));
+    let newSites = sites.slice();
+    newSites.splice(i, 1);
+    if (newSites.length > 0) {
+      let focusedIndex = newSites.length - 1;
+      dispatch(selectTab(focusedIndex));
+    }
   }
 
-  tabHeading;
+  // onPressTab(index) {
+  //   const { dispatch } = this.props;
+  //   dispatch(selectTab(index));
+  // }
+  onChangeTab(tab) {
+    const { dispatch } = this.props;
+    //console.log(tab);
+    this.setState({ activeIndex: tab.i });
+    dispatch(selectTab(tab.i));
+  }
 
   renderTabs() {
     const { sites } = this.props;
@@ -85,10 +103,8 @@ class Browser extends Component {
           key={`tab-${i}`}
           heading={
             <TabHeading>
-              <Button transparent onPress={() => this.onPressTab(i)}>
-                <Text>{tabTitle}</Text>
-              </Button>
-              <Button transparent>
+              <Text>{tabTitle}</Text>
+              <Button transparent onPress={this.onPressCloseTab.bind(this)}>
                 <Icon name="ios-close-circle" />
               </Button>
             </TabHeading>
@@ -107,6 +123,7 @@ class Browser extends Component {
       <Tabs
         ref={r => (this.tabsRef = r as any)}
         renderTabBar={() => <ScrollableTab />}
+        onChangeTab={this.onChangeTab.bind(this)}
       >
         {this.renderTabs()}
       </Tabs>
