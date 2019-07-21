@@ -69,7 +69,7 @@ class Browser extends Component {
     return str.length <= len ? str : str.substr(0, len) + "...";
   }
 
-  onPressCloseTab(i) {
+  pressCloseTab(i) {
     const { dispatch, sites } = this.props;
     dispatch(closeTab(i));
     let newSites = sites.slice();
@@ -104,7 +104,7 @@ class Browser extends Component {
           heading={
             <TabHeading>
               <Text>{tabTitle}</Text>
-              <Button transparent onPress={this.onPressCloseTab.bind(this)}>
+              <Button transparent onPress={() => this.pressCloseTab(i)}>
                 <Icon name="ios-close-circle" />
               </Button>
             </TabHeading>
