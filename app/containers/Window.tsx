@@ -34,6 +34,12 @@ class Window extends Component<{}, IState, any> {
         this.handleBrowserActions
       )
     );
+
+    DAVKeyManagerEmitter.addListener("RNKeyEvent", data => {
+      if (this.state.isActive) {
+        this.controlKeys(data) || this.typing(data);
+      }
+    });
   }
 
   componentDidUpdate(prevProp) {
@@ -50,6 +56,89 @@ class Window extends Component<{}, IState, any> {
   focusWindow() {
     this.setState({ isActive: true });
     this.webref && this.webref.injectJavaScript(focusJS);
+  }
+
+  typing(data) {
+    console.log(data);
+    let charCode;
+    let modifiers = Object.assign({}, data.modifiers);
+    switch (data.key) {
+      case "Backspace":
+        charCode = 8;
+        break;
+      case "Return":
+        charCode = 13;
+        break;
+      case "Tab":
+        charCode = 9;
+        break;
+      case "Esc":
+        charCode = 27;
+        break;
+      case "Up":
+        charCode = "P".charCodeAt(0);
+        modifiers.ctrlKey = true;
+        break;
+      case "Down":
+        charCode = "N".charCodeAt(0);
+        modifiers.ctrlKey = true;
+        break;
+      case "Left":
+        charCode = "B".charCodeAt(0);
+        modifiers.ctrlKey = true;
+        break;
+      case "Right":
+        charCode = "F".charCodeAt(0);
+        modifiers.ctrlKey = true;
+        break;
+      default:
+        charCode = data.key.charCodeAt(0);
+    }
+
+    if (modifiers.ctrlKey) {
+      charCode = data.key.toUpperCase().charCodeAt(0);
+    }
+
+    if (modifiers.shiftKey) {
+      if (data.key.match(/[a-z]/)) {
+        charCode = data.key.toUpperCase().charCodeAt(0);
+      }
+    }
+
+    modifiers = JSON.stringify(modifiers);
+    this.webref.injectJavaScript(
+      `receivedMessageFromReactNative(${charCode}, '${modifiers}')`
+    );
+  }
+
+  controlKeys(data) {
+    console.log(data);
+    const { keymap } = this.props;
+    // if (
+    //   keymap.reset &&
+    //   keymap.reset.key === data.key &&
+    //   equals(keymap.reset.modifiers, data.modifiers)
+    // ) {
+    //   this.setState({
+    //     html: this.buildHtml(this.props)
+    //   });
+    //   return true;
+    // } else if (
+    //   keymap.find &&
+    //   keymap.find.key === data.key &&
+    //   equals(keymap.find.modifiers, data.modifiers)
+    // ) {
+    //   if (this.state.searchMode === false) {
+    //     this.setState({ searchMode: true, isSearchVisiable: true });
+    //     this.refs.terminal.evaluateJavaScript(`receivedBlurFromReactNative()`);
+    //     this.refs.search.focus(); // focus is required to get space key!
+    //   }
+
+    //   // if (this.state.isSearchVisiable === true) {
+    //   return true;
+    // }
+
+    return false;
   }
 
   handleBrowserActions = event => {
@@ -216,6 +305,39 @@ SVIM_TAB
 SVIM_GLOBAL
 SVIM_HINT
 sVimTab.bind();
+
+// https://gist.github.com/demonixis/57264cd34e2bf7bcd0ae
+function _simulateKeyDown(term, keyCode, modifiers) {
+  var evtName = "keydown"; 
+  var modifier = (typeof(modifiers) === "object") ? modifier : {};
+  var event = document.createEvent("HTMLEvents");
+  event.initEvent(evtName, true, false);
+  event.keyCode = keyCode;
+  for (var i in modifiers) {
+    event[i] = modifiers[i];
+  }
+  return term._keyDown(event);      
+}   
+function _simulateKeyPress(term, keyCode, modifiers) {
+  var evtName = "keypress"; 
+  var modifier = (typeof(modifiers) === "object") ? modifier : {};
+  var event = document.createEvent("HTMLEvents");
+  event.initEvent(evtName, true, false);
+  event.keyCode = keyCode;
+  for (var i in modifiers) {
+    event[i] = modifiers[i];
+  }
+  return term._keyPress(event);
+} 
+
+window.receivedMessageFromReactNative = function(key, modifiers) {
+  var modifierObjects = JSON.parse(modifiers);
+  alert(key)
+  var term = document.activeElement;
+  _simulateKeyPress(term, key, modifierObjects) || _simulateKeyDown(term, key, modifierObjects)
+  true
+}
+
 true
 `;
 

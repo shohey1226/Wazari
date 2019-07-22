@@ -46,7 +46,7 @@ class Browser extends Component {
 
   initKeymaps() {
     const { keymap, modifiers } = this.props;
-    DAVKeyManager.setWindow("browser");
+    DAVKeyManager.setWindow("terminal");
     DAVKeyManager.turnOnKeymap();
     DAVKeyManager.setBrowserKeymap(
       keymapper.convertToNativeFormat(keymap, modifiers)
