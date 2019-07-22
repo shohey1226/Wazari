@@ -97,12 +97,12 @@ class Window extends Component<{}, IState, any> {
         case "scrollUp":
           this.webref.injectJavaScript(`sVimTab.commands.scrollUp()`);
           break;
-        case "deleteLine":
-          this._browserRefs[activeTabIndex] &&
-            this._browserRefs[activeTabIndex].evaluateJavaScript(
-              "receivedDeleteLineFromReactNative()"
-            );
-          break;
+        // case "deleteLine":
+        //   this._browserRefs[activeTabIndex] &&
+        //     this._browserRefs[activeTabIndex].evaluateJavaScript(
+        //       "receivedDeleteLineFromReactNative()"
+        //     );
+        //   break;
         case "zoomIn":
           dispatch(updateBrowserWidth(parseInt(browserWidth * 0.8)));
           this.rebuildBrowser(activeTabIndex, isFullScreen);
@@ -135,6 +135,10 @@ class Window extends Component<{}, IState, any> {
     }
   }
 
+  onMessage(event) {
+    console.log(event.nativeEvent.data);
+  }
+
   onNavigationStateChange(event) {
     const { dispatch, activeTabIndex } = this.props;
     //    dispatch(updateSite(activeTabIndex, event.title, event.url));
@@ -150,9 +154,12 @@ class Window extends Component<{}, IState, any> {
           ref={r => (this.webref = r as any)}
           source={{ uri: url }}
           keyboardDisplayRequiresUserAction={false}
+          sharedCookiesEnabled={true}
+          useWebKit={true}
           hideKeyboardAccessoryView={true}
           onLoadEnd={this.onLoadEnd.bind(this)}
           onNavigationStateChange={this.onNavigationStateChange.bind(this)}
+          onMessage={this.onMessage.bind(this)}
           injectedJavaScript={injectingJs
             .replace("SVIM_PREDEFINE", sVim.sVimPredefine)
             .replace("SVIM_GLOBAL", sVim.sVimGlobal)
