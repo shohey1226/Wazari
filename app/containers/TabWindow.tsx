@@ -10,12 +10,18 @@ import { selectSites } from "../selectors/ui";
 const { DAVKeyManager } = NativeModules;
 const DAVKeyManagerEmitter = new NativeEventEmitter(DAVKeyManager);
 
-interface IState {
+interface State {
   isLoading: boolean;
   isActive: boolean;
 }
 
-class TabWindow extends Component<{}, IState, any> {
+interface Props {
+  dispatch: (any) => void;
+  activeTabIndex: number;
+  tabNumber: number;
+}
+
+class TabWindow extends Component<Props, State, any> {
   webref: WebView | null = null;
 
   constructor(props) {
@@ -32,7 +38,12 @@ class TabWindow extends Component<{}, IState, any> {
       DAVKeyManagerEmitter.addListener(
         "RNBrowserKeyEvent",
         this.handleBrowserActions
-      )
+      ),
+      DAVKeyManagerEmitter.addListener("RNKeyEvent", data => {
+        if (this.state.isActive) {
+          this.typing(data);
+        }
+      })
     );
   }
 
@@ -128,10 +139,66 @@ class TabWindow extends Component<{}, IState, any> {
     }
   };
 
+  typing(data) {
+    console.log(data);
+    let charCode;
+    let modifiers = Object.assign({}, data.modifiers);
+    switch (data.key) {
+      case "Backspace":
+        charCode = 8;
+        break;
+      case "Return":
+        charCode = 13;
+        break;
+      case "Tab":
+        charCode = 9;
+        break;
+      case "Esc":
+        charCode = 27;
+        break;
+      case "Up":
+        charCode = "P".charCodeAt(0);
+        modifiers.ctrlKey = true;
+        break;
+      case "Down":
+        charCode = "N".charCodeAt(0);
+        modifiers.ctrlKey = true;
+        break;
+      case "Left":
+        charCode = "B".charCodeAt(0);
+        modifiers.ctrlKey = true;
+        break;
+      case "Right":
+        charCode = "F".charCodeAt(0);
+        modifiers.ctrlKey = true;
+        break;
+      default:
+        charCode = data.key.charCodeAt(0);
+    }
+
+    if (modifiers.ctrlKey) {
+      charCode = data.key.toUpperCase().charCodeAt(0);
+    }
+
+    if (modifiers.shiftKey) {
+      if (data.key.match(/[a-z]/)) {
+        charCode = data.key.toUpperCase().charCodeAt(0);
+      }
+    }
+
+    modifiers = JSON.stringify(modifiers);
+    console.log(charCode, modifiers);
+    this.webref.injectJavaScript(
+      `simulateKeyDown(window.term.textarea, ${charCode}, '${modifiers}')`
+    );
+  }
+
   onLoadEnd(syntheticEvent) {
-    const { tabNumber, activeTabIndex } = this.props;
+    const { nativeEvent } = syntheticEvent;
+    const { dispatch, tabNumber, activeTabIndex } = this.props;
     if (tabNumber === activeTabIndex) {
       this.focusWindow();
+      dispatch(updateSite(activeTabIndex, nativeEvent.title, nativeEvent.url));
     }
   }
 
@@ -140,8 +207,7 @@ class TabWindow extends Component<{}, IState, any> {
   }
 
   onNavigationStateChange(event) {
-    const { dispatch, activeTabIndex } = this.props;
-    //    dispatch(updateSite(activeTabIndex, event.title, event.url));
+    //const { dispatch, activeTabIndex } = this.props;
   }
 
   render() {
@@ -183,6 +249,7 @@ function mapStateToProps(state, ownProps) {
   const activeTabIndex = state.ui.get("activeTabIndex");
   // const isUpdatingUrlForATS = state.browser.get("isUpdatingUrlForATS");
   const sites = selectSites(state);
+  const keyMode = state.ui.get("keyMode");
   // const {
   //   fontSize: fontSize,
   //   isSecured: isSecured,
@@ -195,7 +262,8 @@ function mapStateToProps(state, ownProps) {
     keymap,
     modifiers,
     sites,
-    activeTabIndex
+    activeTabIndex,
+    keyMode
     // fontSize,
     // isFullScreen,
     // isSecured,
@@ -216,6 +284,19 @@ SVIM_TAB
 SVIM_GLOBAL
 SVIM_HINT
 sVimTab.bind();
+
+function simulateKeyDown(element, keyCode, modifiers) {
+  var modifierObjects = JSON.parse(modifiers);
+  var event = {};
+  event.keyCode = keyCode;
+  event.key = event.char = String.fromCharCode(keyCode);
+  for (var i in modifierObjects) {
+    event[i] = modifierObjects[i];
+  }  
+  var keyEvent = new KeyboardEvent("keydown", event); 
+  element.dispatchEvent(keyEvent)
+}   
+
 true
 `;
 

@@ -27,7 +27,7 @@ export function selectTab(index) {
   };
 }
 
-export function updateSite(index, title, url) {
+export function updateSite(index: number, title: string, url: string) {
   return {
     type: UPDATE_SITE,
     index: index,

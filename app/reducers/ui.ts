@@ -8,11 +8,16 @@ import {
 } from "../actions/ui";
 import { Map, fromJS } from "immutable";
 
+enum KeyMode {
+  Direct,
+  KeyEvent
+}
+
 const initialState = fromJS({
   // sites = [{ url: "xx", title: ""},{},,,]
   sites: [],
   activeTabIndex: 0,
-  isUpdatingUrlForATS: false
+  keyMode: KeyMode.Direct
 });
 
 export default function ui(state = initialState, action) {
@@ -28,12 +33,18 @@ export default function ui(state = initialState, action) {
     case SELECT_TAB:
       return state.set("activeTabIndex", action.index);
     case UPDATE_SITE:
-      return state.set(
-        "sites",
-        state.get("sites").update(action.index, site => {
-          return site.set("url", action.url).set("title", action.title);
-        })
-      );
+      let mode = KeyMode.Direct;
+      if (/^https:\/\/www\.wazaterm\.com\/terminals\/\S+/.test(action.url)) {
+        mode = KeyMode.KeyEvent;
+      }
+      return state
+        .set(
+          "sites",
+          state.get("sites").update(action.index, site => {
+            return site.set("url", action.url).set("title", action.title);
+          })
+        )
+        .set("keyMode", mode);
 
     case UPDATE_URL_FOR_ATS:
       return state

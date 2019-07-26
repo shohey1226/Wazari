@@ -28,21 +28,32 @@ import keymapper from "../utils/Keymapper";
 const { DAVKeyManager } = NativeModules;
 const DAVKeyManagerEmitter = new NativeEventEmitter(DAVKeyManager);
 
+enum KeyMode {
+  Direct,
+  KeyEvent
+}
+
 interface State {
   activeIndex: number;
 }
 
+type Site = {
+  url: string;
+  title: string;
+};
+
 interface Props {
   dispatch: (any) => void;
-  sites: Array<string>;
+  sites: Array<Site>;
   activeTabIndex: number;
   keymap: any;
   modifiers: any;
+  keyMode: KeyMode;
 }
 
 /* Browser is whole browser controls each windows(tabs) */
 class Browser extends Component<Props, State> {
-  tabsref: Tabs | null = null;
+  tabsRef: Tabs | null = null;
 
   constructor(props) {
     super(props);
@@ -68,13 +79,22 @@ class Browser extends Component<Props, State> {
     );
   }
 
-  componentDidUpdate(prevProp) {
-    if (prevProp.activeTabIndex !== this.props.activeTabIndex) {
-      if (this.state.activeIndex !== this.props.activeTabIndex) {
+  componentDidUpdate(prevProp: Props) {
+    const { activeTabIndex, sites, keyMode } = this.props;
+
+    if (prevProp.activeTabIndex !== activeTabIndex) {
+      if (this.state.activeIndex !== activeTabIndex) {
         // https://github.com/ptomasroos/react-native-scrollable-tab-view/issues/818
         setTimeout(() => {
-          this.tabsRef.goToPage(this.props.activeTabIndex);
+          this.tabsRef.goToPage(activeTabIndex);
         }, 300);
+      }
+    }
+    if (prevProp.keyMode !== keyMode) {
+      if (keyMode === KeyMode.Direct) {
+        DAVKeyManager.setWindow("browser");
+      } else {
+        DAVKeyManager.setWindow("terminal");
       }
     }
   }
@@ -158,7 +178,8 @@ function mapStateToProps(state, ownProps) {
   const modifiers = selectModifiers(state);
   const activeTabIndex = state.ui.get("activeTabIndex");
   const sites = selectSites(state);
-  return { sites, keymap, modifiers, activeTabIndex };
+  const keyMode = state.ui.get("keyMode");
+  return { sites, keymap, modifiers, activeTabIndex, keyMode };
 }
 
 export default connect(mapStateToProps)(Browser);
