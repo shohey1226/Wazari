@@ -13,7 +13,7 @@
   NSDictionary *_desktopKeymap;
   NSDictionary *_browserKeymap;
 //  NSDictionary *_editorKeymap;
-//  NSDictionary *_terminalKeymap;
+  NSDictionary *_terminalKeymap;
   BOOL _keymapEnabled;
 }
 @end

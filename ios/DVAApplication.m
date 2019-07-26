@@ -19,7 +19,7 @@
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(desktopKeymapReceived:) name:@"desktopKeymap" object:nil];
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(browserKeymapReceived:) name:@"browserKeymap" object:nil];
 //  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(editorKeymapReceived:) name:@"editorKeymap" object:nil];
-//  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(terminalKeymapReceived:) name:@"terminalKeymap" object:nil];
+  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(terminalKeymapReceived:) name:@"terminalKeymap" object:nil];
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(turnOnKeymapReceived:) name:@"turnOnKeymap" object:nil];
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(turnOffKeymapReceived:) name:@"turnOffKeymap" object:nil];
   self = [super init];
@@ -56,11 +56,11 @@
 //  _editorKeymap = notification.userInfo[@"editorKeymap"];
 //}
 //
-//- (void)terminalKeymapReceived:(NSNotification *)notification
-//{
-//  NSLog(@"Notification - You recieved terminalKeymap!");
-//  _terminalKeymap = notification.userInfo[@"terminalKeymap"];
-//}
+- (void)terminalKeymapReceived:(NSNotification *)notification
+{
+  NSLog(@"Notification - You recieved terminalKeymap!");
+  _terminalKeymap = notification.userInfo[@"terminalKeymap"];
+}
 
 - (void) turnOnKeymapReceived:(NSNotification *)notification
 {
@@ -88,9 +88,10 @@
   }
 //  else if([window  isEqual: @"editor"]){
 //    _keymap = _editorKeymap;
-//  } else if([window  isEqual: @"terminal"]){
-//    _keymap = _terminalKeymap;
 //  }
+  else if([window  isEqual: @"terminal"]){
+    _keymap = _terminalKeymap;
+  }
   
   NSMutableArray *_commands = [[NSMutableArray alloc] init];
   for (NSString* keyMod in [_keymap allKeys]) {
@@ -105,9 +106,10 @@
     }
 //    else if([window  isEqual: @"editor"]){
 //      [_commands addObject:[UIKeyCommand keyCommandWithInput:key modifierFlags:intMod action:@selector(handleEditorCommand:)]];
-//    }else if([window  isEqual: @"terminal"]){
-//      [_commands addObject:[UIKeyCommand keyCommandWithInput:key modifierFlags:intMod action:@selector(handleTerminalCommand:)]];
 //    }
+  else if([window  isEqual: @"terminal"]){
+      [_commands addObject:[UIKeyCommand keyCommandWithInput:key modifierFlags:intMod action:@selector(handleTerminalCommand:)]];
+    }
   }
   
   return _commands;
@@ -272,10 +274,10 @@
 //  [self _handleDACommand:command :@"editor"];
 //}
 //
-//- (void)handleTerminalCommand:(UIKeyCommand *)command {
-//  NSLog(@"handleTerminalCommand!!");
-//  [self _handleDACommand:command :@"terminal"];
-//}
+- (void)handleTerminalCommand:(UIKeyCommand *)command {
+  NSLog(@"handleTerminalCommand!!");
+  [self _handleDACommand:command :@"terminal"];
+}
 
 
 - (void)_handleDACommand:(UIKeyCommand *)command :(NSString*)window {

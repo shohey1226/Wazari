@@ -15,7 +15,7 @@ interface IState {
   isActive: boolean;
 }
 
-class Window extends Component<{}, IState, any> {
+class TabWindow extends Component<{}, IState, any> {
   webref: WebView | null = null;
 
   constructor(props) {
@@ -207,7 +207,7 @@ function mapStateToProps(state, ownProps) {
   };
 }
 
-export default connect(mapStateToProps)(Window);
+export default connect(mapStateToProps)(TabWindow);
 
 let injectingJs = `
 SVIM_PREDEFINE

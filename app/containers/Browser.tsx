@@ -19,7 +19,7 @@ import {
   TabHeading,
   Icon
 } from "native-base";
-import Window from "./Window";
+import TabWindow from "./TabWindow";
 import { selectSites } from "../selectors/ui";
 import { selectBrowserKeymap, selectModifiers } from "../selectors/keymap";
 import { addNewTab, selectTab, closeTab } from "../actions/ui";
@@ -28,7 +28,22 @@ import keymapper from "../utils/Keymapper";
 const { DAVKeyManager } = NativeModules;
 const DAVKeyManagerEmitter = new NativeEventEmitter(DAVKeyManager);
 
-class Browser extends Component {
+interface State {
+  activeIndex: number;
+}
+
+interface Props {
+  dispatch: (any) => void;
+  sites: Array<string>;
+  activeTabIndex: number;
+  keymap: any;
+  modifiers: any;
+}
+
+/* Browser is whole browser controls each windows(tabs) */
+class Browser extends Component<Props, State> {
+  tabsref: Tabs | null = null;
+
   constructor(props) {
     super(props);
     this.state = { activeIndex: props.activeTabIndex };
@@ -117,7 +132,7 @@ class Browser extends Component {
             </TabHeading>
           }
         >
-          <Window url={sites[i].url} tabNumber={i} />
+          <TabWindow url={sites[i].url} tabNumber={i} />
         </Tab>
       );
     }
