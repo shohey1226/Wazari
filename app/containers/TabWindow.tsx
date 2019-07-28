@@ -176,21 +176,36 @@ class TabWindow extends Component<Props, State, any> {
         charCode = data.key.charCodeAt(0);
     }
 
-    if (modifiers.ctrlKey) {
-      charCode = data.key.toUpperCase().charCodeAt(0);
-    }
+    // if (modifiers.ctrlKey) {
+    //   charCode = data.key.toUpperCase().charCodeAt(0);
+    // }
 
+    // handle shift key to make it Uppercase
     if (modifiers.shiftKey) {
       if (data.key.match(/[a-z]/)) {
         charCode = data.key.toUpperCase().charCodeAt(0);
       }
     }
 
-    modifiers = JSON.stringify(modifiers);
-    console.log(charCode, modifiers);
-    this.webref.injectJavaScript(
-      `simulateKeyDown(window.term.textarea, ${charCode}, '${modifiers}')`
-    );
+    const modifiersStr = JSON.stringify(modifiers);
+
+    if (
+      32 <= charCode &&
+      charCode < 128 &&
+      !modifiers.ctrlKey &&
+      !modifiers.altKey &&
+      !modifiers.metaKey
+    ) {
+      console.log("keypress");
+      this.webref.injectJavaScript(
+        `simulateKeyPress(window.term.textarea, ${charCode}, '${modifiersStr}')`
+      );
+    } else {
+      console.log("keydown");
+      this.webref.injectJavaScript(
+        `simulateKeyDown(window.term.textarea, ${charCode}, '${modifiersStr}')`
+      );
+    }
   }
 
   onLoadEnd(syntheticEvent) {
@@ -285,11 +300,24 @@ SVIM_GLOBAL
 SVIM_HINT
 sVimTab.bind();
 
+function simulateKeyPress(element, charCode, modifiers) {
+  var modifierObjects = JSON.parse(modifiers);
+  var event = {};  
+  event.charCode = charCode  
+  event.key = event.char = String.fromCharCode(charCode);
+  for (var i in modifierObjects) {
+    event[i] = modifierObjects[i];
+  }  
+  var keyEvent = new KeyboardEvent("keypress", event); 
+  element.dispatchEvent(keyEvent)
+}   
+
 function simulateKeyDown(element, keyCode, modifiers) {
   var modifierObjects = JSON.parse(modifiers);
   var event = {};
-  event.keyCode = keyCode;
-  event.key = event.char = String.fromCharCode(keyCode);
+  event.key = event.char = String.fromCharCode(keyCode);  
+  event.keyCode = event.code = event.key.toUpperCase().charCodeAt(0);
+
   for (var i in modifierObjects) {
     event[i] = modifierObjects[i];
   }  
