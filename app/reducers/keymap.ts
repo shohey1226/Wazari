@@ -226,8 +226,8 @@ const defaultKeymap = {
       modifiers: {
         capslockKey: false,
         shiftKey: false,
-        altKey: false,
-        ctrlKey: true,
+        altKey: true,
+        ctrlKey: false,
         metaKey: false
       }
     }

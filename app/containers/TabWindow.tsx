@@ -114,12 +114,9 @@ class TabWindow extends Component<Props, State, any> {
         case "scrollUp":
           this.webref.injectJavaScript(`sVimTab.commands.scrollUp()`);
           break;
-        // case "deleteLine":
-        //   this._browserRefs[activeTabIndex] &&
-        //     this._browserRefs[activeTabIndex].evaluateJavaScript(
-        //       "receivedDeleteLineFromReactNative()"
-        //     );
-        //   break;
+        case "deleteLine":
+          this.webref.injectJavaScript(`deleteLine()`);
+          break;
         case "zoomIn":
           dispatch(updateBrowserWidth(parseInt(browserWidth * 0.8)));
           this.rebuildBrowser(activeTabIndex, isFullScreen);
@@ -350,6 +347,13 @@ function cursorToEnd(){
   } else if (inp.setSelectionRange) {
     inp.setSelectionRange(inp.value.length, inp.value.length);
   }  
+}
+
+function deleteLine(){
+  var el = document.activeElement;  
+  var caretPos = el.selectionStart;  
+  var content = el.value;
+  el.value = content.substring(0, caretPos);
 }
 
 
