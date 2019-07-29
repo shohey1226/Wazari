@@ -61,6 +61,26 @@ const defaultKeymap = {
     }
   },
   browser: {
+    home: {
+      key: "a",
+      modifiers: {
+        capslockKey: false,
+        shiftKey: false,
+        altKey: true,
+        ctrlKey: false,
+        metaKey: false
+      }
+    },
+    end: {
+      key: "e",
+      modifiers: {
+        capslockKey: false,
+        shiftKey: false,
+        altKey: true,
+        ctrlKey: false,
+        metaKey: false
+      }
+    },
     goBack: {
       key: "[",
       modifiers: {

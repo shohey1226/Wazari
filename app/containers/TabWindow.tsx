@@ -74,6 +74,12 @@ class TabWindow extends Component<Props, State, any> {
     } = this.props;
     if (this.webref && this.state.isActive) {
       switch (event.action) {
+        case "home":
+          this.webref.injectJavaScript(`cursorToBeginning()`);
+          break;
+        case "end":
+          this.webref.injectJavaScript(`cursorToEnd()`);
+          break;
         case "goBack":
           this.webref.goBack();
           break;
@@ -323,6 +329,29 @@ function simulateKeyDown(element, keyCode, modifiers) {
   var keyEvent = new KeyboardEvent("keydown", event); 
   element.dispatchEvent(keyEvent)
 }   
+
+function cursorToBeginning(){
+  var inp = document.activeElement;
+  if (inp.createTextRange) {
+    var part = inp.createTextRange();
+    part.move("character", 0);
+    part.select();
+  } else if (inp.setSelectionRange) {
+    inp.setSelectionRange(0, 0);
+  }  
+}
+
+function cursorToEnd(){
+  var inp = document.activeElement;
+  if (inp.createTextRange) {
+    var part = inp.createTextRange();
+    part.move("character", inp.value.length);
+    part.select();
+  } else if (inp.setSelectionRange) {
+    inp.setSelectionRange(inp.value.length, inp.value.length);
+  }  
+}
+
 
 
 

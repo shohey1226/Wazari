@@ -18,7 +18,6 @@
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(activeWindowReceived:) name:@"activeWindow" object:nil];
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(desktopKeymapReceived:) name:@"desktopKeymap" object:nil];
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(browserKeymapReceived:) name:@"browserKeymap" object:nil];
-//  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(editorKeymapReceived:) name:@"editorKeymap" object:nil];
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(terminalKeymapReceived:) name:@"terminalKeymap" object:nil];
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(turnOnKeymapReceived:) name:@"turnOnKeymap" object:nil];
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(turnOffKeymapReceived:) name:@"turnOffKeymap" object:nil];
@@ -50,12 +49,6 @@
   _browserKeymap = notification.userInfo[@"browserKeymap"];
 }
 
-//- (void)editorKeymapReceived:(NSNotification *)notification
-//{
-//  NSLog(@"Notification - You recieved editorKeymap!");
-//  _editorKeymap = notification.userInfo[@"editorKeymap"];
-//}
-//
 - (void)terminalKeymapReceived:(NSNotification *)notification
 {
   NSLog(@"Notification - You recieved terminalKeymap!");
@@ -78,6 +71,8 @@
   return YES;
 }
 
+
+// keymap is set on RN side. When there is key set, then execute the handleCommand.
 - (NSMutableArray *)buildDAKeymap :(NSString*)window
 {
   NSDictionary* _keymap;
@@ -86,9 +81,6 @@
   }else if([window  isEqual: @"browser"]){
     _keymap = _browserKeymap;
   }
-//  else if([window  isEqual: @"editor"]){
-//    _keymap = _editorKeymap;
-//  }
   else if([window  isEqual: @"terminal"]){
     _keymap = _terminalKeymap;
   }
@@ -103,11 +95,7 @@
       [_commands addObject:[UIKeyCommand keyCommandWithInput:key modifierFlags:intMod action:@selector(handleDesktopCommand:)]];
     }else if([window  isEqual: @"browser"]){
       [_commands addObject:[UIKeyCommand keyCommandWithInput:key modifierFlags:intMod action:@selector(handleBrowserCommand:)]];
-    }
-//    else if([window  isEqual: @"editor"]){
-//      [_commands addObject:[UIKeyCommand keyCommandWithInput:key modifierFlags:intMod action:@selector(handleEditorCommand:)]];
-//    }
-  else if([window  isEqual: @"terminal"]){
+    }else if([window  isEqual: @"terminal"]){
       [_commands addObject:[UIKeyCommand keyCommandWithInput:key modifierFlags:intMod action:@selector(handleTerminalCommand:)]];
     }
   }
@@ -115,6 +103,10 @@
   return _commands;
 }
 
+// Override keyCommands to handle shortcut or others
+// _keymapEnabled: boolean to turn on/off keymapping
+// buildDAKeymap(desktop/browser) to set up keymaps and execute handle*Command funtion
+// If activeWindow is not browser, then all keys is changed to push back to RN side - Terminal
 - (NSArray *)keyCommands {
 
   if(_keymapEnabled == NO){
@@ -269,11 +261,6 @@
   [self _handleDACommand:command :@"browser"];
 }
 
-//- (void)handleEditorCommand:(UIKeyCommand *)command {
-//  NSLog(@"handleEditorCommand!!");
-//  [self _handleDACommand:command :@"editor"];
-//}
-//
 - (void)handleTerminalCommand:(UIKeyCommand *)command {
   NSLog(@"handleTerminalCommand!!");
   [self _handleDACommand:command :@"terminal"];
