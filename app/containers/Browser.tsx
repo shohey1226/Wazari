@@ -65,7 +65,7 @@ class Browser extends Component<Props, State> {
     const { dispatch, sites, activeTabIndex } = this.props;
     if (sites.length === 0) {
       dispatch(addNewTab("https://www.wazaterm.com"));
-      //dispatch(addNewTab("https://www.google.com"));
+      dispatch(addNewTab("https://www.google.com"));
     }
     this.initKeymaps();
   }

@@ -140,7 +140,7 @@ class TabWindow extends Component<Props, State, any> {
   };
 
   typing(data) {
-    console.log(data);
+    //console.log(data);
     let charCode;
     let modifiers = Object.assign({}, data.modifiers);
     switch (data.key) {
@@ -196,12 +196,10 @@ class TabWindow extends Component<Props, State, any> {
       !modifiers.altKey &&
       !modifiers.metaKey
     ) {
-      console.log("keypress");
       this.webref.injectJavaScript(
         `simulateKeyPress(window.term.textarea, ${charCode}, '${modifiersStr}')`
       );
     } else {
-      console.log("keydown");
       this.webref.injectJavaScript(
         `simulateKeyDown(window.term.textarea, ${charCode}, '${modifiersStr}')`
       );
@@ -218,7 +216,8 @@ class TabWindow extends Component<Props, State, any> {
   }
 
   onMessage(event) {
-    console.log(event.nativeEvent.data);
+    const data = JSON.parse(event.nativeEvent.data);
+    console.log(data);
   }
 
   onNavigationStateChange(event) {
@@ -241,6 +240,7 @@ class TabWindow extends Component<Props, State, any> {
           onLoadEnd={this.onLoadEnd.bind(this)}
           onNavigationStateChange={this.onNavigationStateChange.bind(this)}
           onMessage={this.onMessage.bind(this)}
+          userAgent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.0 Safari/605.1.15"
           injectedJavaScript={injectingJs
             .replace("SVIM_PREDEFINE", sVim.sVimPredefine)
             .replace("SVIM_GLOBAL", sVim.sVimGlobal)
@@ -317,13 +317,14 @@ function simulateKeyDown(element, keyCode, modifiers) {
   var event = {};
   event.key = event.char = String.fromCharCode(keyCode);  
   event.keyCode = event.code = event.key.toUpperCase().charCodeAt(0);
-
   for (var i in modifierObjects) {
     event[i] = modifierObjects[i];
   }  
   var keyEvent = new KeyboardEvent("keydown", event); 
   element.dispatchEvent(keyEvent)
 }   
+
+
 
 true
 `;
