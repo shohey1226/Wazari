@@ -44,13 +44,33 @@ const ModifierNames = {
   capslockKey: "Caps Lock(⇪)"
 };
 
-class KeySetting extends Component {
+enum ModalType {
+  Mod,
+  Action
+}
+
+interface Props {
+  modifiers: any;
+  desktopKeymap: any;
+  browserKeymap: any;
+  dispatch: (any) => void;
+}
+
+interface States {
+  modalVisible: boolean;
+  modalType: ModalType;
+  focusedModifier: string | null;
+  window: string | null;
+  action: string | null;
+}
+
+class KeySetting extends Component<Props, States> {
   constructor(props) {
     super(props);
     this.state = {
       focusedModifier: null,
       modalVisible: false,
-      modalType: null,
+      modalType: ModalType.Mod,
       window: null,
       action: null
     };
@@ -87,14 +107,14 @@ class KeySetting extends Component {
     this.setState({
       modalVisible: !this.state.modalVisible,
       focusedModifier: modifierKey,
-      modalType: "modifiers"
+      modalType: ModalType.Mod
     });
   }
 
   toggleActionsModal(window, action) {
     this.setState({
       modalVisible: !this.state.modalVisible,
-      modalType: "actions",
+      modalType: ModalType.Action,
       window: window,
       action: action
     });
@@ -122,7 +142,7 @@ class KeySetting extends Component {
             <Text>{ModifierNames[mod]}</Text>
           </Body>
           <Right>
-            <Text>{ModifierNames[mod]}</Text>
+            <Text>{ModifierNames[modifiers[mod]]}</Text>
             <Icon active name="arrow-forward" />
           </Right>
         </ListItem>
@@ -248,7 +268,7 @@ class KeySetting extends Component {
   renderModalContent() {
     const { modifiers, desktopKeymap, browserKeymap } = this.props;
 
-    if (this.state.modalType === "modifiers") {
+    if (this.state.modalType === ModalType.Mod) {
       return (
         <View
           style={{
