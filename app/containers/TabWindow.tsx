@@ -222,6 +222,15 @@ class TabWindow extends Component<Props, State, any> {
     const { dispatch, tabNumber, activeTabIndex } = this.props;
     if (tabNumber === activeTabIndex) {
       this.focusWindow();
+      //dispatch(updateSite(activeTabIndex, nativeEvent.title, nativeEvent.url));
+    }
+  }
+
+  onLoadStart(syntheticEvent) {
+    const { nativeEvent } = syntheticEvent;
+    const { dispatch, tabNumber, activeTabIndex } = this.props;
+    if (tabNumber === activeTabIndex) {
+      //console.log(this.webref.props.injectedJavaScript);
       dispatch(updateSite(activeTabIndex, nativeEvent.title, nativeEvent.url));
     }
   }
@@ -248,6 +257,7 @@ class TabWindow extends Component<Props, State, any> {
           sharedCookiesEnabled={true}
           useWebKit={true}
           hideKeyboardAccessoryView={true}
+          onLoadStart={this.onLoadStart.bind(this)}
           onLoadEnd={this.onLoadEnd.bind(this)}
           onNavigationStateChange={this.onNavigationStateChange.bind(this)}
           onMessage={this.onMessage.bind(this)}

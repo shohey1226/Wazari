@@ -8,9 +8,15 @@ sVimTab.mode = "normal";
 // Indicates if window is top
 sVimTab.topWindow = window.top === window;
 // Indicates the top domain
-sVimTab.topDomain = !sVimTab.topWindow && window.location.ancestorOrigins ? window.location.ancestorOrigins[0].match(/:\/\/(.*)/)[1] : window.location.hostname;
+sVimTab.topDomain =
+  !sVimTab.topWindow && window.location.ancestorOrigins
+    ? window.location.ancestorOrigins[0].match(/:\/\/(.*)/)[1]
+    : window.location.hostname;
 // Indicates the top url
-sVimTab.topUrl = !sVimTab.topWindow && document.referrer ? document.referrer : window.location.href;
+sVimTab.topUrl =
+  !sVimTab.topWindow && document.referrer
+    ? document.referrer
+    : window.location.href;
 // Define commands that can be run
 sVimTab.commands = {
   // Scroll down
@@ -45,17 +51,27 @@ sVimTab.commands = {
 
   // Scroll full-page down
   scrollFullPageDown: function() {
-    sVimHelper.scrollBy(0, window.innerHeight * (sVimTab.settings.fullpagescrollpercent / 100));
+    sVimHelper.scrollBy(
+      0,
+      window.innerHeight * (sVimTab.settings.fullpagescrollpercent / 100)
+    );
   },
 
   // Scroll full-page up
   scrollFullPageUp: function() {
-    sVimHelper.scrollBy(0, -window.innerHeight * (sVimTab.settings.fullpagescrollpercent / 100));
+    sVimHelper.scrollBy(
+      0,
+      -window.innerHeight * (sVimTab.settings.fullpagescrollpercent / 100)
+    );
   },
 
   // Scroll to bottom of the page
   scrollToBottom: function() {
-    sVimHelper.scrollBy(0, (document.body.scrollHeight - window.pageYOffset - window.innerHeight) * 1.1);
+    sVimHelper.scrollBy(
+      0,
+      (document.body.scrollHeight - window.pageYOffset - window.innerHeight) *
+        1.1
+    );
   },
 
   // Scroll to top of the page
@@ -70,7 +86,10 @@ sVimTab.commands = {
 
   // Scroll to the right of the page
   scrollToRight: function() {
-    sVimHelper.scrollBy(document.body.scrollWidth - window.pageXOffset - window.innerWidth + 30, 0);
+    sVimHelper.scrollBy(
+      document.body.scrollWidth - window.pageXOffset - window.innerWidth + 30,
+      0
+    );
   },
 
   // Go to the first input box
@@ -80,12 +99,14 @@ sVimTab.commands = {
 
     // Find and focus on the first input in view, if none then use first on the page
     for (var i = 0, l = inputs.length; i < l; i++) {
-      if (sVimHelper.isElementInput(inputs[i]) && sVimHelper.isElementVisible(inputs[i])) {
+      if (
+        sVimHelper.isElementInput(inputs[i]) &&
+        sVimHelper.isElementVisible(inputs[i])
+      ) {
         if (sVimHelper.isElementInView(inputs[i])) {
           focusIndex = i;
           break;
-        }
-        else if (focusIndex == null) {
+        } else if (focusIndex == null) {
           focusIndex = i;
         }
       }
@@ -100,12 +121,16 @@ sVimTab.commands = {
 
   // Zoom page in
   zoomPageIn: function() {
-    document.body.style.zoom = (+document.body.style.zoom ? parseFloat(document.body.style.zoom) : 1) + (sVimTab.settings.zoomstep / 100);
+    document.body.style.zoom =
+      (+document.body.style.zoom ? parseFloat(document.body.style.zoom) : 1) +
+      sVimTab.settings.zoomstep / 100;
   },
 
   // Zoom page out
   zoomPageOut: function() {
-    document.body.style.zoom = (+document.body.style.zoom ? parseFloat(document.body.style.zoom) : 1) - (sVimTab.settings.zoomstep / 100);
+    document.body.style.zoom =
+      (+document.body.style.zoom ? parseFloat(document.body.style.zoom) : 1) -
+      sVimTab.settings.zoomstep / 100;
   },
 
   // Zoom page to original size
@@ -226,7 +251,9 @@ sVimTab.commands = {
   // Navigate to parent directory
   parentDirectory: function() {
     if (/:\/\/.*?\/./.test(sVimTab.topUrl)) {
-      window.top.location.assign(sVimTab.topUrl.match(/(.*)./)[1].match(/.*\//));
+      window.top.location.assign(
+        sVimTab.topUrl.match(/(.*)./)[1].match(/.*\//)
+      );
     }
   },
 
@@ -243,8 +270,7 @@ sVimTab.commands = {
     var domains = host.split(".").length;
     if (domains == 2) {
       window.top.location.assign("http://www." + host);
-    }
-    else if (domains > 2) {
+    } else if (domains > 2) {
       window.top.location.assign("http://" + host);
     }
   },
@@ -304,8 +330,7 @@ sVimTab.bind = function() {
   var style = document.getElementById("sVim-style");
   if (style) {
     style.innerHTML = sVimTab.settings.css;
-  }
-  else {
+  } else {
     style = document.createElement("style");
     style.type = "text/css";
     style.id = "sVim-style";
@@ -331,32 +356,37 @@ sVimTab.bind = function() {
     // Replace <Leader>
     shortcut = shortcut.replace(/<[lL]eader>/g, sVimTab.settings.mapleader);
     // Bind going into normal mode even in textboxes
-//    if (command == "normalMode") {
-//      Mousetrap.bindGlobal(shortcut, sVimTab.runCommand(command), "keydown");
-//    }
-//    else {
-//      Mousetrap.bind(shortcut, sVimTab.runCommand(command), "keydown");
-//    }
+    //    if (command == "normalMode") {
+    //      Mousetrap.bindGlobal(shortcut, sVimTab.runCommand(command), "keydown");
+    //    }
+    //    else {
+    //      Mousetrap.bind(shortcut, sVimTab.runCommand(command), "keydown");
+    //    }
   }
-                                                                        
+
   // Create command div
   if (!document.getElementById("sVim-command")) {
     sVimTab.commandDiv = document.createElement("div");
     sVimTab.commandDiv.id = "sVim-command";
     sVimTab.commandDiv.style[sVimTab.settings.barposition] = "0";
     document.body.appendChild(sVimTab.commandDiv);
+  } else {
+    sVimTab.commandDiv = document.getElementById("sVim-command");
   }
 
   // Default to normal mode
   sVimTab.commands["normalMode"]();
-
 };
 
 // Prevent propagation for all keydown events if in normal mode, non-escape key is pressed or active element is input
 sVimTab.stopPropagation = function() {
   return function(e) {
     var element = document.activeElement;
-    if (sVimTab.mode == "normal" && e.keyCode != 27 && (element != null && !sVimHelper.isElementInput(element))) {
+    if (
+      sVimTab.mode == "normal" &&
+      e.keyCode != 27 &&
+      (element != null && !sVimHelper.isElementInput(element))
+    ) {
       e.stopPropagation();
     }
   };
@@ -377,7 +407,14 @@ sVimTab.runCommand = function(command) {
 
     var element = document.activeElement;
     // Only run command if in normal mode or command is normalMode, and if active element is not insert mode of a vim editor
-    if ((sVimTab.mode == "normal" || command == "normalMode") && !(element != null && element.parentNode.className.indexOf("ace_editor") != -1 && element.parentNode.className.indexOf("insert-mode") != -1)) {
+    if (
+      (sVimTab.mode == "normal" || command == "normalMode") &&
+      !(
+        element != null &&
+        element.parentNode.className.indexOf("ace_editor") != -1 &&
+        element.parentNode.className.indexOf("insert-mode") != -1
+      )
+    ) {
       // FIXX WHEN ":" implemented
       sVimTab.commands[command]();
       return command == "normalMode";
@@ -405,9 +442,13 @@ sVimTab.checkBlacklist = function() {
 safari.self.tab.dispatchMessage("sendSettings");
 
 // Catch commands from global
-safari.self.addEventListener("message", function(event) {
-  if (event.name == "settings") {
-    sVimTab.settings = event.message;
-    sVimTab.bind();
-  }
-}, false);
+safari.self.addEventListener(
+  "message",
+  function(event) {
+    if (event.name == "settings") {
+      sVimTab.settings = event.message;
+      sVimTab.bind();
+    }
+  },
+  false
+);
