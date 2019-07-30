@@ -14,7 +14,8 @@ import { Provider } from "react-redux";
 import {
   createStackNavigator,
   createAppContainer,
-  StackActions
+  StackActions,
+  StatusBar
 } from "react-navigation";
 
 import Browser from "./app/containers/Browser";

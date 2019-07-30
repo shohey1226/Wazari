@@ -137,7 +137,7 @@ class Browser extends Component<Props, State> {
         <Tab
           key={`tab-${i}`}
           heading={
-            <TabHeading style={{ paddingLeft: 0, paddingRight: 0 }}>
+            <TabHeading style={{ paddingLeft: 10, paddingRight: 10 }}>
               <Text style={{ fontSize: 12, marginLeft: 1 }}>{tabTitle}</Text>
               <Button
                 transparent
@@ -179,7 +179,14 @@ function mapStateToProps(state, ownProps) {
   const activeTabIndex = state.ui.get("activeTabIndex");
   const sites = selectSites(state);
   const keyMode = state.ui.get("keyMode");
-  return { sites, keymap, modifiers, activeTabIndex, keyMode };
+
+  return {
+    sites,
+    keymap,
+    modifiers,
+    activeTabIndex,
+    keyMode
+  };
 }
 
 export default connect(mapStateToProps)(Browser);

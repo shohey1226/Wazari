@@ -4,7 +4,9 @@ import {
   UPDATE_SITE,
   CLOSE_TAB,
   UPDATE_URL_FOR_ATS,
-  COMPLETED_TO_UPDATE_URL_FOR_ATS
+  COMPLETED_TO_UPDATE_URL_FOR_ATS,
+  TOGGLE_FORWARD,
+  TOGGLE_BACK
 } from "../actions/ui";
 import { Map, fromJS } from "immutable";
 
@@ -17,11 +19,17 @@ const initialState = fromJS({
   // sites = [{ url: "xx", title: ""},{},,,]
   sites: [],
   activeTabIndex: 0,
-  keyMode: KeyMode.Direct
+  keyMode: KeyMode.Direct,
+  backToggled: false,
+  forwardToggled: false
 });
 
 export default function ui(state = initialState, action) {
   switch (action.type) {
+    case TOGGLE_BACK:
+      return state.set("backToggled", !state.get("backToggled"));
+    case TOGGLE_FORWARD:
+      return state.set("forwardToggled", !state.get("forwardToggled"));
     case ADD_NEW_TAB:
       return state
         .set("sites", state.get("sites").push(Map({ url: action.url })))

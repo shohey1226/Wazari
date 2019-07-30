@@ -5,6 +5,20 @@ export const CLOSE_TAB = "CLOSE_TAB";
 export const COMPLETED_TO_UPDATE_URL_FOR_ATS =
   "COMPLETED_TO_UPDATE_URL_FOR_ATS";
 export const UPDATE_URL_FOR_ATS = "UPDATE_URL_FOR_ATS";
+export const TOGGLE_FORWARD = "TOGGLE_FORWARD";
+export const TOGGLE_BACK = "TOGGLE_BACK";
+
+export function toggleForward() {
+  return {
+    type: TOGGLE_FORWARD
+  };
+}
+
+export function toggleBack() {
+  return {
+    type: TOGGLE_BACK
+  };
+}
 
 export function addNewTab(url) {
   return {

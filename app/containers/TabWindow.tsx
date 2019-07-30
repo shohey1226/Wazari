@@ -48,6 +48,7 @@ class TabWindow extends Component<Props, State, any> {
   }
 
   componentDidUpdate(prevProp) {
+    const { backToggled, forwardToggled } = this.props;
     if (prevProp.activeTabIndex !== this.props.activeTabIndex)
       if (this.props.tabNumber === this.props.activeTabIndex) {
         this.focusWindow();
@@ -56,6 +57,13 @@ class TabWindow extends Component<Props, State, any> {
         this.webref &&
           this.webref.injectJavaScript(`document.activeElement.blur();`);
       }
+
+    if (prevProp.backToggled !== backToggled) {
+      this.webref.goBack();
+    }
+    if (prevProp.forwardToggled !== forwardToggled) {
+      this.webref.goForward();
+    }
   }
 
   focusWindow() {
@@ -268,6 +276,8 @@ function mapStateToProps(state, ownProps) {
   // const isUpdatingUrlForATS = state.browser.get("isUpdatingUrlForATS");
   const sites = selectSites(state);
   const keyMode = state.ui.get("keyMode");
+  const backToggled = state.ui.get("backToggled");
+  const forwardToggled = state.ui.get("forwardToggled");
   // const {
   //   fontSize: fontSize,
   //   isSecured: isSecured,
@@ -277,6 +287,8 @@ function mapStateToProps(state, ownProps) {
   return {
     // activeWindow,
     // isHelp,
+    backToggled,
+    forwardToggled,
     keymap,
     modifiers,
     sites,
