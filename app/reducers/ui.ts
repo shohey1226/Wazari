@@ -15,13 +15,29 @@ enum KeyMode {
   KeyEvent
 }
 
-const initialState = fromJS({
-  // sites = [{ url: "xx", title: ""},{},,,]
+type Site = {
+  url: string;
+  title: string;
+};
+
+export interface UiState extends Map<any, any> {
+  sites: Array<Site>;
+  activeTabIndex: number;
+  keyMode: KeyMode;
+  backToggled: boolean;
+  forwardToggled: boolean;
+  backButtonDisabled: boolean;
+  forwardButtonDisabled: boolean;
+}
+
+const initialState: UiState = fromJS({
   sites: [],
   activeTabIndex: 0,
   keyMode: KeyMode.Direct,
   backToggled: false,
-  forwardToggled: false
+  forwardToggled: false,
+  backButtonDisabled: false,
+  forwardButtonDisabled: true
 });
 
 export default function ui(state = initialState, action) {
