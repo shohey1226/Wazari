@@ -13,9 +13,9 @@ import {
 } from "../actions/ui";
 
 interface IState {
-  isLoading: boolean;
-  isActive: boolean;
   text: string;
+  canGoBack: boolean;
+  canGoForward: boolean;
 }
 
 interface Props {
@@ -27,12 +27,30 @@ interface Props {
 class NavBar extends Component<Props, IState, any> {
   constructor(props) {
     super(props);
-    this.state = { text: "" };
+    const site = props.sites[props.activeTabIndex];
+    this.state = {
+      text: "",
+      canGoBack: site && site.canGoBack ? site.canGoBack : false,
+      canGoForward: site && site.canGoForward ? site.canGoForward : false
+    };
   }
 
   componentDidMount() {}
 
-  componentDidUpdate(prevProp) {}
+  componentDidUpdate(prevProp) {
+    const { activeTabIndex, sites } = this.props;
+    const site = sites[activeTabIndex];
+    const prevSite = prevProp.sites[prevProp.activeTabIndex];
+    if (
+      activeTabIndex !== prevProp.activeTabIndex ||
+      site.url !== prevSite.url
+    ) {
+      this.setState({
+        canGoBack: site.canGoBack,
+        canGoForward: site.canGoForward
+      });
+    }
+  }
 
   onEndEditing() {
     const { dispatch, activeTabIndex, sites } = this.props;
@@ -55,9 +73,15 @@ class NavBar extends Component<Props, IState, any> {
   }
 
   render() {
+    const { canGoBack, canGoForward } = this.props;
     return (
       <Header searchBar rounded>
-        <Button transparent dark onPress={this.onPressToggleBack.bind(this)}>
+        <Button
+          transparent
+          dark
+          onPress={this.onPressToggleBack.bind(this)}
+          disabled={!this.state.canGoBack}
+        >
           <Icon name="ios-arrow-back" />
         </Button>
         <Button
@@ -65,6 +89,7 @@ class NavBar extends Component<Props, IState, any> {
           dark
           onPress={this.onPressToggleForward.bind(this)}
           style={{ marginRight: 20 }}
+          disabled={!this.state.canGoForward}
         >
           <Icon name="ios-arrow-forward" />
         </Button>

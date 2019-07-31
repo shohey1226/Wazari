@@ -18,6 +18,8 @@ enum KeyMode {
 type Site = {
   url: string;
   title: string;
+  canGoBack: boolean;
+  canGoForward: boolean;
 };
 
 export interface UiState extends Map<any, any> {
@@ -26,8 +28,6 @@ export interface UiState extends Map<any, any> {
   keyMode: KeyMode;
   backToggled: boolean;
   forwardToggled: boolean;
-  backButtonDisabled: boolean;
-  forwardButtonDisabled: boolean;
 }
 
 const initialState: UiState = fromJS({
@@ -35,17 +35,17 @@ const initialState: UiState = fromJS({
   activeTabIndex: 0,
   keyMode: KeyMode.Direct,
   backToggled: false,
-  forwardToggled: false,
-  backButtonDisabled: false,
-  forwardButtonDisabled: true
+  forwardToggled: false
 });
 
 export default function ui(state = initialState, action) {
   switch (action.type) {
+    // Back/Forward button on bar
     case TOGGLE_BACK:
       return state.set("backToggled", !state.get("backToggled"));
     case TOGGLE_FORWARD:
       return state.set("forwardToggled", !state.get("forwardToggled"));
+
     case ADD_NEW_TAB:
       return state
         .set("sites", state.get("sites").push(Map({ url: action.url })))
@@ -65,7 +65,11 @@ export default function ui(state = initialState, action) {
         .set(
           "sites",
           state.get("sites").update(action.index, site => {
-            return site.set("url", action.url).set("title", action.title);
+            return site
+              .set("url", action.url)
+              .set("title", action.title)
+              .set("canGoBack", action.canGoBack)
+              .set("canGoForward", action.canGoForward);
           })
         )
         .set("keyMode", mode);

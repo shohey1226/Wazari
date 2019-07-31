@@ -222,7 +222,15 @@ class TabWindow extends Component<Props, State, any> {
     const { dispatch, tabNumber, activeTabIndex } = this.props;
     if (tabNumber === activeTabIndex) {
       this.focusWindow();
-      //dispatch(updateSite(activeTabIndex, nativeEvent.title, nativeEvent.url));
+      dispatch(
+        updateSite(
+          activeTabIndex,
+          nativeEvent.title,
+          nativeEvent.url,
+          nativeEvent.canGoBack,
+          nativeEvent.canGoForward
+        )
+      );
     }
   }
 
@@ -231,7 +239,6 @@ class TabWindow extends Component<Props, State, any> {
     const { dispatch, tabNumber, activeTabIndex } = this.props;
     if (tabNumber === activeTabIndex) {
       //console.log(this.webref.props.injectedJavaScript);
-      dispatch(updateSite(activeTabIndex, nativeEvent.title, nativeEvent.url));
     }
   }
 

@@ -7,6 +7,7 @@ export const COMPLETED_TO_UPDATE_URL_FOR_ATS =
 export const UPDATE_URL_FOR_ATS = "UPDATE_URL_FOR_ATS";
 export const TOGGLE_FORWARD = "TOGGLE_FORWARD";
 export const TOGGLE_BACK = "TOGGLE_BACK";
+export const UPDATE_BACK_FORWARD = "UPDATE_BACK_FORWARD";
 
 export function toggleForward() {
   return {
@@ -41,12 +42,20 @@ export function selectTab(index) {
   };
 }
 
-export function updateSite(index: number, title: string, url: string) {
+export function updateSite(
+  index: number,
+  title: string,
+  url: string,
+  canGoBack: boolean,
+  canGoForward: boolean
+) {
   return {
     type: UPDATE_SITE,
     index: index,
     title: title,
-    url: url
+    url: url,
+    canGoBack: canGoBack,
+    canGoForward: canGoForward
   };
 }
 
