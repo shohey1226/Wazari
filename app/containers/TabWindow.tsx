@@ -11,7 +11,8 @@ const { DAVKeyManager } = NativeModules;
 const DAVKeyManagerEmitter = new NativeEventEmitter(DAVKeyManager);
 
 interface State {
-  isLoading: boolean;
+  isLoadingSVim: boolean;
+  isLoadingJSInjection: boolean;
   isActive: boolean;
 }
 
@@ -26,13 +27,17 @@ class TabWindow extends Component<Props, State, any> {
 
   constructor(props) {
     super(props);
-    this.state = { isLoading: true, isActive: false };
+    this.state = {
+      isLoadingSVim: true,
+      isActive: false,
+      isLoadingJSInjection: true
+    };
     this.subscriptions = [];
   }
 
   componentDidMount() {
     sVim.init(() => {
-      this.setState({ isLoading: false });
+      this.setState({ isLoadingSVim: false });
     });
     this.subscriptions.push(
       DAVKeyManagerEmitter.addListener(
@@ -80,7 +85,11 @@ class TabWindow extends Component<Props, State, any> {
       browserWidth,
       homePage
     } = this.props;
-    if (this.webref && this.state.isActive) {
+    if (
+      this.webref &&
+      this.state.isActive &&
+      this.state.isLoadingJSInjection === false
+    ) {
       switch (event.action) {
         case "home":
           this.webref.injectJavaScript(`cursorToBeginning()`);
@@ -235,6 +244,7 @@ class TabWindow extends Component<Props, State, any> {
   }
 
   onLoadStart(syntheticEvent) {
+    this.setState({ isLoadingJSInjection: true });
     const { nativeEvent } = syntheticEvent;
     const { dispatch, tabNumber, activeTabIndex } = this.props;
     if (tabNumber === activeTabIndex) {
@@ -245,6 +255,9 @@ class TabWindow extends Component<Props, State, any> {
   onMessage(event) {
     const data = JSON.parse(event.nativeEvent.data);
     console.log(data);
+    if (!data.isLoading) {
+      this.setState({ isLoadingJSInjection: false });
+    }
   }
 
   onNavigationStateChange(event) {
@@ -253,7 +266,7 @@ class TabWindow extends Component<Props, State, any> {
 
   render() {
     const { url } = this.props;
-    if (this.state.isLoading) {
+    if (this.state.isLoadingSVim) {
       return <View />;
     } else {
       return (
@@ -325,6 +338,7 @@ function mapStateToProps(state, ownProps) {
 export default connect(mapStateToProps)(TabWindow);
 
 let injectingJs = `
+
 SVIM_PREDEFINE
 SVIM_HELPER
 SVIM_TAB
@@ -386,7 +400,7 @@ function deleteLine(){
 }
 
 
-
+window.ReactNativeWebView.postMessage(JSON.stringify({isLoading: false}))
 
 true
 `;
