@@ -39,6 +39,7 @@ const initialState: UiState = fromJS({
 });
 
 export default function ui(state = initialState, action) {
+  let mode;
   switch (action.type) {
     // Back/Forward button on bar
     case TOGGLE_BACK:
@@ -51,13 +52,17 @@ export default function ui(state = initialState, action) {
         .set("sites", state.get("sites").push(Map({ url: action.url })))
         .set("activeTabIndex", state.get("sites").size);
     case SELECT_TAB:
-      return state.set("activeTabIndex", action.index);
+      mode = KeyMode.Direct;
+      if (/^https:\/\/www\.wazaterm\.com\/terminals\/\S+/.test(action.url)) {
+        mode = KeyMode.KeyEvent;
+      }
+      return state.set("activeTabIndex", action.index).set("keyMode", mode);
     case CLOSE_TAB:
       return state.set("sites", state.get("sites").delete(action.index));
     case SELECT_TAB:
       return state.set("activeTabIndex", action.index);
     case UPDATE_SITE:
-      let mode = KeyMode.Direct;
+      mode = KeyMode.Direct;
       if (/^https:\/\/www\.wazaterm\.com\/terminals\/\S+/.test(action.url)) {
         mode = KeyMode.KeyEvent;
       }

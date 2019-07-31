@@ -11,9 +11,9 @@ const { DAVKeyManager } = NativeModules;
 const DAVKeyManagerEmitter = new NativeEventEmitter(DAVKeyManager);
 
 interface State {
-  isLoadingSVim: boolean;
-  isLoadingJSInjection: boolean;
-  isActive: boolean;
+  isLoadingSVim: boolean; // state to load local sVim files
+  isLoadingJSInjection: boolean; // state to load injectedJS so commands can be used
+  isActive: boolean; // active Tab and focused
 }
 
 interface Props {
@@ -54,19 +54,18 @@ class TabWindow extends Component<Props, State, any> {
 
   componentDidUpdate(prevProp) {
     const { backToggled, forwardToggled } = this.props;
-    if (prevProp.activeTabIndex !== this.props.activeTabIndex)
+    if (prevProp.activeTabIndex !== this.props.activeTabIndex) {
       if (this.props.tabNumber === this.props.activeTabIndex) {
         this.focusWindow();
       } else {
-        this.setState({ isActive: false });
-        this.webref &&
-          this.webref.injectJavaScript(`document.activeElement.blur();`);
+        this.blurWindow();
       }
+    }
 
-    if (prevProp.backToggled !== backToggled) {
+    if (prevProp.backToggled !== backToggled && this.state.isActive) {
       this.webref.goBack();
     }
-    if (prevProp.forwardToggled !== forwardToggled) {
+    if (prevProp.forwardToggled !== forwardToggled && this.state.isActive) {
       this.webref.goForward();
     }
   }
@@ -74,6 +73,12 @@ class TabWindow extends Component<Props, State, any> {
   focusWindow() {
     this.setState({ isActive: true });
     this.webref && this.webref.injectJavaScript(focusJS);
+  }
+
+  blurWindow() {
+    this.setState({ isActive: false });
+    this.webref &&
+      this.webref.injectJavaScript(`document.activeElement.blur();`);
   }
 
   handleBrowserActions = event => {
