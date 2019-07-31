@@ -17,6 +17,9 @@ import {
   StackActions,
   StatusBar
 } from "react-navigation";
+import { StyleProvider } from "native-base";
+import getTheme from "./native-base-theme/components";
+import platform from "./native-base-theme/variables/platform";
 
 import Browser from "./app/containers/Browser";
 import Setting from "./app/components/Setting";
@@ -52,11 +55,13 @@ let Navigation = createAppContainer(RootStack);
 class App extends React.Component {
   render() {
     return (
-      <Provider store={store}>
-        <PersistGate loading={null} persistor={persistor}>
-          <Navigation />
-        </PersistGate>
-      </Provider>
+      <StyleProvider style={getTheme(platform)}>
+        <Provider store={store}>
+          <PersistGate loading={null} persistor={persistor}>
+            <Navigation />
+          </PersistGate>
+        </Provider>
+      </StyleProvider>
     );
   }
 }

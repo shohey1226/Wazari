@@ -141,6 +141,7 @@ class Browser extends Component<Props, State> {
               <Text style={{ fontSize: 12, marginLeft: 1 }}>{tabTitle}</Text>
               <Button
                 transparent
+                light
                 onPress={() => this.pressCloseTab(i)}
                 style={{ marginTop: 3 }}
               >
@@ -164,7 +165,9 @@ class Browser extends Component<Props, State> {
     return (
       <Tabs
         ref={r => (this.tabsRef = r as any)}
-        renderTabBar={() => <ScrollableTab />}
+        renderTabBar={() => (
+          <ScrollableTab style={{ backgroundColor: "#222" }} />
+        )}
         onChangeTab={this.onChangeTab.bind(this)}
       >
         {this.renderTabs()}

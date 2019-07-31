@@ -78,7 +78,7 @@ class NavBar extends Component<Props, IState, any> {
       <Header searchBar rounded>
         <Button
           transparent
-          dark
+          light
           onPress={this.onPressToggleBack.bind(this)}
           disabled={!this.state.canGoBack}
         >
@@ -86,7 +86,7 @@ class NavBar extends Component<Props, IState, any> {
         </Button>
         <Button
           transparent
-          dark
+          light
           onPress={this.onPressToggleForward.bind(this)}
           style={{ marginRight: 20 }}
           disabled={!this.state.canGoForward}
@@ -105,7 +105,7 @@ class NavBar extends Component<Props, IState, any> {
             autoCapitalize="none"
           />
         </Item>
-        <Button transparent dark onPress={() => this.props.onPressSetting()}>
+        <Button transparent light onPress={() => this.props.onPressSetting()}>
           <Icon name="settings" />
         </Button>
       </Header>
