@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { View, NativeModules, NativeEventEmitter } from "react-native";
 import { WebView } from "react-native-webview";
 import { connect } from "react-redux";
+import DeviceInfo from "react-native-device-info";
 import sVim from "../utils/sVim";
 import { selectBrowserKeymap, selectModifiers } from "../selectors/keymap";
 import { addNewTab, selectTab, updateSite, closeTab } from "../actions/ui";
@@ -24,6 +25,8 @@ interface Props {
 
 class TabWindow extends Component<Props, State, any> {
   webref: WebView | null = null;
+  conditionalProps: object = {};
+  subscriptions: Array<any> = [];
 
   constructor(props) {
     super(props);
@@ -33,6 +36,10 @@ class TabWindow extends Component<Props, State, any> {
       isLoadingJSInjection: true
     };
     this.subscriptions = [];
+    if (DeviceInfo.isTablet()) {
+      this.conditionalProps.userAgent =
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.0 Safari/605.1.15";
+    }
   }
 
   componentDidMount() {
@@ -286,13 +293,13 @@ class TabWindow extends Component<Props, State, any> {
           onLoadEnd={this.onLoadEnd.bind(this)}
           onNavigationStateChange={this.onNavigationStateChange.bind(this)}
           onMessage={this.onMessage.bind(this)}
-          userAgent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.0 Safari/605.1.15"
           injectedJavaScript={injectingJs
             .replace("SVIM_PREDEFINE", sVim.sVimPredefine)
             .replace("SVIM_GLOBAL", sVim.sVimGlobal)
             .replace("SVIM_HELPER", sVim.sVimHelper)
             .replace("SVIM_TAB", sVim.sVimTab)
             .replace("SVIM_HINT", sVim.sVimHint)}
+          {...this.conditionalProps}
         />
       );
     }
