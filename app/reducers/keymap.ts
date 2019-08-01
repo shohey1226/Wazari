@@ -81,7 +81,7 @@ const defaultKeymap = {
         metaKey: false
       }
     },
-    deleteOneChar: {
+    deletePreviousChar: {
       key: "h",
       modifiers: {
         capslockKey: false,
@@ -91,7 +91,17 @@ const defaultKeymap = {
         metaKey: false
       }
     },
-    backOneChar: {
+    deleteNextChar: {
+      key: "d",
+      modifiers: {
+        capslockKey: false,
+        shiftKey: false,
+        altKey: false,
+        ctrlKey: true,
+        metaKey: false
+      }
+    },
+    moveBackOneChar: {
       key: "b",
       modifiers: {
         capslockKey: false,
@@ -101,7 +111,7 @@ const defaultKeymap = {
         metaKey: false
       }
     },
-    forwardOneChar: {
+    moveForwardOneChar: {
       key: "f",
       modifiers: {
         capslockKey: false,
@@ -212,7 +222,7 @@ const defaultKeymap = {
       }
     },
     hitAHint: {
-      key: "f",
+      key: "i",
       modifiers: {
         capslockKey: false,
         shiftKey: false,

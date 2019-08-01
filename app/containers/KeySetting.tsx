@@ -80,25 +80,25 @@ class KeySetting extends Component<Props, States> {
     const { modifiers, desktopKeymap, browserKeymap } = this.props;
 
     // Update modifiers
-    if (!equals(this.props.modifiers, prevProps.modifiers)) {
-      DAVKeyManager.updateModifiers(this.props.modifiers);
-    }
-
-    if (!isEqual(this.props.desktopKeymap, prevProps.desktopKeymap)) {
+    if (!equals(modifiers, prevProps.modifiers)) {
+      DAVKeyManager.updateModifiers(modifiers);
+      DAVKeyManager.setBrowserKeymap(
+        keymapper.convertToNativeFormat(browserKeymap, modifiers)
+      );
       DAVKeyManager.setDesktopKeymap(
-        keymapper.convertToNativeFormat(
-          this.props.desktopKeymap,
-          this.props.modifiers
-        )
+        keymapper.convertToNativeFormat(desktopKeymap, modifiers)
       );
     }
 
-    if (!isEqual(this.props.browserKeymap, prevProps.browserKeymap)) {
+    if (!isEqual(desktopKeymap, prevProps.desktopKeymap)) {
+      DAVKeyManager.setDesktopKeymap(
+        keymapper.convertToNativeFormat(desktopKeymap, modifiers)
+      );
+    }
+
+    if (!isEqual(browserKeymap, prevProps.browserKeymap)) {
       DAVKeyManager.setBrowserKeymap(
-        keymapper.convertToNativeFormat(
-          this.props.browserKeymap,
-          this.props.modifiers
-        )
+        keymapper.convertToNativeFormat(browserKeymap, modifiers)
       );
     }
   }

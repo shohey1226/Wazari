@@ -109,8 +109,17 @@ class TabWindow extends Component<Props, State, any> {
         case "end":
           this.webref.injectJavaScript(`cursorToEnd()`);
           break;
-        case "deleteOneChar":
-          this.webref.injectJavaScript(`deleteOneChar()`);
+        case "deletePreviousChar":
+          this.webref.injectJavaScript(`deletePreviousChar()`);
+          break;
+        case "deleteNextChar":
+          this.webref.injectJavaScript(`deleteNextChar()`);
+          break;
+        case "moveBackOneChar":
+          this.webref.injectJavaScript(`moveBackOneChar()`);
+          break;
+        case "moveForwardOneChar":
+          this.webref.injectJavaScript(`moveForwardOneChar()`);
           break;
         case "goBack":
           this.webref.goBack();
@@ -414,11 +423,53 @@ function deleteLine(){
   el.value = content.substring(0, caretPos);
 }
 
-function deleteOneChar(){
+function deletePreviousChar(){
   var el = document.activeElement;  
+  var caretPosStart = el.selectionStart;    
+  var caretPosEnd = el.selectionEnd;
   var content = el.value;
-  if(content.length > 0){
-    el.value = content.substring(0, content.length-1);  
+  if(caretPosStart > 0){
+    el.value = content.substring(0, caretPosStart-1) + content.substring(caretPosEnd, content.length);
+    el.setSelectionRange(caretPosStart - 1, caretPosStart - 1);
+  }
+}
+
+function deleteNextChar(){
+  var el = document.activeElement;  
+  var caretPosStart = el.selectionStart;    
+  var caretPosEnd = el.selectionEnd;
+  var content = el.value;
+  if(caretPosEnd < content.length){
+    el.value = content.substring(0, caretPosStart) + content.substring(caretPosEnd+1, content.length);
+    el.setSelectionRange(caretPosStart, caretPosStart);
+  }
+}
+
+function moveBackOneChar(){
+  var inp = document.activeElement;
+  var caretPos = inp.selectionStart;  
+  if(caretPos > 0){
+    if (inp.createTextRange) {
+      var part = inp.createTextRange();
+      part.move("character", caretPos-1);
+      part.select();
+    } else if (inp.setSelectionRange) {
+      inp.setSelectionRange(caretPos-1, caretPos-1);
+    }
+  }
+}
+
+function moveForwardOneChar(){
+  var inp = document.activeElement;
+  var caretPos = inp.selectionStart;  
+  if(caretPos < inp.value.length){
+    if (inp.createTextRange) {
+      var part = inp.createTextRange();
+      part.move("character", caretPos+1);
+      part.select();
+    } else if (inp.setSelectionRange) {
+      inp.setSelectionRange(caretPos+1, caretPos+1);
+    }
   }
 }
 
