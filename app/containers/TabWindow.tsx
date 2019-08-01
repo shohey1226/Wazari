@@ -109,6 +109,9 @@ class TabWindow extends Component<Props, State, any> {
         case "end":
           this.webref.injectJavaScript(`cursorToEnd()`);
           break;
+        case "deleteOneChar":
+          this.webref.injectJavaScript(`deleteOneChar()`);
+          break;
         case "goBack":
           this.webref.goBack();
           break;
@@ -411,18 +414,27 @@ function deleteLine(){
   el.value = content.substring(0, caretPos);
 }
 
+function deleteOneChar(){
+  var el = document.activeElement;  
+  var content = el.value;
+  if(content.length > 0){
+    el.value = content.substring(0, content.length-1);  
+  }
+}
+
 
 window.ReactNativeWebView.postMessage(JSON.stringify({isLoading: false}))
 
 true
 `;
 
+// specify 16px fontSize not to zoom in.
 const focusJS = `
 setTimeout(function(){
   var input = document.createElement("input");
   input.type = "text";  
   input.style.position = "absolute";
-  input.style.fontSize = "16px"; // not to zoom
+  input.style.fontSize = "16px";
   input.style.top = window.pageYOffset + 'px';
   document.body.appendChild(input);
   input.focus();

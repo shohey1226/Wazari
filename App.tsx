@@ -30,7 +30,7 @@ import { PersistGate } from "redux-persist/integration/react";
 
 const { store, persistor } = configureStore({});
 
-persistor.purge();
+//persistor.purge();
 
 let RootStack = createStackNavigator({
   Home: {

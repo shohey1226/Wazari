@@ -66,8 +66,8 @@ const defaultKeymap = {
       modifiers: {
         capslockKey: false,
         shiftKey: false,
-        altKey: true,
-        ctrlKey: false,
+        altKey: false,
+        ctrlKey: true,
         metaKey: false
       }
     },
@@ -76,8 +76,38 @@ const defaultKeymap = {
       modifiers: {
         capslockKey: false,
         shiftKey: false,
-        altKey: true,
-        ctrlKey: false,
+        altKey: false,
+        ctrlKey: true,
+        metaKey: false
+      }
+    },
+    deleteOneChar: {
+      key: "h",
+      modifiers: {
+        capslockKey: false,
+        shiftKey: false,
+        altKey: false,
+        ctrlKey: true,
+        metaKey: false
+      }
+    },
+    backOneChar: {
+      key: "b",
+      modifiers: {
+        capslockKey: false,
+        shiftKey: false,
+        altKey: false,
+        ctrlKey: true,
+        metaKey: false
+      }
+    },
+    forwardOneChar: {
+      key: "f",
+      modifiers: {
+        capslockKey: false,
+        shiftKey: false,
+        altKey: false,
+        ctrlKey: true,
         metaKey: false
       }
     },
