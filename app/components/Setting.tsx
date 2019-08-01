@@ -4,10 +4,15 @@ import DeviceInfo from "react-native-device-info";
 import { Col, Row, Grid } from "react-native-easy-grid";
 import SettingMenu from "./SettingMenu";
 import KeySetting from "../containers/KeySetting";
+import { StackActions } from "react-navigation";
 
 class Setting extends Component {
   clickMenuItem(item: string) {
     console.log(item);
+    if (DeviceInfo.isTablet()) {
+    } else {
+      this.props.navigation.navigate({ routeName: "KeySetting" });
+    }
   }
 
   render() {
@@ -15,7 +20,7 @@ class Setting extends Component {
       return (
         <Grid>
           <Col size={1}>
-            <SettingMenu clickMenuItem={this.clickMenuItem} />
+            <SettingMenu clickMenuItem={this.clickMenuItem.bind(this)} />
           </Col>
           <Col size={2}>
             <View>
@@ -25,11 +30,7 @@ class Setting extends Component {
         </Grid>
       );
     } else {
-      return (
-        <View>
-          <Text>phone</Text>
-        </View>
-      );
+      return <SettingMenu clickMenuItem={this.clickMenuItem.bind(this)} />;
     }
   }
 }
