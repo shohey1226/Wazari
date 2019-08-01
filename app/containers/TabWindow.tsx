@@ -387,6 +387,9 @@ function simulateKeyDown(element, keyCode, modifiers) {
 
 function cursorToBeginning(){
   var inp = document.activeElement;
+  if(!inp.value){
+    return
+  }  
   if (inp.createTextRange) {
     var part = inp.createTextRange();
     part.move("character", 0);
@@ -398,6 +401,9 @@ function cursorToBeginning(){
 
 function cursorToEnd(){
   var inp = document.activeElement;
+  if(!inp.value){
+    return
+  }  
   if (inp.createTextRange) {
     var part = inp.createTextRange();
     part.move("character", inp.value.length);
@@ -409,13 +415,19 @@ function cursorToEnd(){
 
 function deleteLine(){
   var el = document.activeElement;  
+  if(!el.value){
+    return
+  }  
   var caretPos = el.selectionStart;  
   var content = el.value;
   el.value = content.substring(0, caretPos);
 }
 
 function deletePreviousChar(){
-  var el = document.activeElement;  
+  var el = document.activeElement;
+  if(!el.value){
+    return
+  }  
   var caretPosStart = el.selectionStart;    
   var caretPosEnd = el.selectionEnd;
   var content = el.value;
@@ -426,7 +438,10 @@ function deletePreviousChar(){
 }
 
 function deleteNextChar(){
-  var el = document.activeElement;  
+  var el = document.activeElement;
+  if(!el.value){
+    return
+  }  
   var caretPosStart = el.selectionStart;
   var caretPosEnd = el.selectionEnd;
   var content = el.value;
@@ -438,6 +453,9 @@ function deleteNextChar(){
 
 function moveBackOneChar(){
   var inp = document.activeElement;
+  if(!inp.value){
+    return
+  }  
   var caretPos = inp.selectionStart;  
   if(caretPos > 0){
     if (inp.createTextRange) {
@@ -452,6 +470,9 @@ function moveBackOneChar(){
 
 function moveForwardOneChar(){
   var inp = document.activeElement;
+  if(!inp.value){
+    return
+  }
   var caretPos = inp.selectionStart;  
   if(caretPos < inp.value.length){
     if (inp.createTextRange) {
