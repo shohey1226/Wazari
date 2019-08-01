@@ -143,9 +143,6 @@ class TabWindow extends Component<Props, State, any> {
         case "reload":
           this.webref.reload();
           break;
-        // case "lockScroll":
-        //   this.setState({ scrollEnabled: !this.state.scrollEnabled });
-        //   break;
         case "hitAHint":
           this.webref.injectJavaScript(`sVimHint.start()`);
           break;
@@ -159,16 +156,10 @@ class TabWindow extends Component<Props, State, any> {
           this.webref.injectJavaScript(`deleteLine()`);
           break;
         case "zoomIn":
-          dispatch(updateBrowserWidth(parseInt(browserWidth * 0.8)));
-          this.rebuildBrowser(activeTabIndex, isFullScreen);
-          this._browserRefs[activeTabIndex] &&
-            this._browserRefs[activeTabIndex].reload();
+          this.webref.injectJavaScript(`sVimTab.commands.zoomPageIn()`);
           break;
         case "zoomOut":
-          dispatch(updateBrowserWidth(parseInt(browserWidth * 1.2)));
-          this.rebuildBrowser(activeTabIndex, isFullScreen);
-          this._browserRefs[activeTabIndex] &&
-            this._browserRefs[activeTabIndex].reload();
+          this.webref.injectJavaScript(`sVimTab.commands.zoomPageOut()`);
           break;
         case "closeTab":
           dispatch(closeTab(activeTabIndex));
@@ -436,7 +427,7 @@ function deletePreviousChar(){
 
 function deleteNextChar(){
   var el = document.activeElement;  
-  var caretPosStart = el.selectionStart;    
+  var caretPosStart = el.selectionStart;
   var caretPosEnd = el.selectionEnd;
   var content = el.value;
   if(caretPosEnd < content.length){
