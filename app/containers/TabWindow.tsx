@@ -422,6 +422,7 @@ setTimeout(function(){
   var input = document.createElement("input");
   input.type = "text";  
   input.style.position = "absolute";
+  input.style.fontSize = "16px"; // not to zoom
   input.style.top = window.pageYOffset + 'px';
   document.body.appendChild(input);
   input.focus();
