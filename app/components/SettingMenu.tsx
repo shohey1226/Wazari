@@ -2,8 +2,13 @@ import React, { Component } from "react";
 import { View } from "react-native";
 import { List, ListItem, Text, Left, Right, Icon } from "native-base";
 
+export enum MenuItem {
+  Key,
+  General
+}
+
 export interface Props {
-  clickMenuItem: (menuItem: string) => void;
+  clickMenuItem: (menuItem: MenuItem) => void;
 }
 
 class SettingMenu extends Component<Props> {
@@ -14,9 +19,17 @@ class SettingMenu extends Component<Props> {
   render() {
     return (
       <List>
-        <ListItem onPress={() => this.props.clickMenuItem("keyboard")}>
+        <ListItem onPress={() => this.props.clickMenuItem(MenuItem.Key)}>
           <Left>
             <Text>Keyboard</Text>
+          </Left>
+          <Right>
+            <Icon name="arrow-forward" />
+          </Right>
+        </ListItem>
+        <ListItem onPress={() => this.props.clickMenuItem(MenuItem.General)}>
+          <Left>
+            <Text>General</Text>
           </Left>
           <Right>
             <Icon name="arrow-forward" />

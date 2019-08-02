@@ -24,6 +24,7 @@ import platform from "./native-base-theme/variables/platform";
 import Browser from "./app/containers/Browser";
 import Setting from "./app/components/Setting";
 import KeySetting from "./app/containers/KeySetting";
+import GeneralSetting from "./app/containers/GeneralSetting";
 import NavBar from "./app/containers/NavBar";
 import configureStore from "./app/configureStore";
 import { PersistGate } from "redux-persist/integration/react";
@@ -54,6 +55,12 @@ let RootStack = createStackNavigator({
     screen: KeySetting,
     navigationOptions: () => ({
       title: "Key Setting"
+    })
+  },
+  GeneralSetting: {
+    screen: GeneralSetting,
+    navigationOptions: () => ({
+      title: "General Setting"
     })
   }
 });
