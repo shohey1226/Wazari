@@ -53,7 +53,11 @@ export default function ui(state = initialState, action) {
         .set("activeTabIndex", state.get("sites").size);
     case SELECT_TAB:
       mode = KeyMode.Direct;
-      if (/^https:\/\/www\.wazaterm\.com\/terminals\/\S+/.test(action.url)) {
+      if (
+        /^https:\/\/www\.wazaterm\.com\/terminals\/\S+/.test(
+          state.get("sites").getIn([action.index, "url"])
+        )
+      ) {
         mode = KeyMode.KeyEvent;
       }
       return state.set("activeTabIndex", action.index).set("keyMode", mode);

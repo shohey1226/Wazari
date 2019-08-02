@@ -18,17 +18,17 @@ const defaultKeymap = {
     altKey: "altKey",
     metaKey: "metaKey"
   },
-  desktop: {
-    fullWindow: {
-      key: "?",
-      modifiers: {
-        capslockKey: false,
-        shiftKey: false,
-        altKey: true,
-        ctrlKey: false,
-        metaKey: true
-      }
-    },
+  browser: {
+    // fullWindow: {
+    //   key: "?",
+    //   modifiers: {
+    //     capslockKey: false,
+    //     shiftKey: false,
+    //     altKey: true,
+    //     ctrlKey: false,
+    //     metaKey: true
+    //   }
+    // },
     copy: {
       key: "c",
       modifiers: {
@@ -58,9 +58,7 @@ const defaultKeymap = {
         ctrlKey: false,
         metaKey: false
       }
-    }
-  },
-  browser: {
+    },
     home: {
       key: "a",
       modifiers: {

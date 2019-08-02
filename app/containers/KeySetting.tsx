@@ -20,11 +20,7 @@ import {
   Left,
   Icon
 } from "native-base";
-import {
-  selectModifiers,
-  selectDesktopKeymap,
-  selectBrowserKeymap
-} from "../selectors/keymap";
+import { selectModifiers, selectBrowserKeymap } from "../selectors/keymap";
 import {
   updateModifier,
   updateActionModifier,
@@ -51,7 +47,6 @@ enum ModalType {
 
 interface Props {
   modifiers: any;
-  desktopKeymap: any;
   browserKeymap: any;
   dispatch: (any) => void;
 }
@@ -77,22 +72,13 @@ class KeySetting extends Component<Props, States> {
   }
 
   componentDidUpdate(prevProps) {
-    const { modifiers, desktopKeymap, browserKeymap } = this.props;
+    const { modifiers, browserKeymap } = this.props;
 
     // Update modifiers
     if (!equals(modifiers, prevProps.modifiers)) {
       DAVKeyManager.updateModifiers(modifiers);
       DAVKeyManager.setBrowserKeymap(
         keymapper.convertToNativeFormat(browserKeymap, modifiers)
-      );
-      DAVKeyManager.setDesktopKeymap(
-        keymapper.convertToNativeFormat(desktopKeymap, modifiers)
-      );
-    }
-
-    if (!isEqual(desktopKeymap, prevProps.desktopKeymap)) {
-      DAVKeyManager.setDesktopKeymap(
-        keymapper.convertToNativeFormat(desktopKeymap, modifiers)
       );
     }
 
@@ -266,7 +252,7 @@ class KeySetting extends Component<Props, States> {
   }
 
   renderModalContent() {
-    const { modifiers, desktopKeymap, browserKeymap } = this.props;
+    const { modifiers, browserKeymap } = this.props;
 
     if (this.state.modalType === ModalType.Mod) {
       return (
@@ -312,8 +298,6 @@ class KeySetting extends Component<Props, States> {
       let keymap = null;
       if (this.state.window === "browser") {
         keymap = browserKeymap[this.state.action];
-      } else if (this.state.window === "desktop") {
-        keymap = desktopKeymap[this.state.action];
       }
       if (!keymap) {
         return <View />;
@@ -424,7 +408,6 @@ class KeySetting extends Component<Props, States> {
         <Separator bordered>
           <Text>Shortcuts</Text>
         </Separator>
-        {this.renderActionKeys("desktop", this.props.desktopKeymap)}
         {this.renderActionKeys("browser", this.props.browserKeymap)}
         <Separator bordered>
           <Text style={{ color: "red" }}>Danger zone</Text>
@@ -451,11 +434,9 @@ class KeySetting extends Component<Props, States> {
 
 function mapStateToProps(state, ownProps) {
   const modifiers = selectModifiers(state);
-  const desktopKeymap = selectDesktopKeymap(state);
   const browserKeymap = selectBrowserKeymap(state);
   return {
     modifiers,
-    desktopKeymap,
     browserKeymap
   };
 }
