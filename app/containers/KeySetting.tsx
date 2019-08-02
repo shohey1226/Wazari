@@ -59,6 +59,14 @@ interface States {
   action: string | null;
 }
 
+type ActionModifier = {
+  capslockKey: boolean;
+  shiftKey: boolean;
+  altKey: boolean;
+  ctrlKey: boolean;
+  metaKey: boolean;
+};
+
 class KeySetting extends Component<Props, States> {
   constructor(props) {
     super(props);
@@ -219,19 +227,81 @@ class KeySetting extends Component<Props, States> {
   }
 
   _actionKeyValueChanged(value) {
-    const { dispatch } = this.props;
-    dispatch(updateActionKey(this.state.window, this.state.action, value));
+    const { dispatch, browserKeymap } = this.props;
+    if (!this.state.action) return;
+
+    const keyFrom = browserKeymap[this.state.action].key;
+    if (this._isUniqueActionKey(this.state.action, value)) {
+      dispatch(updateActionKey(this.state.window, this.state.action, value));
+    } else {
+      Alert.alert(`The key and modifiers are being used`, "");
+      dispatch(updateActionKey(this.state.window, this.state.action, keyFrom));
+    }
   }
+
   _actionModifierValueChanged(value, modifier) {
-    const { dispatch } = this.props;
-    dispatch(
-      updateActionModifier(
-        this.state.window,
-        this.state.action,
-        modifier,
-        value
-      )
-    );
+    const { dispatch, browserKeymap } = this.props;
+    if (!this.state.action) return;
+
+    const valueFrom = browserKeymap[this.state.action].modifiers[modifier];
+    if (this._isUniqueActionModifer(this.state.action, modifier, value)) {
+      dispatch(
+        updateActionModifier(
+          this.state.window,
+          this.state.action,
+          modifier,
+          value
+        )
+      );
+    } else {
+      Alert.alert(`The key and modifiers are being used`, "");
+      dispatch(
+        updateActionModifier(
+          this.state.window,
+          this.state.action,
+          modifier,
+          valueFrom
+        )
+      );
+    }
+  }
+
+  _isUniqueActionKey(actionName: string, keyTo: string) {
+    const { browserKeymap } = this.props;
+    for (let action in browserKeymap) {
+      if (actionName === action) {
+        continue;
+      }
+      if (
+        keyTo === browserKeymap[action].key &&
+        equals(
+          browserKeymap[actionName].modifiers,
+          browserKeymap[action].modifiers
+        )
+      ) {
+        // already being used
+        return false;
+      }
+    }
+    return true;
+  }
+
+  _isUniqueActionModifer(actionName: string, modifier: string, value: boolean) {
+    const { browserKeymap } = this.props;
+    let modifiersTo = Object.assign({}, browserKeymap[actionName].modifiers);
+    modifiersTo[modifier] = value;
+    for (let action in browserKeymap) {
+      if (actionName === action) {
+        continue;
+      }
+      if (
+        browserKeymap[actionName].key === browserKeymap[action].key &&
+        equals(browserKeymap[action].modifiers, modifiersTo)
+      ) {
+        return false;
+      }
+    }
+    return true;
   }
 
   setDefault() {
