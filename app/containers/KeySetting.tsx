@@ -204,7 +204,7 @@ class KeySetting extends Component<Props, States> {
     return rows;
   }
 
-  _key(key, modifiers) {
+  private _key(key: string, modifiers: ActionModifier) {
     return `${Object.keys(modifiers)
       .filter(mod => modifiers[mod] === true)
       .map(mod =>
@@ -218,11 +218,11 @@ class KeySetting extends Component<Props, States> {
       .join("+")} - ${key}`;
   }
 
-  _toCapitalizedWords(name) {
+  private _toCapitalizedWords(name: string) {
     var words = name.match(/[A-Za-z][a-z]*/g);
     return words.map(this._capitalize).join(" ");
   }
-  _capitalize(word) {
+  private _capitalize(word: string) {
     return word.charAt(0).toUpperCase() + word.substring(1);
   }
 
@@ -266,7 +266,7 @@ class KeySetting extends Component<Props, States> {
     }
   }
 
-  _isUniqueActionKey(actionName: string, keyTo: string) {
+  private _isUniqueActionKey(actionName: string, keyTo: string) {
     const { browserKeymap } = this.props;
     for (let action in browserKeymap) {
       if (actionName === action) {
@@ -286,7 +286,11 @@ class KeySetting extends Component<Props, States> {
     return true;
   }
 
-  _isUniqueActionModifer(actionName: string, modifier: string, value: boolean) {
+  private _isUniqueActionModifer(
+    actionName: string,
+    modifier: string,
+    value: boolean
+  ) {
     const { browserKeymap } = this.props;
     let modifiersTo = Object.assign({}, browserKeymap[actionName].modifiers);
     modifiersTo[modifier] = value;
