@@ -11,7 +11,11 @@ interface State {
   currentMenuItem: MenuItem;
 }
 
-class Setting extends Component<{}, State> {
+interface Props {
+  navigation: any;
+}
+
+class Setting extends Component<Props, State> {
   constructor(props) {
     super(props);
     this.state = {
