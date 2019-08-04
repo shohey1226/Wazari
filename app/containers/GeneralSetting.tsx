@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import { connect } from "react-redux";
 import {
   View,
   List,
@@ -16,10 +17,12 @@ import { Picker } from "react-native";
 import ModalFrame from "../components/ModalFrame";
 import SearchEnginePicker from "../components/SearchEnginePicker";
 import Modal from "react-native-modal";
+import { updateHome } from "../actions/user";
 
 interface State {
   isModalVisible: boolean;
   searchEngine: string;
+  homeUrl: string;
 }
 
 class GeneralSetting extends Component<any, State> {
@@ -27,7 +30,8 @@ class GeneralSetting extends Component<any, State> {
     super(props);
     this.state = {
       isModalVisible: false,
-      searchEngine: "google"
+      searchEngine: "google",
+      homeUrl: props.homeUrl
     };
   }
 
@@ -43,7 +47,7 @@ class GeneralSetting extends Component<any, State> {
           searchEngine={this.state.searchEngine}
         />
         <Button block onPress={() => this.setState({ isModalVisible: false })}>
-          <Text>CANCEL</Text>
+          <Text>CLOSE</Text>
         </Button>
       </ModalFrame>
     );
@@ -51,6 +55,11 @@ class GeneralSetting extends Component<any, State> {
 
   toggleModal(modalType: string) {
     this.setState({ isModalVisible: !this.state.isModalVisible });
+  }
+
+  onSubmitHomeEditing() {
+    const { dispatch } = this.props;
+    dispatch(updateHome(this.state.homeUrl));
   }
 
   render() {
@@ -61,7 +70,11 @@ class GeneralSetting extends Component<any, State> {
             <Text>Home Page</Text>
           </Left>
           <Body>
-            <Input placeholder="https://www.google.com" />
+            <Input
+              onChangeText={text => this.setState({ homeUrl: text })}
+              value={this.state.homeUrl}
+              onSubmitEditing={this.onSubmitHomeEditing.bind(this)}
+            />
           </Body>
         </ListItem>
         <ListItem icon onPress={() => this.toggleModal("searchEngine")}>
@@ -87,4 +100,11 @@ class GeneralSetting extends Component<any, State> {
   }
 }
 
-export default GeneralSetting;
+function mapStateToProps(state, ownProps) {
+  const homeUrl = state.user.get("homeUrl");
+  return {
+    homeUrl
+  };
+}
+
+export default connect(mapStateToProps)(GeneralSetting);
