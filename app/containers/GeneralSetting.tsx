@@ -17,35 +17,50 @@ import { Picker } from "react-native";
 import ModalFrame from "../components/ModalFrame";
 import SearchEnginePicker from "../components/SearchEnginePicker";
 import Modal from "react-native-modal";
-import { updateHome } from "../actions/user";
+import { updateHome, updateSearchEngine } from "../actions/user";
 
 interface State {
   isModalVisible: boolean;
   searchEngine: string;
   homeUrl: string;
+  modalType: string | null;
 }
 
-class GeneralSetting extends Component<any, State> {
+interface Props {
+  searchEngine: string;
+  dispatch: (any) => void;
+  homeUrl: string;
+}
+
+class GeneralSetting extends Component<Props, State> {
   constructor(props) {
     super(props);
     this.state = {
       isModalVisible: false,
-      searchEngine: "google",
+      modalType: "searchEngine",
       homeUrl: props.homeUrl
     };
   }
 
   onSearchEngineValueChange(value) {
-    this.setState({ searchEngine: value });
+    const { dispatch } = this.props;
+    dispatch(updateSearchEngine(value));
   }
 
-  renderModalContent() {
-    return (
-      <ModalFrame>
+  renderModalContainer() {
+    console.log(this.props.searchEngine);
+    let content = <View />;
+    if (this.state.modalType === "searchEngine") {
+      content = (
         <SearchEnginePicker
           onValueChange={this.onSearchEngineValueChange.bind(this)}
-          searchEngine={this.state.searchEngine}
+          searchEngine={this.props.searchEngine}
         />
+      );
+    }
+    return (
+      <ModalFrame>
+        {content}
         <Button block onPress={() => this.setState({ isModalVisible: false })}>
           <Text>CLOSE</Text>
         </Button>
@@ -54,7 +69,10 @@ class GeneralSetting extends Component<any, State> {
   }
 
   toggleModal(modalType: string) {
-    this.setState({ isModalVisible: !this.state.isModalVisible });
+    this.setState({
+      isModalVisible: !this.state.isModalVisible,
+      modalType: modalType
+    });
   }
 
   onSubmitHomeEditing() {
@@ -63,6 +81,7 @@ class GeneralSetting extends Component<any, State> {
   }
 
   render() {
+    const { searchEngine } = this.props;
     return (
       <List>
         <ListItem>
@@ -82,7 +101,7 @@ class GeneralSetting extends Component<any, State> {
             <Text>Search Engine</Text>
           </Body>
           <Right>
-            <Text>{this.state.searchEngine}</Text>
+            <Text>{searchEngine}</Text>
             <Icon active name="arrow-forward" />
           </Right>
         </ListItem>
@@ -92,7 +111,7 @@ class GeneralSetting extends Component<any, State> {
             animationIn="fadeIn"
             animationOut="fadeOut"
           >
-            {this.renderModalContent()}
+            {this.renderModalContainer()}
           </Modal>
         </View>
       </List>
@@ -102,8 +121,10 @@ class GeneralSetting extends Component<any, State> {
 
 function mapStateToProps(state, ownProps) {
   const homeUrl = state.user.get("homeUrl");
+  const searchEngine = state.user.get("searchEngine");
   return {
-    homeUrl
+    homeUrl,
+    searchEngine
   };
 }
 
