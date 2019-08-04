@@ -1,6 +1,5 @@
 import React, { Component } from "react";
-import { View, Text } from "react-native";
-import DeviceInfo from "react-native-device-info";
+import { View, Text, Dimensions } from "react-native";
 import { Col, Row, Grid } from "react-native-easy-grid";
 import { default as SettingMenu, MenuItem } from "./SettingMenu";
 import KeySetting from "../containers/KeySetting";
@@ -9,6 +8,7 @@ import { StackActions } from "react-navigation";
 
 interface State {
   currentMenuItem: MenuItem;
+  width: number;
 }
 
 interface Props {
@@ -16,15 +16,25 @@ interface Props {
 }
 
 class Setting extends Component<Props, State> {
+  handler = dims => this.setState({ width: dims.window.width });
+
   constructor(props) {
     super(props);
     this.state = {
-      currentMenuItem: MenuItem.Key
+      currentMenuItem: MenuItem.Key,
+      width: Dimensions.get("window").width
     };
   }
 
+  componentDidMount() {
+    Dimensions.addEventListener("change", this.handler);
+  }
+  componentWillMount() {
+    Dimensions.addEventListener("change", this.handler);
+  }
+
   clickMenuItem(item: MenuItem) {
-    if (DeviceInfo.isTablet()) {
+    if (this.state.width > 414) {
       switch (item) {
         case MenuItem.Key:
           this.setState({ currentMenuItem: MenuItem.Key });
@@ -55,7 +65,7 @@ class Setting extends Component<Props, State> {
   }
 
   render() {
-    if (DeviceInfo.isTablet()) {
+    if (this.state.width > 414) {
       return (
         <Grid>
           <Col size={1}>
