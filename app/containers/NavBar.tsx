@@ -4,6 +4,7 @@ import { connect } from "react-redux";
 import { Button, Icon, Header, Item, Input, Left } from "native-base";
 import { selectBrowserKeymap, selectModifiers } from "../selectors/keymap";
 import { selectSites } from "../selectors/ui";
+import { SearchEngine } from "../components/SearchEnginePicker";
 import {
   addNewTab,
   selectTab,
@@ -22,6 +23,7 @@ interface Props {
   dispatch: (any) => void;
   activeTabIndex: number;
   sites: any;
+  searchEngine: SearchEngine;
 }
 
 class NavBar extends Component<Props, IState, any> {
@@ -53,11 +55,17 @@ class NavBar extends Component<Props, IState, any> {
   }
 
   onEndEditing() {
-    const { dispatch, activeTabIndex, sites } = this.props;
+    const { dispatch, activeTabIndex, sites, searchEngine } = this.props;
     if (/^http/.test(this.state.text)) {
       dispatch(addNewTab(this.state.text));
     } else {
-      dispatch(addNewTab(`https://www.google.com/search?q=${this.state.text}`));
+      if (searchEngine === SearchEngine.Google) {
+        dispatch(
+          addNewTab(`https://www.google.com/search?q=${this.state.text}`)
+        );
+      } else if (searchEngine === SearchEngine.DuckDuckGo) {
+        dispatch(addNewTab(`https://duckduckgo.com/?q=${this.state.text}`));
+      }
     }
     this.setState({ text: "" });
   }
@@ -73,7 +81,7 @@ class NavBar extends Component<Props, IState, any> {
   }
 
   render() {
-    const { canGoBack, canGoForward } = this.props;
+    const { searchEngine } = this.props;
     return (
       <Header searchBar rounded>
         <Button
@@ -96,7 +104,7 @@ class NavBar extends Component<Props, IState, any> {
         <Item>
           <Icon name="ios-search" />
           <Input
-            placeholder="URL or Search with Google"
+            placeholder={`URL or Search with ${searchEngine}`}
             onChangeText={text => this.setState({ text })}
             value={this.state.text}
             autoCorrect={false}
@@ -118,11 +126,13 @@ function mapStateToProps(state, ownProps) {
   const modifiers = selectModifiers(state);
   const activeTabIndex = state.ui.get("activeTabIndex");
   const sites = selectSites(state);
+  const searchEngine = state.user.get("searchEngine");
   return {
     keymap,
     modifiers,
     activeTabIndex,
-    sites
+    sites,
+    searchEngine
   };
 }
 
