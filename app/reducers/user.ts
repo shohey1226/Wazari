@@ -1,14 +1,15 @@
 import { UPDATE_HOME, UPDATE_SEARCH_ENGINE } from "../actions/user";
 import { Map, fromJS } from "immutable";
+import { SearchEngine } from "../components/SearchEnginePicker";
 
 export interface UserState extends Map<any, any> {
   homeUrl: string;
-  searchEngine: string;
+  searchEngine: SearchEngine;
 }
 
 const initialState: UserState = fromJS({
   homeUrl: "https://www.google.com",
-  searchEngine: "google"
+  searchEngine: SearchEngine.Google
 });
 
 export default function user(state = initialState, action) {

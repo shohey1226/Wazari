@@ -18,16 +18,16 @@ import ModalFrame from "../components/ModalFrame";
 import SearchEnginePicker from "../components/SearchEnginePicker";
 import Modal from "react-native-modal";
 import { updateHome, updateSearchEngine } from "../actions/user";
+import { SearchEngine } from "../components/SearchEnginePicker";
 
 interface State {
   isModalVisible: boolean;
-  searchEngine: string;
   homeUrl: string;
   modalType: string | null;
 }
 
 interface Props {
-  searchEngine: string;
+  searchEngine: SearchEngine;
   dispatch: (any) => void;
   homeUrl: string;
 }
@@ -48,7 +48,6 @@ class GeneralSetting extends Component<Props, State> {
   }
 
   renderModalContainer() {
-    console.log(this.props.searchEngine);
     let content = <View />;
     if (this.state.modalType === "searchEngine") {
       content = (
