@@ -181,27 +181,27 @@ class KeySetting extends Component<Props, States> {
   }
 
   renderActionKeys(window, keymap) {
-    let rows = [];
-    for (let action in keymap) {
-      rows.push(
-        <ListItem
-          icon
-          onPress={() => this.toggleActionsModal(window, action)}
-          key={`keymap-${window}-${action}`}
-        >
-          <Body>
-            <Text>{this._toCapitalizedWords(action)}</Text>
-          </Body>
-          <Right>
-            <Text>
-              {this._key(keymap[action].key, keymap[action].modifiers)}
-            </Text>
-            <Icon active name="arrow-forward" />
-          </Right>
-        </ListItem>
-      );
-    }
-    return rows;
+    return Object.keys(keymap)
+      .sort()
+      .map(action => {
+        return (
+          <ListItem
+            icon
+            onPress={() => this.toggleActionsModal(window, action)}
+            key={`keymap-${window}-${action}`}
+          >
+            <Body>
+              <Text>{this._toCapitalizedWords(action)}</Text>
+            </Body>
+            <Right>
+              <Text>
+                {this._key(keymap[action].key, keymap[action].modifiers)}
+              </Text>
+              <Icon active name="arrow-forward" />
+            </Right>
+          </ListItem>
+        );
+      });
   }
 
   private _key(key: string, modifiers: ActionModifier) {
