@@ -26,6 +26,7 @@ import Setting from "./app/components/Setting";
 import KeySetting from "./app/containers/KeySetting";
 import GeneralSetting from "./app/containers/GeneralSetting";
 import NavBar from "./app/containers/NavBar";
+import SettingBackButton from "./app/components/SettingBackButton";
 import configureStore from "./app/configureStore";
 import { PersistGate } from "redux-persist/integration/react";
 
@@ -43,8 +44,9 @@ let RootStack = createStackNavigator({
   },
   Setting: {
     screen: Setting,
-    navigationOptions: () => ({
-      title: "Setting"
+    navigationOptions: ({ navigation }) => ({
+      title: "Setting",
+      headerLeft: <SettingBackButton {...navigation} />
     })
   },
   KeySetting: {

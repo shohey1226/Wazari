@@ -13,6 +13,8 @@ import {
   toggleForward
 } from "../actions/ui";
 
+const { DAVKeyManager } = NativeModules;
+
 interface IState {
   text: string;
   canGoBack: boolean;
@@ -87,6 +89,7 @@ class NavBar extends Component<Props, IState, any> {
   }
 
   onPressSetting() {
+    DAVKeyManager.turnOffKeymap();
     this.props.navigate({ routeName: "Setting" });
   }
 
