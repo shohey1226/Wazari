@@ -13,10 +13,10 @@ import {
   Item,
   Button
 } from "native-base";
-import { Picker } from "react-native";
+import { Picker, Modal } from "react-native";
 import ModalFrame from "../components/ModalFrame";
 import SearchEnginePicker from "../components/SearchEnginePicker";
-import Modal from "react-native-modal";
+
 import { updateHome, updateSearchEngine } from "../actions/user";
 import { SearchEngine } from "../components/SearchEnginePicker";
 
@@ -106,9 +106,9 @@ class GeneralSetting extends Component<Props, State> {
         </ListItem>
         <View>
           <Modal
-            isVisible={this.state.isModalVisible}
-            animationIn="fadeIn"
-            animationOut="fadeOut"
+            visible={this.state.isModalVisible}
+            animationType="fade"
+            transparent={true}
           >
             {this.renderModalContainer()}
           </Modal>

@@ -363,7 +363,7 @@ class KeySetting extends Component<Props, States> {
               block
               onPress={() => this.setState({ modalVisible: false })}
             >
-              <Text>CANCEL</Text>
+              <Text style={{ color: "white" }}>CANCEL</Text>
             </Button>
           </View>
         </View>
@@ -463,7 +463,7 @@ class KeySetting extends Component<Props, States> {
               block
               onPress={() => this.setState({ modalVisible: false })}
             >
-              <Text>CLOSE</Text>
+              <Text style={{ color: "white" }}>CLOSE</Text>
             </Button>
           </View>
         </View>
