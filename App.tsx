@@ -38,11 +38,7 @@ let RootStack = createStackNavigator({
     screen: Browser,
     navigationOptions: ({ navigation }) => ({
       title: "",
-      header: (
-        <NavBar
-          onPressSetting={() => navigation.navigate({ routeName: "Setting" })}
-        />
-      )
+      header: <NavBar {...navigation} />
     })
   },
   Setting: {

@@ -86,6 +86,10 @@ class NavBar extends Component<Props, IState, any> {
     dispatch(addNewTab(homeUrl));
   }
 
+  onPressSetting() {
+    this.props.navigate({ routeName: "Setting" });
+  }
+
   render() {
     const { searchEngine } = this.props;
     return (
@@ -122,7 +126,7 @@ class NavBar extends Component<Props, IState, any> {
         <Button transparent light onPress={() => this.onPressAdd()}>
           <Icon name="md-add" />
         </Button>
-        <Button transparent light onPress={() => this.props.onPressSetting()}>
+        <Button transparent light onPress={this.onPressSetting.bind(this)}>
           <Icon name="settings" />
         </Button>
       </Header>
