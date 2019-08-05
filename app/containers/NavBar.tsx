@@ -24,6 +24,7 @@ interface Props {
   activeTabIndex: number;
   sites: any;
   searchEngine: SearchEngine;
+  homeUrl: string;
 }
 
 class NavBar extends Component<Props, IState, any> {
@@ -80,6 +81,11 @@ class NavBar extends Component<Props, IState, any> {
     dispatch(toggleForward());
   }
 
+  onPressAdd() {
+    const { dispatch, homeUrl } = this.props;
+    dispatch(addNewTab(homeUrl));
+  }
+
   render() {
     const { searchEngine } = this.props;
     return (
@@ -113,6 +119,9 @@ class NavBar extends Component<Props, IState, any> {
             autoCapitalize="none"
           />
         </Item>
+        <Button transparent light onPress={() => this.onPressAdd()}>
+          <Icon name="md-add" />
+        </Button>
         <Button transparent light onPress={() => this.props.onPressSetting()}>
           <Icon name="settings" />
         </Button>
@@ -127,12 +136,14 @@ function mapStateToProps(state, ownProps) {
   const activeTabIndex = state.ui.get("activeTabIndex");
   const sites = selectSites(state);
   const searchEngine = state.user.get("searchEngine");
+  const homeUrl = state.user.get("homeUrl");
   return {
     keymap,
     modifiers,
     activeTabIndex,
     sites,
-    searchEngine
+    searchEngine,
+    homeUrl
   };
 }
 

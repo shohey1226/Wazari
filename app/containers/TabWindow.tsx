@@ -21,6 +21,7 @@ interface Props {
   dispatch: (any) => void;
   activeTabIndex: number;
   tabNumber: number;
+  homeUrl: string;
 }
 
 class TabWindow extends Component<Props, State, any> {
@@ -95,7 +96,7 @@ class TabWindow extends Component<Props, State, any> {
       sites,
       isFullScreen,
       browserWidth,
-      homePage
+      homeUrl
     } = this.props;
     if (
       this.webref &&
@@ -128,7 +129,7 @@ class TabWindow extends Component<Props, State, any> {
           this.webref.goForward();
           break;
         case "newTab":
-          dispatch(addNewTab(homePage));
+          dispatch(addNewTab(homeUrl));
           break;
         case "nextTab":
           let nextIndex =
@@ -323,6 +324,7 @@ function mapStateToProps(state, ownProps) {
   const keyMode = state.ui.get("keyMode");
   const backToggled = state.ui.get("backToggled");
   const forwardToggled = state.ui.get("forwardToggled");
+  const homeUrl = state.user.get("homeUrl");
   // const {
   //   fontSize: fontSize,
   //   isSecured: isSecured,
@@ -338,7 +340,8 @@ function mapStateToProps(state, ownProps) {
     modifiers,
     sites,
     activeTabIndex,
-    keyMode
+    keyMode,
+    homeUrl
     // fontSize,
     // isFullScreen,
     // isSecured,

@@ -304,7 +304,7 @@ export default (variables /*: * */ = variable) => {
     ".large": {
       height: 60,
       "NativeBase.Text": {
-        fontSize: 22,
+        fontSize: 22
       }
     },
 
@@ -329,7 +329,7 @@ export default (variables /*: * */ = variable) => {
     "NativeBase.Icon": {
       color: variables.inverseTextColor,
       fontSize: 24,
-      marginHorizontal: 16,
+      marginHorizontal: 8, // originally 16
       paddingTop: platform === "ios" ? 2 : undefined
     },
     "NativeBase.IconNB": {
