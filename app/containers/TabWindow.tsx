@@ -172,7 +172,6 @@ class TabWindow extends Component<Props, State, any> {
           break;
         case "paste":
           let content = await Clipboard.getString();
-          console.log(content);
           this.webref.injectJavaScript(`pasteFromRN("${content}")`);
           break;
         case "closeTab":

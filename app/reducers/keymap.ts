@@ -189,16 +189,6 @@ const defaultKeymap = {
         metaKey: true
       }
     },
-    lockScroll: {
-      key: "x",
-      modifiers: {
-        capslockKey: false,
-        shiftKey: false,
-        altKey: false,
-        ctrlKey: false,
-        metaKey: true
-      }
-    },
     scrollDown: {
       key: "n",
       modifiers: {
