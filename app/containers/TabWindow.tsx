@@ -1,5 +1,10 @@
 import React, { Component } from "react";
-import { View, NativeModules, NativeEventEmitter } from "react-native";
+import {
+  View,
+  NativeModules,
+  NativeEventEmitter,
+  Clipboard
+} from "react-native";
 import { WebView } from "react-native-webview";
 import { connect } from "react-redux";
 import DeviceInfo from "react-native-device-info";
@@ -89,7 +94,7 @@ class TabWindow extends Component<Props, State, any> {
       this.webref.injectJavaScript(`document.activeElement.blur();`);
   }
 
-  handleBrowserActions = event => {
+  handleBrowserActions = async event => {
     const {
       dispatch,
       activeTabIndex,
@@ -161,6 +166,14 @@ class TabWindow extends Component<Props, State, any> {
           break;
         case "zoomOut":
           this.webref.injectJavaScript(`sVimTab.commands.zoomPageOut()`);
+          break;
+        case "copy":
+          this.webref.injectJavaScript(`copyToRN()`);
+          break;
+        case "paste":
+          let content = await Clipboard.getString();
+          console.log(content);
+          this.webref.injectJavaScript(`pasteFromRN("${content}")`);
           break;
         case "closeTab":
           let newSites = sites.slice();
@@ -268,8 +281,15 @@ class TabWindow extends Component<Props, State, any> {
   onMessage(event) {
     const data = JSON.parse(event.nativeEvent.data);
     console.log(data);
-    if (!data.isLoading) {
-      this.setState({ isLoadingJSInjection: false });
+    switch (data.postFor) {
+      case "jsloading":
+        if (!data.isLoading) {
+          this.setState({ isLoadingJSInjection: false });
+        }
+        break;
+      case "copy":
+        Clipboard.setString(data.selection);
+        break;
     }
   }
 
@@ -485,8 +505,19 @@ function moveForwardOneChar(){
   }
 }
 
+function copyToRN() {
+  var selObj = window.getSelection(); 
+  var selectedText = selObj.toString();
+  window.ReactNativeWebView.postMessage(JSON.stringify({selection: selectedText, postFor: "copy"}));
+}
 
-window.ReactNativeWebView.postMessage(JSON.stringify({isLoading: false}))
+function pasteFromRN(content) {
+  var el = document.activeElement;   
+  var value = el.value;    
+  el.value = value + content;
+}
+
+window.ReactNativeWebView.postMessage(JSON.stringify({isLoading: false, postFor: "jsloading"}))
 
 true
 `;

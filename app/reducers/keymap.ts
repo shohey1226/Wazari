@@ -249,16 +249,16 @@ const defaultKeymap = {
         metaKey: true
       }
     },
-    find: {
-      key: "f",
-      modifiers: {
-        capslockKey: false,
-        shiftKey: false,
-        altKey: false,
-        ctrlKey: false,
-        metaKey: true
-      }
-    },
+    // find: {
+    //   key: "f",
+    //   modifiers: {
+    //     capslockKey: false,
+    //     shiftKey: false,
+    //     altKey: false,
+    //     ctrlKey: false,
+    //     metaKey: true
+    //   }
+    // },
     deleteLine: {
       key: "k",
       modifiers: {
