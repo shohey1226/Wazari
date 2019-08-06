@@ -24,7 +24,7 @@ type Site = {
 
 export interface UiState extends Map<any, any> {
   sites: Array<Site>;
-  activeTabIndex: number;
+  activeTabIndex: number | null;
   keyMode: KeyMode;
   backToggled: boolean;
   forwardToggled: boolean;
@@ -62,7 +62,9 @@ export default function ui(state = initialState, action) {
       }
       return state.set("activeTabIndex", action.index).set("keyMode", mode);
     case CLOSE_TAB:
-      return state.set("sites", state.get("sites").delete(action.index));
+      return state
+        .set("sites", state.get("sites").delete(action.index))
+        .set("activeTabIndex", action.focusedIndex);
     case SELECT_TAB:
       return state.set("activeTabIndex", action.index);
     case UPDATE_SITE:

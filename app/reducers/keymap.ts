@@ -49,16 +49,16 @@ const defaultKeymap = {
         metaKey: true
       }
     },
-    help: {
-      key: "1",
-      modifiers: {
-        capslockKey: false,
-        shiftKey: false,
-        altKey: true,
-        ctrlKey: false,
-        metaKey: false
-      }
-    },
+    // help: {
+    //   key: "1",
+    //   modifiers: {
+    //     capslockKey: false,
+    //     shiftKey: false,
+    //     altKey: true,
+    //     ctrlKey: false,
+    //     metaKey: false
+    //   }
+    // },
     home: {
       key: "a",
       modifiers: {

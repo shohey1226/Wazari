@@ -106,13 +106,10 @@ class Browser extends Component<Props, State> {
 
   pressCloseTab(i) {
     const { dispatch, sites } = this.props;
-    dispatch(closeTab(i));
     let newSites = sites.slice();
     newSites.splice(i, 1);
-    if (newSites.length > 0) {
-      let focusedIndex = newSites.length - 1;
-      dispatch(selectTab(focusedIndex));
-    }
+    const focusedIndex = newSites.length > 0 ? newSites.length - 1 : null;
+    dispatch(closeTab(i, focusedIndex));
   }
 
   // onPressTab(index) {

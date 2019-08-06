@@ -28,10 +28,11 @@ export function addNewTab(url) {
   };
 }
 
-export function closeTab(index) {
+export function closeTab(index: number, focusedIndex: number | null) {
   return {
     type: CLOSE_TAB,
-    index: index
+    index: index,
+    focusedIndex: focusedIndex
   };
 }
 

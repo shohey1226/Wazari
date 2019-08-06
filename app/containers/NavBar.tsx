@@ -47,8 +47,8 @@ class NavBar extends Component<Props, IState, any> {
     const site = sites[activeTabIndex];
     const prevSite = prevProp.sites[prevProp.activeTabIndex];
     if (
-      activeTabIndex !== prevProp.activeTabIndex ||
-      site.url !== prevSite.url
+      site &&
+      (activeTabIndex !== prevProp.activeTabIndex || site.url !== prevSite.url)
     ) {
       this.setState({
         canGoBack: site.canGoBack,

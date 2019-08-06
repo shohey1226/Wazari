@@ -163,13 +163,10 @@ class TabWindow extends Component<Props, State, any> {
           this.webref.injectJavaScript(`sVimTab.commands.zoomPageOut()`);
           break;
         case "closeTab":
-          dispatch(closeTab(activeTabIndex));
           let newSites = sites.slice();
           newSites.splice(activeTabIndex, 1);
-          if (newSites.length > 0) {
-            let focusedIndex = newSites.length - 1;
-            dispatch(selectTab(focusedIndex));
-          }
+          let focusedIndex = newSites.length > 0 ? newSites.length - 1 : null;
+          dispatch(closeTab(activeTabIndex, focusedIndex));
           break;
       }
     }
