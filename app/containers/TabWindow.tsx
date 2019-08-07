@@ -158,6 +158,7 @@ class TabWindow extends Component<Props, State, any> {
           break;
         case "hitAHint":
           this.webref.injectJavaScript(`sVimHint.start()`);
+          this.webref.injectJavaScript(`document.activeElement.blur();`);
           break;
         case "scrollDown":
           this.webref.injectJavaScript(`sVimTab.commands.scrollDown()`);
@@ -260,9 +261,22 @@ class TabWindow extends Component<Props, State, any> {
 
   textTyping(data) {
     console.log(data);
+
+    // handle shift key to make it Uppercase
+    if (data.modifiers.shiftKey) {
+      if (data.key.match(/[a-z]/)) {
+        data.key = data.key.toUpperCase();
+      }
+    }
+
     switch (data.key) {
+      case "Esc":
+        this.webref.injectJavaScript(`document.activeElement.blur();`);
+        break;
       case "Backspace":
         this.webref.injectJavaScript(`deletePreviousChar()`);
+        break;
+      case "Tab":
         break;
       default:
         this.webref.injectJavaScript(`typingFromRN('${data.key}')`);
