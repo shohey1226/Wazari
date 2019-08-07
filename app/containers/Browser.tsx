@@ -24,14 +24,10 @@ import { selectSites } from "../selectors/ui";
 import { selectBrowserKeymap, selectModifiers } from "../selectors/keymap";
 import { addNewTab, selectTab, closeTab } from "../actions/ui";
 import keymapper from "../utils/Keymapper";
+import { KeyMode } from "../types/index.d";
 
 const { DAVKeyManager } = NativeModules;
 const DAVKeyManagerEmitter = new NativeEventEmitter(DAVKeyManager);
-
-enum KeyMode {
-  Direct,
-  KeyEvent
-}
 
 interface State {
   activeIndex: number;
@@ -124,7 +120,7 @@ class Browser extends Component<Props, State> {
   }
 
   renderTabs() {
-    const { sites } = this.props;
+    const { sites, keyMode } = this.props;
     let tabs = [];
     for (let i = 0; i < sites.length; i++) {
       const tabTitle = sites[i].title
@@ -150,7 +146,7 @@ class Browser extends Component<Props, State> {
             </TabHeading>
           }
         >
-          <TabWindow url={sites[i].url} tabNumber={i} />
+          <TabWindow url={sites[i].url} tabNumber={i} keyMode={keyMode} />
         </Tab>
       );
     }

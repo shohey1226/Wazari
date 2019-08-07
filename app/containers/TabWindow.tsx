@@ -12,6 +12,7 @@ import sVim from "../utils/sVim";
 import { selectBrowserKeymap, selectModifiers } from "../selectors/keymap";
 import { addNewTab, selectTab, updateSite, closeTab } from "../actions/ui";
 import { selectSites } from "../selectors/ui";
+import { KeyMode } from "../types/index.d";
 
 const { DAVKeyManager } = NativeModules;
 const DAVKeyManagerEmitter = new NativeEventEmitter(DAVKeyManager);
@@ -27,6 +28,7 @@ interface Props {
   activeTabIndex: number;
   tabNumber: number;
   homeUrl: string;
+  keyMode: KeyMode;
 }
 
 class TabWindow extends Component<Props, State, any> {
@@ -59,7 +61,11 @@ class TabWindow extends Component<Props, State, any> {
       ),
       DAVKeyManagerEmitter.addListener("RNKeyEvent", data => {
         if (this.state.isActive) {
-          this.typing(data);
+          if (this.props.keyMode === KeyMode.Terminal) {
+            this.typing(data);
+          } else if (this.props.keyMode === KeyMode.Direct) {
+            this.typingToInput(data);
+          }
         }
       })
     );
@@ -108,6 +114,7 @@ class TabWindow extends Component<Props, State, any> {
       this.state.isActive &&
       this.state.isLoadingJSInjection === false
     ) {
+      console.log(event);
       switch (event.action) {
         case "home":
           this.webref.injectJavaScript(`cursorToBeginning()`);
@@ -185,7 +192,6 @@ class TabWindow extends Component<Props, State, any> {
   };
 
   typing(data) {
-    //console.log(data);
     let charCode;
     let modifiers = Object.assign({}, data.modifiers);
     switch (data.key) {
@@ -249,6 +255,11 @@ class TabWindow extends Component<Props, State, any> {
         `simulateKeyDown(window.term.textarea, ${charCode}, '${modifiersStr}')`
       );
     }
+  }
+
+  typingToInput(data) {
+    console.log(data);
+    this.webref.injectJavaScript(`typingFromRN('${data.key}')`);
   }
 
   onLoadEnd(syntheticEvent) {
@@ -514,6 +525,12 @@ function pasteFromRN(content) {
   var el = document.activeElement;   
   var value = el.value;    
   el.value = value + content;
+}
+
+function typingFromRN(key){
+  var el = document.activeElement;   
+  var value = el.value;    
+  el.value = value + key;
 }
 
 window.ReactNativeWebView.postMessage(JSON.stringify({isLoading: false, postFor: "jsloading"}))

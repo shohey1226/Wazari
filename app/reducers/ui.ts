@@ -9,11 +9,7 @@ import {
   TOGGLE_BACK
 } from "../actions/ui";
 import { Map, fromJS } from "immutable";
-
-enum KeyMode {
-  Direct,
-  KeyEvent
-}
+import { KeyMode } from "../types/index.d";
 
 type Site = {
   url: string;
@@ -58,7 +54,7 @@ export default function ui(state = initialState, action) {
           state.get("sites").getIn([action.index, "url"])
         )
       ) {
-        mode = KeyMode.KeyEvent;
+        mode = KeyMode.Terminal;
       }
       return state.set("activeTabIndex", action.index).set("keyMode", mode);
     case CLOSE_TAB:
