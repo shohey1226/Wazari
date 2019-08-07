@@ -12,6 +12,7 @@ import sVim from "../utils/sVim";
 import { selectBrowserKeymap, selectModifiers } from "../selectors/keymap";
 import { addNewTab, selectTab, updateSite, closeTab } from "../actions/ui";
 import { selectSites } from "../selectors/ui";
+import { KeyMode } from "../types/index.d";
 
 const { DAVKeyManager } = NativeModules;
 const DAVKeyManagerEmitter = new NativeEventEmitter(DAVKeyManager);
@@ -27,6 +28,7 @@ interface Props {
   activeTabIndex: number;
   tabNumber: number;
   homeUrl: string;
+  keyMode: KeyMode;
 }
 
 class TabWindow extends Component<Props, State, any> {
@@ -59,7 +61,11 @@ class TabWindow extends Component<Props, State, any> {
       ),
       DAVKeyManagerEmitter.addListener("RNKeyEvent", data => {
         if (this.state.isActive) {
-          this.typing(data);
+          if (this.props.keyMode === KeyMode.Terminal) {
+            this.typing(data);
+          } else if (this.props.keyMode === KeyMode.Text) {
+            this.textTyping(data);
+          }
         }
       })
     );
@@ -108,6 +114,7 @@ class TabWindow extends Component<Props, State, any> {
       this.state.isActive &&
       this.state.isLoadingJSInjection === false
     ) {
+      console.log(event);
       switch (event.action) {
         case "home":
           this.webref.injectJavaScript(`cursorToBeginning()`);
@@ -151,6 +158,7 @@ class TabWindow extends Component<Props, State, any> {
           break;
         case "hitAHint":
           this.webref.injectJavaScript(`sVimHint.start()`);
+          this.webref.injectJavaScript(`document.activeElement.blur();`);
           break;
         case "scrollDown":
           this.webref.injectJavaScript(`sVimTab.commands.scrollDown()`);
@@ -185,7 +193,7 @@ class TabWindow extends Component<Props, State, any> {
   };
 
   typing(data) {
-    //console.log(data);
+    console.log("terminal input", data);
     let charCode;
     let modifiers = Object.assign({}, data.modifiers);
     switch (data.key) {
@@ -248,6 +256,30 @@ class TabWindow extends Component<Props, State, any> {
       this.webref.injectJavaScript(
         `simulateKeyDown(window.term.textarea, ${charCode}, '${modifiersStr}')`
       );
+    }
+  }
+
+  textTyping(data) {
+    console.log(data);
+
+    // handle shift key to make it Uppercase
+    if (data.modifiers.shiftKey) {
+      if (data.key.match(/[a-z]/)) {
+        data.key = data.key.toUpperCase();
+      }
+    }
+
+    switch (data.key) {
+      case "Esc":
+        this.webref.injectJavaScript(`document.activeElement.blur();`);
+        break;
+      case "Backspace":
+        this.webref.injectJavaScript(`deletePreviousChar()`);
+        break;
+      case "Tab":
+        break;
+      default:
+        this.webref.injectJavaScript(`typingFromRN('${data.key}')`);
     }
   }
 
@@ -327,29 +359,15 @@ class TabWindow extends Component<Props, State, any> {
 }
 
 function mapStateToProps(state, ownProps) {
-  // const activeWindow = state.navigation.get("activeWindow");
-  // const isFullScreen = state.navigation.get("isFullScreen");
-  // const isLandscape = state.navigation.get("isLandscape");
-  // const appState = state.navigation.get("appState");
-  // const isHelp = state.navigation.get("isHelp");
   const keymap = selectBrowserKeymap(state);
   const modifiers = selectModifiers(state);
   const activeTabIndex = state.ui.get("activeTabIndex");
-  // const isUpdatingUrlForATS = state.browser.get("isUpdatingUrlForATS");
   const sites = selectSites(state);
   const keyMode = state.ui.get("keyMode");
   const backToggled = state.ui.get("backToggled");
   const forwardToggled = state.ui.get("forwardToggled");
   const homeUrl = state.user.get("homeUrl");
-  // const {
-  //   fontSize: fontSize,
-  //   isSecured: isSecured,
-  //   browserWidth: browserWidth,
-  //   homePage: homePage
-  // } = selectCurrentConfig(state);
   return {
-    // activeWindow,
-    // isHelp,
     backToggled,
     forwardToggled,
     keymap,
@@ -358,14 +376,6 @@ function mapStateToProps(state, ownProps) {
     activeTabIndex,
     keyMode,
     homeUrl
-    // fontSize,
-    // isFullScreen,
-    // isSecured,
-    // isUpdatingUrlForATS,
-    // appState,
-    // browserWidth,
-    // isLandscape,
-    // homePage
   };
 }
 
@@ -514,6 +524,12 @@ function pasteFromRN(content) {
   var el = document.activeElement;   
   var value = el.value;    
   el.value = value + content;
+}
+
+function typingFromRN(key){
+  var el = document.activeElement;   
+  var value = el.value;    
+  el.value = value + key;
 }
 
 window.ReactNativeWebView.postMessage(JSON.stringify({isLoading: false, postFor: "jsloading"}))

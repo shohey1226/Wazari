@@ -15,10 +15,10 @@
 - (id)init
 {
   NSLog(@"init DVAApplication now");
-  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(activeWindowReceived:) name:@"activeWindow" object:nil];
-  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(desktopKeymapReceived:) name:@"desktopKeymap" object:nil];
+  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(activeModeReceived:) name:@"activeMode" object:nil];
+  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(appKeymapReceived:) name:@"appKeymap" object:nil];
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(browserKeymapReceived:) name:@"browserKeymap" object:nil];
-  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(terminalKeymapReceived:) name:@"terminalKeymap" object:nil];
+  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(inputKeymapReceived:) name:@"inputKeymap" object:nil];
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(turnOnKeymapReceived:) name:@"turnOnKeymap" object:nil];
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(turnOffKeymapReceived:) name:@"turnOffKeymap" object:nil];
   self = [super init];
@@ -27,20 +27,20 @@
 
 - (NSArray<NSString *> *)supportedEvents
 {
-  return @[@"activeWindow", @"desktopKeymap", @"browserKeymap"];
+  return @[@"activeMode", @"appKeymap", @"browserKeymap"];
 }
 
-- (void)activeWindowReceived:(NSNotification *)notification
+- (void)activeModeReceived:(NSNotification *)notification
 {
-  NSLog(@"Notification - You recieved window!");
-  _currentWindow = notification.userInfo[@"windowName"];
-  NSLog(@"window: %@", _currentWindow);
+  NSLog(@"Notification - You recieved mode!");
+  _currentMode = notification.userInfo[@"modeName"];
+  NSLog(@"mode: %@", _currentMode);
 }
 
-- (void)desktopKeymapReceived:(NSNotification *)notification
+- (void)appKeymapReceived:(NSNotification *)notification
 {
-  NSLog(@"Notification - You recieved desktopKeymap!");
-  _desktopKeymap = notification.userInfo[@"desktopKeymap"];
+  NSLog(@"Notification - You recieved appKeymap!");
+  _appKeymap = notification.userInfo[@"appKeymap"];
 }
 
 - (void)browserKeymapReceived:(NSNotification *)notification
@@ -49,10 +49,10 @@
   _browserKeymap = notification.userInfo[@"browserKeymap"];
 }
 
-- (void)terminalKeymapReceived:(NSNotification *)notification
+- (void)inputKeymapReceived:(NSNotification *)notification
 {
-  NSLog(@"Notification - You recieved terminalKeymap!");
-  _terminalKeymap = notification.userInfo[@"terminalKeymap"];
+  NSLog(@"Notification - You recieved inputKeymap!");
+  _inputKeymap = notification.userInfo[@"inputKeymap"];
 }
 
 - (void) turnOnKeymapReceived:(NSNotification *)notification
@@ -73,16 +73,16 @@
 
 
 // keymap is set on RN side. When there is key set, then execute the handleCommand.
-- (NSMutableArray *)buildDAKeymap :(NSString*)window
+- (NSMutableArray *)buildDAKeymap :(NSString*)mode
 {
   NSDictionary* _keymap;
-  if([window  isEqual: @"desktop"]){
-    _keymap = _desktopKeymap;
-  }else if([window  isEqual: @"browser"]){
+  if([mode isEqual: @"app"]){
+    _keymap = _appKeymap;
+  }else if([mode isEqual: @"browser"]){
     _keymap = _browserKeymap;
   }
-  else if([window  isEqual: @"terminal"]){
-    _keymap = _terminalKeymap;
+  else if([mode isEqual: @"input"]){
+    _keymap = _inputKeymap;
   }
   
   NSMutableArray *_commands = [[NSMutableArray alloc] init];
@@ -91,169 +91,168 @@
     NSString* key = keyModArray[0];
     NSString* modStr = keyModArray[1];
     NSInteger intMod = [[modStr stringByTrimmingCharactersInSet:[[NSCharacterSet decimalDigitCharacterSet] invertedSet]] intValue];
-    if([window  isEqual: @"desktop"]){
-      [_commands addObject:[UIKeyCommand keyCommandWithInput:key modifierFlags:intMod action:@selector(handleDesktopCommand:)]];
-    }else if([window  isEqual: @"browser"]){
+    if([mode  isEqual: @"app"]){
+      [_commands addObject:[UIKeyCommand keyCommandWithInput:key modifierFlags:intMod action:@selector(handleAppCommand:)]];
+    }else if([mode  isEqual: @"browser"]){
       [_commands addObject:[UIKeyCommand keyCommandWithInput:key modifierFlags:intMod action:@selector(handleBrowserCommand:)]];
-    }else if([window  isEqual: @"terminal"]){
-      [_commands addObject:[UIKeyCommand keyCommandWithInput:key modifierFlags:intMod action:@selector(handleTerminalCommand:)]];
+    }else if([mode  isEqual: @"input"]){
+      [_commands addObject:[UIKeyCommand keyCommandWithInput:key modifierFlags:intMod action:@selector(handleInputCommand:)]];
     }
   }
   
   return _commands;
 }
 
-// Override keyCommands to handle shortcut or others
-// _keymapEnabled: boolean to turn on/off keymapping
-// buildDAKeymap(desktop/browser) to set up keymaps and execute handle*Command funtion
-// If activeWindow is not browser, then all keys is changed to push back to RN side - Terminal
+/* ============================================================================================================
+This is main function for keymapping - API to call key notification to RN side.
+buildDAKeymap(app/browser/input) to set up keymaps and execute handle*Command funtion listed in reducers/keymap
+Browser Mode = App + Browser + Input
+Input Mode - App + Input
+=============================================================================================================== */
 - (NSArray *)keyCommands {
 
+  //_keymapEnabled: boolean to turn on/off keymapping
   if(_keymapEnabled == NO){
     return [NSArray array];
   }
   
-  NSMutableSet *desktopKeymapSet = [NSMutableSet setWithArray: [self buildDAKeymap :@"desktop"]];
-
-  if([_currentWindow  isEqual: @"browser"]){
-    [desktopKeymapSet addObjectsFromArray:  [self buildDAKeymap :@"browser"]];
-    return [desktopKeymapSet allObjects];
-  }else{
+  // *appKeymapSet is return objects to catch keys
+  // app mode doesn't have anything for now - 2019 Aug 7
+  NSMutableSet *appKeymapSet = [NSMutableSet setWithArray: [self buildDAKeymap :@"app"]];
+  
+  // If it's browser mode, only browser keymap
+  if([_currentMode isEqual: @"browser"]){
+    [appKeymapSet addObjectsFromArray:  [self buildDAKeymap :@"browser"]];
+    return [appKeymapSet allObjects];
     
-
-    if(!_commands){
-
-      // https://github.com/kishikawakatsumi/KeyboardShortcuts/blob/master/KeyCommands/ViewController.m
-      _commands = [[NSMutableArray alloc] init];
-      NSString *characters = @"`~!@#$%^&*()_+{}|\":?><1234567890-=qwertyuiop[]asdfghjkl;'zxcvbnm, ./\\";
-      for (NSInteger i = 0; i < characters.length; i++) {
-        NSString *input = [characters substringWithRange:NSMakeRange(i, 1)];
-        
-        /* Caps Lock */
-        [_commands addObject:[UIKeyCommand keyCommandWithInput:input modifierFlags:UIKeyModifierAlphaShift action:@selector(handleCommand:)]];
-        /* Shift */
-        // [_commands addObject:[UIKeyCommand keyCommandWithInput:input modifierFlags:UIKeyModifierShift action:@selector(handleCommand:)]];
-        /* Control */
-        [_commands addObject:[UIKeyCommand keyCommandWithInput:input modifierFlags:UIKeyModifierControl action:@selector(handleCommand:)]];
-        /* Option */
-        [_commands addObject:[UIKeyCommand keyCommandWithInput:input modifierFlags:UIKeyModifierAlternate action:@selector(handleCommand:)]];
-        /* Command */
-        [_commands addObject:[UIKeyCommand keyCommandWithInput:input modifierFlags:UIKeyModifierCommand action:@selector(handleCommand:)]];
-        /* Control + Option(Alt) */
-        [_commands addObject:[UIKeyCommand keyCommandWithInput:input modifierFlags:UIKeyModifierControl | UIKeyModifierAlternate action:@selector(handleCommand:)]];
-        /* Control + Command */
-        [_commands addObject:[UIKeyCommand keyCommandWithInput:input modifierFlags:UIKeyModifierControl | UIKeyModifierCommand action:@selector(handleCommand:)]];
-        /* Shift + Command */
-        [_commands addObject:[UIKeyCommand keyCommandWithInput:input modifierFlags:UIKeyModifierShift | UIKeyModifierCommand action:@selector(handleCommand:)]];
-        /* Shift + Control */
-        [_commands addObject:[UIKeyCommand keyCommandWithInput:input modifierFlags:UIKeyModifierShift | UIKeyModifierControl action:@selector(handleCommand:)]];
-        /* Option(Alt) + Command */
-        [_commands addObject:[UIKeyCommand keyCommandWithInput:input modifierFlags:UIKeyModifierAlternate | UIKeyModifierCommand action:@selector(handleCommand:)]];
-        /* Control + Option(Alt) + Command */
-        [_commands addObject:[UIKeyCommand keyCommandWithInput:input modifierFlags:UIKeyModifierControl | UIKeyModifierAlternate | UIKeyModifierCommand action:@selector(handleCommand:)]];
-        /* No modifier */
-        [_commands addObject:[UIKeyCommand keyCommandWithInput:input modifierFlags:kNilOptions action:@selector(handleCommand:)]];
-      }
-      
-      // shift + alphabet taking care separately
-      NSString *alphabets = @"qwertyuiopasdfghjklzxcvbnm";
-      for (NSInteger i = 0; i < alphabets.length; i++) {
-        NSString *alphabet = [alphabets substringWithRange:NSMakeRange(i, 1)];
-        /* Shift */
-        [_commands addObject:[UIKeyCommand keyCommandWithInput:alphabet modifierFlags:UIKeyModifierShift action:@selector(handleCommand:)]];
-      }
-      
-      /* Delete */
-      [_commands addObject:[UIKeyCommand keyCommandWithInput:@"\b" modifierFlags:kNilOptions action:@selector(handleCommand:)]];
-      /* Alt + Delete */
-      [_commands addObject:[UIKeyCommand keyCommandWithInput:@"\b" modifierFlags:UIKeyModifierAlternate action:@selector(handleCommand:)]];
-      
-      /* Tab */
-      [_commands addObject:[UIKeyCommand keyCommandWithInput:@"\t" modifierFlags:kNilOptions action:@selector(handleCommand:)]];
-      /* Tab + Option(Alt) */
-      [_commands addObject:[UIKeyCommand keyCommandWithInput:@"\t" modifierFlags:UIKeyModifierAlternate action:@selector(handleCommand:)]];
-      /* Tab + Control */
-      [_commands addObject:[UIKeyCommand keyCommandWithInput:@"\t" modifierFlags:UIKeyModifierControl action:@selector(handleCommand:)]];
-      /* Tab + Shift */
-      [_commands addObject:[UIKeyCommand keyCommandWithInput:@"\t" modifierFlags:UIKeyModifierShift action:@selector(handleCommand:)]];
-      /* Tab + Control + Shift */
-      [_commands addObject:[UIKeyCommand keyCommandWithInput:@"\t" modifierFlags:UIKeyModifierShift | UIKeyModifierControl action:@selector(handleCommand:)]];
-      
-      /* Enter */
-      [_commands addObject:[UIKeyCommand keyCommandWithInput:@"\r" modifierFlags:kNilOptions action:@selector(handleCommand:)]];
-      
-      /* Up */
-      [_commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputUpArrow modifierFlags:kNilOptions action:@selector(handleCommand:)]];
-      /* Up + Option(Alt) + Command */
-      [_commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputUpArrow modifierFlags:UIKeyModifierAlternate | UIKeyModifierCommand action:@selector(handleCommand:)]];
-      /* Up + Option(Alt) + Control */
-      [_commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputUpArrow modifierFlags:UIKeyModifierAlternate | UIKeyModifierControl action:@selector(handleCommand:)]];
-      /* Up + Option(Alt) + Control + Shift */
-      [_commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputUpArrow modifierFlags:UIKeyModifierAlternate | UIKeyModifierControl | UIKeyModifierShift action:@selector(handleCommand:)]];
-      /* Up + Shift */
-      [_commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputUpArrow modifierFlags:UIKeyModifierShift action:@selector(handleCommand:)]];
-      /* Up + Alt + Shift */
-      [_commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputUpArrow modifierFlags:UIKeyModifierShift | UIKeyModifierAlternate action:@selector(handleCommand:)]];
-      /* Up + Option(Alt) */
-      [_commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputUpArrow modifierFlags:UIKeyModifierAlternate action:@selector(handleCommand:)]];
-      
-      /* Down */
-      [_commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputDownArrow modifierFlags:kNilOptions action:@selector(handleCommand:)]];
-      /* Down + Option(Alt) + Command */
-      [_commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputDownArrow modifierFlags:UIKeyModifierAlternate | UIKeyModifierCommand action:@selector(handleCommand:)]];
-      /* Down + Option(Alt) + Control */
-      [_commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputDownArrow modifierFlags:UIKeyModifierAlternate | UIKeyModifierControl action:@selector(handleCommand:)]];
-      /* Down + Option(Alt) + Control + Shift */
-      [_commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputDownArrow modifierFlags:UIKeyModifierAlternate | UIKeyModifierControl | UIKeyModifierShift action:@selector(handleCommand:)]];
-      /* Down + Shift */
-      [_commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputDownArrow modifierFlags:UIKeyModifierShift action:@selector(handleCommand:)]];
-      /* Alt + Down + Shift */
-      [_commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputDownArrow modifierFlags:UIKeyModifierShift | UIKeyModifierAlternate action:@selector(handleCommand:)]];
-      /* Down + Command */
-      [_commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputDownArrow modifierFlags:UIKeyModifierCommand action:@selector(handleCommand:)]];
-      
-      /* Left */
-      [_commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputLeftArrow modifierFlags:kNilOptions action:@selector(handleCommand:)]];
-      /* Left + Option(Alt) + Command */
-      [_commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputLeftArrow modifierFlags:UIKeyModifierAlternate | UIKeyModifierCommand action:@selector(handleCommand:)]];
-      /* Left + Shift */
-      [_commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputLeftArrow modifierFlags:UIKeyModifierShift action:@selector(handleCommand:)]];
-      /* Left + Option(Alt) */
-      [_commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputLeftArrow modifierFlags:UIKeyModifierAlternate action:@selector(handleCommand:)]];
-      
-      /* Right */
-      [_commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputRightArrow modifierFlags:kNilOptions action:@selector(handleCommand:)]];
-      /* Right + Option(Alt) + Command */
-      [_commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputRightArrow modifierFlags:UIKeyModifierAlternate | UIKeyModifierCommand action:@selector(handleCommand:)]];
-      /* Right + Shift */
-      [_commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputRightArrow modifierFlags:UIKeyModifierShift action:@selector(handleCommand:)]];
-      /* Right + Option(Alt) */
-      [_commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputRightArrow modifierFlags:UIKeyModifierAlternate action:@selector(handleCommand:)]];
-      
-      
-      /* Esc */
-      [_commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputEscape modifierFlags:kNilOptions action:@selector(handleCommand:)]];
-      
-    }
-    [desktopKeymapSet addObjectsFromArray:  _commands];
-    
-//    if([_currentWindow  isEqual: @"editor"]){
-//      [desktopKeymapSet addObjectsFromArray:  [self buildDAKeymap :@"editor"]];
-//    } else if([_currentWindow  isEqual: @"terminal"]){
-//      [desktopKeymapSet addObjectsFromArray:  [self buildDAKeymap :@"terminal"]];
-//    }
-    
-    
-    return [desktopKeymapSet allObjects];
-    //return _commands;
+  // If it's text mode, then, browser and input keymap
+  } else if([_currentMode isEqual: @"text"]){
+    [appKeymapSet addObjectsFromArray:  [self buildDAKeymap :@"browser"]];
   }
+
+  // keymap for input - cache as it's long list of hooks
+  if(!_commands){
+
+    // https://github.com/kishikawakatsumi/KeyboardShortcuts/blob/master/KeyCommands/ViewController.m
+    _commands = [[NSMutableArray alloc] init];
+    NSString *characters = @"`~!@#$%^&*()_+{}|\":?><1234567890-=qwertyuiop[]asdfghjkl;'zxcvbnm, ./\\";
+    for (NSInteger i = 0; i < characters.length; i++) {
+      NSString *input = [characters substringWithRange:NSMakeRange(i, 1)];
+      
+      /* Caps Lock */
+      [_commands addObject:[UIKeyCommand keyCommandWithInput:input modifierFlags:UIKeyModifierAlphaShift action:@selector(handleCommand:)]];
+      /* Shift */
+      // [_commands addObject:[UIKeyCommand keyCommandWithInput:input modifierFlags:UIKeyModifierShift action:@selector(handleCommand:)]];
+      /* Control */
+      [_commands addObject:[UIKeyCommand keyCommandWithInput:input modifierFlags:UIKeyModifierControl action:@selector(handleCommand:)]];
+      /* Option */
+      [_commands addObject:[UIKeyCommand keyCommandWithInput:input modifierFlags:UIKeyModifierAlternate action:@selector(handleCommand:)]];
+      /* Command */
+      [_commands addObject:[UIKeyCommand keyCommandWithInput:input modifierFlags:UIKeyModifierCommand action:@selector(handleCommand:)]];
+      /* Control + Option(Alt) */
+      [_commands addObject:[UIKeyCommand keyCommandWithInput:input modifierFlags:UIKeyModifierControl | UIKeyModifierAlternate action:@selector(handleCommand:)]];
+      /* Control + Command */
+      [_commands addObject:[UIKeyCommand keyCommandWithInput:input modifierFlags:UIKeyModifierControl | UIKeyModifierCommand action:@selector(handleCommand:)]];
+      /* Shift + Command */
+      [_commands addObject:[UIKeyCommand keyCommandWithInput:input modifierFlags:UIKeyModifierShift | UIKeyModifierCommand action:@selector(handleCommand:)]];
+      /* Shift + Control */
+      [_commands addObject:[UIKeyCommand keyCommandWithInput:input modifierFlags:UIKeyModifierShift | UIKeyModifierControl action:@selector(handleCommand:)]];
+      /* Option(Alt) + Command */
+      [_commands addObject:[UIKeyCommand keyCommandWithInput:input modifierFlags:UIKeyModifierAlternate | UIKeyModifierCommand action:@selector(handleCommand:)]];
+      /* Control + Option(Alt) + Command */
+      [_commands addObject:[UIKeyCommand keyCommandWithInput:input modifierFlags:UIKeyModifierControl | UIKeyModifierAlternate | UIKeyModifierCommand action:@selector(handleCommand:)]];
+      /* No modifier */
+      [_commands addObject:[UIKeyCommand keyCommandWithInput:input modifierFlags:kNilOptions action:@selector(handleCommand:)]];
+    }
+    
+    // shift + alphabet taking care separately
+    NSString *alphabets = @"qwertyuiopasdfghjklzxcvbnm";
+    for (NSInteger i = 0; i < alphabets.length; i++) {
+      NSString *alphabet = [alphabets substringWithRange:NSMakeRange(i, 1)];
+      /* Shift */
+      [_commands addObject:[UIKeyCommand keyCommandWithInput:alphabet modifierFlags:UIKeyModifierShift action:@selector(handleCommand:)]];
+    }
+    
+    /* Delete */
+    [_commands addObject:[UIKeyCommand keyCommandWithInput:@"\b" modifierFlags:kNilOptions action:@selector(handleCommand:)]];
+    /* Alt + Delete */
+    [_commands addObject:[UIKeyCommand keyCommandWithInput:@"\b" modifierFlags:UIKeyModifierAlternate action:@selector(handleCommand:)]];
+    
+    /* Tab */
+    [_commands addObject:[UIKeyCommand keyCommandWithInput:@"\t" modifierFlags:kNilOptions action:@selector(handleCommand:)]];
+    /* Tab + Option(Alt) */
+    [_commands addObject:[UIKeyCommand keyCommandWithInput:@"\t" modifierFlags:UIKeyModifierAlternate action:@selector(handleCommand:)]];
+    /* Tab + Control */
+    [_commands addObject:[UIKeyCommand keyCommandWithInput:@"\t" modifierFlags:UIKeyModifierControl action:@selector(handleCommand:)]];
+    /* Tab + Shift */
+    [_commands addObject:[UIKeyCommand keyCommandWithInput:@"\t" modifierFlags:UIKeyModifierShift action:@selector(handleCommand:)]];
+    /* Tab + Control + Shift */
+    [_commands addObject:[UIKeyCommand keyCommandWithInput:@"\t" modifierFlags:UIKeyModifierShift | UIKeyModifierControl action:@selector(handleCommand:)]];
+    
+    /* Enter */
+    [_commands addObject:[UIKeyCommand keyCommandWithInput:@"\r" modifierFlags:kNilOptions action:@selector(handleCommand:)]];
+    
+    /* Up */
+    [_commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputUpArrow modifierFlags:kNilOptions action:@selector(handleCommand:)]];
+    /* Up + Option(Alt) + Command */
+    [_commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputUpArrow modifierFlags:UIKeyModifierAlternate | UIKeyModifierCommand action:@selector(handleCommand:)]];
+    /* Up + Option(Alt) + Control */
+    [_commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputUpArrow modifierFlags:UIKeyModifierAlternate | UIKeyModifierControl action:@selector(handleCommand:)]];
+    /* Up + Option(Alt) + Control + Shift */
+    [_commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputUpArrow modifierFlags:UIKeyModifierAlternate | UIKeyModifierControl | UIKeyModifierShift action:@selector(handleCommand:)]];
+    /* Up + Shift */
+    [_commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputUpArrow modifierFlags:UIKeyModifierShift action:@selector(handleCommand:)]];
+    /* Up + Alt + Shift */
+    [_commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputUpArrow modifierFlags:UIKeyModifierShift | UIKeyModifierAlternate action:@selector(handleCommand:)]];
+    /* Up + Option(Alt) */
+    [_commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputUpArrow modifierFlags:UIKeyModifierAlternate action:@selector(handleCommand:)]];
+    
+    /* Down */
+    [_commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputDownArrow modifierFlags:kNilOptions action:@selector(handleCommand:)]];
+    /* Down + Option(Alt) + Command */
+    [_commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputDownArrow modifierFlags:UIKeyModifierAlternate | UIKeyModifierCommand action:@selector(handleCommand:)]];
+    /* Down + Option(Alt) + Control */
+    [_commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputDownArrow modifierFlags:UIKeyModifierAlternate | UIKeyModifierControl action:@selector(handleCommand:)]];
+    /* Down + Option(Alt) + Control + Shift */
+    [_commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputDownArrow modifierFlags:UIKeyModifierAlternate | UIKeyModifierControl | UIKeyModifierShift action:@selector(handleCommand:)]];
+    /* Down + Shift */
+    [_commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputDownArrow modifierFlags:UIKeyModifierShift action:@selector(handleCommand:)]];
+    /* Alt + Down + Shift */
+    [_commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputDownArrow modifierFlags:UIKeyModifierShift | UIKeyModifierAlternate action:@selector(handleCommand:)]];
+    /* Down + Command */
+    [_commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputDownArrow modifierFlags:UIKeyModifierCommand action:@selector(handleCommand:)]];
+    
+    /* Left */
+    [_commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputLeftArrow modifierFlags:kNilOptions action:@selector(handleCommand:)]];
+    /* Left + Option(Alt) + Command */
+    [_commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputLeftArrow modifierFlags:UIKeyModifierAlternate | UIKeyModifierCommand action:@selector(handleCommand:)]];
+    /* Left + Shift */
+    [_commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputLeftArrow modifierFlags:UIKeyModifierShift action:@selector(handleCommand:)]];
+    /* Left + Option(Alt) */
+    [_commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputLeftArrow modifierFlags:UIKeyModifierAlternate action:@selector(handleCommand:)]];
+    
+    /* Right */
+    [_commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputRightArrow modifierFlags:kNilOptions action:@selector(handleCommand:)]];
+    /* Right + Option(Alt) + Command */
+    [_commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputRightArrow modifierFlags:UIKeyModifierAlternate | UIKeyModifierCommand action:@selector(handleCommand:)]];
+    /* Right + Shift */
+    [_commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputRightArrow modifierFlags:UIKeyModifierShift action:@selector(handleCommand:)]];
+    /* Right + Option(Alt) */
+    [_commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputRightArrow modifierFlags:UIKeyModifierAlternate action:@selector(handleCommand:)]];
+    
+    /* Esc */
+    [_commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputEscape modifierFlags:kNilOptions action:@selector(handleCommand:)]];
+    
+  }
+  [appKeymapSet addObjectsFromArray:  _commands];
+  
+  return [appKeymapSet allObjects];
 
 }
 
-
-- (void)handleDesktopCommand:(UIKeyCommand *)command {
-  NSLog(@"handleDesktopCommand!!");
-  [self _handleDACommand:command :@"desktop"];
+- (void)handleAppCommand:(UIKeyCommand *)command {
+  NSLog(@"handleAppCommand!!");
+  [self _handleDACommand:command :@"app"];
 }
 
 - (void)handleBrowserCommand:(UIKeyCommand *)command {
@@ -261,25 +260,25 @@
   [self _handleDACommand:command :@"browser"];
 }
 
-- (void)handleTerminalCommand:(UIKeyCommand *)command {
-  NSLog(@"handleTerminalCommand!!");
-  [self _handleDACommand:command :@"terminal"];
+- (void)handleInputCommand:(UIKeyCommand *)command {
+  NSLog(@"handleInputCommand!!");
+  [self _handleDACommand:command :@"input"];
 }
 
 
-- (void)_handleDACommand:(UIKeyCommand *)command :(NSString*)window {
+- (void)_handleDACommand:(UIKeyCommand *)command :(NSString*)mode {
   NSLog(@"handleDACommand!!");
   UIKeyModifierFlags modifierFlags = command.modifierFlags;
   NSString *input = command.input;
   NSDictionary *_keymap;
   NSString *_notificatinName;
   
-  if([window  isEqual: @"browser"]){
+  if([mode isEqual: @"browser"]){
     _keymap = _browserKeymap;
     _notificatinName = @"BrowserKeyEvent";
-  }else if([window  isEqual: @"desktop"]){
-    _keymap = _desktopKeymap;
-    _notificatinName = @"DesktopKeyEvent";
+  }else if([mode isEqual: @"app"]){
+    _keymap = _appKeymap;
+    _notificatinName = @"AppKeyEvent";
   }
   
   for (NSString* keyMod in [_keymap allKeys]) {
@@ -360,7 +359,6 @@
   }
   
   NSLog(@"input: %@", input);
-  //NSLog(@"modifier: %@", modifierSymbols);
   NSLog(@"modifierDict: %@", modifierDict);
   NSLog(@"inputCharacterds: %@", inputCharacters);
   

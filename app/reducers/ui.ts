@@ -3,17 +3,12 @@ import {
   SELECT_TAB,
   UPDATE_SITE,
   CLOSE_TAB,
-  UPDATE_URL_FOR_ATS,
-  COMPLETED_TO_UPDATE_URL_FOR_ATS,
+  UPDATE_MODE,
   TOGGLE_FORWARD,
   TOGGLE_BACK
 } from "../actions/ui";
 import { Map, fromJS } from "immutable";
-
-enum KeyMode {
-  Direct,
-  KeyEvent
-}
+import { KeyMode } from "../types/index.d";
 
 type Site = {
   url: string;
@@ -33,7 +28,7 @@ export interface UiState extends Map<any, any> {
 const initialState: UiState = fromJS({
   sites: [],
   activeTabIndex: 0,
-  keyMode: KeyMode.Direct,
+  keyMode: KeyMode.Text,
   backToggled: false,
   forwardToggled: false
 });
@@ -52,13 +47,13 @@ export default function ui(state = initialState, action) {
         .set("sites", state.get("sites").push(Map({ url: action.url })))
         .set("activeTabIndex", state.get("sites").size);
     case SELECT_TAB:
-      mode = KeyMode.Direct;
+      mode = KeyMode.Text;
       if (
         /^https:\/\/www\.wazaterm\.com\/terminals\/\S+/.test(
           state.get("sites").getIn([action.index, "url"])
         )
       ) {
-        mode = KeyMode.KeyEvent;
+        mode = KeyMode.Terminal;
       }
       return state.set("activeTabIndex", action.index).set("keyMode", mode);
     case CLOSE_TAB:
@@ -68,9 +63,9 @@ export default function ui(state = initialState, action) {
     case SELECT_TAB:
       return state.set("activeTabIndex", action.index);
     case UPDATE_SITE:
-      mode = KeyMode.Direct;
+      mode = KeyMode.Text;
       if (/^https:\/\/www\.wazaterm\.com\/terminals\/\S+/.test(action.url)) {
-        mode = KeyMode.KeyEvent;
+        mode = KeyMode.Terminal;
       }
       return state
         .set(
@@ -85,17 +80,9 @@ export default function ui(state = initialState, action) {
         )
         .set("keyMode", mode);
 
-    case UPDATE_URL_FOR_ATS:
-      return state
-        .set(
-          "sites",
-          state.get("sites").update(action.index, site => {
-            return site.set("url", action.url);
-          })
-        )
-        .set("isUpdatingUrlForATS", true);
-    case COMPLETED_TO_UPDATE_URL_FOR_ATS:
-      return state.set("isUpdatingUrlForATS", false);
+    case UPDATE_MODE:
+      return state.set("keyMode", action.mode);
+
     // case LOGOUT:
     //   // make it default state
     //   return Object.assign({}, state, {

@@ -23,7 +23,7 @@ RCT_EXPORT_MODULE();
 {
   NSLog(@"init now");
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyEventReceived:) name:@"KeyEvent" object:nil];
-  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(desktopKeyEventReceived:) name:@"DesktopKeyEvent" object:nil];
+  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(appKeyEventReceived:) name:@"AppKeyEvent" object:nil];
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(browserKeyEventReceived:) name:@"BrowserKeyEvent" object:nil];
   _modifiers = @{@"metaKey": @"metaKey", @"capslockKey": @"capslockKey", @"altKey": @"altKey", @"ctrlKey": @"ctrlKey"}; // set default modifiers
   self = [super init];
@@ -32,13 +32,13 @@ RCT_EXPORT_MODULE();
 
 - (NSArray<NSString *> *)supportedEvents
 {
-  return @[@"RNKeyEvent", @"RNDesktopKeyEvent", @"RNBrowserKeyEvent"];
+  return @[@"RNKeyEvent", @"RNAppKeyEvent", @"RNBrowserKeyEvent"];
 }
 
 // Will be called when this module's first listener is added.
 -(void)startObserving {
   hasListeners = YES;
-  // Set up any upstream listeners or background tasks as necessary
+  // Set up any upstream listeners or background tasks as necessaryfha
 }
 
 // Will be called when this module's last listener is removed, or on dealloc.
@@ -47,11 +47,11 @@ RCT_EXPORT_MODULE();
   // Remove upstream listeners, stop unnecessary background tasks
 }
 
-- (void)desktopKeyEventReceived:(NSNotification *)notification
+- (void)appKeyEventReceived:(NSNotification *)notification
 {
   NSString *action = notification.userInfo[@"action"];
   if (hasListeners) {
-    [self sendEventWithName:@"RNDesktopKeyEvent" body:@{@"action": action}];
+    [self sendEventWithName:@"RNAppKeyEvent" body:@{@"action": action}];
   }
 }
 
@@ -63,7 +63,6 @@ RCT_EXPORT_MODULE();
   }
 }
 
-
 - (void)keyEventReceived:(NSNotification *)notification
 {
 
@@ -71,11 +70,11 @@ RCT_EXPORT_MODULE();
   NSString *key = notification.userInfo[@"key"];
   NSLog(@"key: %@", key);
   
-  // https://stackoverflow.com/questions/11193611/get-a-char-from-nsstring-and-convert-to-int
-//  char *cstring = [key UTF8String];
-//  int charcode = cstring[0];
-//  NSLog(@"int: %d", charcode);
-//  NSNumber *charCodeNumber = [NSNumber numberWithInt:charcode];
+// https://stackoverflow.com/questions/11193611/get-a-char-from-nsstring-and-convert-to-int
+// char *cstring = [key UTF8String];
+// int charcode = cstring[0];
+// NSLog(@"int: %d", charcode);
+// NSNumber *charCodeNumber = [NSNumber numberWithInt:charcode];
   
   NSDictionary *modifierDict = notification.userInfo[@"modifiers"]; // original from keyboard
   NSMutableDictionary *newModifierDict = [[NSMutableDictionary alloc] initWithDictionary:modifierDict]; // updated with modifier change on RN
@@ -113,17 +112,17 @@ RCT_EXPORT_METHOD(updateModifiers:(NSDictionary *)modifiers )
   NSLog(@"%@", _modifiers);
 }
 
-// Set window name using notification
-RCT_EXPORT_METHOD(setWindow:(NSString *)windowName)
+// Set Mode name using notification
+RCT_EXPORT_METHOD(setMode:(NSString *)modeName)
 {
-  NSDictionary *window = @{@"windowName": windowName};
-  [[NSNotificationCenter defaultCenter] postNotificationName:@"activeWindow" object:self userInfo:window];
+  NSDictionary *mode = @{@"modeName": modeName};
+  [[NSNotificationCenter defaultCenter] postNotificationName:@"activeMode" object:self userInfo:mode];
 }
 
-RCT_EXPORT_METHOD(setDesktopKeymap:(NSDictionary *)keymap)
+RCT_EXPORT_METHOD(setAppKeymap:(NSDictionary *)keymap)
 {
-  NSDictionary *desktopKeymap = @{@"desktopKeymap": keymap};
-  [[NSNotificationCenter defaultCenter] postNotificationName:@"desktopKeymap" object:self userInfo:desktopKeymap];
+  NSDictionary *appKeymap = @{@"appKeymap": keymap};
+  [[NSNotificationCenter defaultCenter] postNotificationName:@"appKeymap" object:self userInfo:appKeymap];
 }
 
 RCT_EXPORT_METHOD(setBrowserKeymap:(NSDictionary *)keymap)
@@ -132,17 +131,10 @@ RCT_EXPORT_METHOD(setBrowserKeymap:(NSDictionary *)keymap)
   [[NSNotificationCenter defaultCenter] postNotificationName:@"browserKeymap" object:self userInfo:browserKeymap];
 }
 
-//RCT_EXPORT_METHOD(setEditorKeymap:(NSDictionary *)keymap)
-//{
-//  NSDictionary *editorKeymap = @{@"editorKeymap": keymap};
-//  [[NSNotificationCenter defaultCenter] postNotificationName:@"editorKeymap" object:self userInfo:editorKeymap];
-//}
-//
-
-RCT_EXPORT_METHOD(setTerminalKeymap:(NSDictionary *)keymap)
+RCT_EXPORT_METHOD(setInputKeymap:(NSDictionary *)keymap)
 {
-  NSDictionary *terminalKeymap = @{@"terminalKeymap": keymap};
-  [[NSNotificationCenter defaultCenter] postNotificationName:@"terminalKeymap" object:self userInfo:terminalKeymap];
+  NSDictionary *inputKeymap = @{@"inputKeymap": keymap};
+  [[NSNotificationCenter defaultCenter] postNotificationName:@"inputKeymap" object:self userInfo:inputKeymap];
 }
 
 
