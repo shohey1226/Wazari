@@ -120,8 +120,13 @@ Input Mode - App + Input
   // app mode doesn't have anything for now - 2019 Aug 7
   NSMutableSet *appKeymapSet = [NSMutableSet setWithArray: [self buildDAKeymap :@"app"]];
   
-  // If it's browser mode, add the keys on the top of appKeymapSet
+  // If it's browser mode, only browser keymap
   if([_currentMode isEqual: @"browser"]){
+    [appKeymapSet addObjectsFromArray:  [self buildDAKeymap :@"browser"]];
+    return [appKeymapSet allObjects];
+    
+  // If it's text mode, then, browser and input keymap
+  } else if([_currentMode isEqual: @"text"]){
     [appKeymapSet addObjectsFromArray:  [self buildDAKeymap :@"browser"]];
   }
 

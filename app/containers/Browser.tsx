@@ -67,12 +67,31 @@ class Browser extends Component<Props, State> {
   }
 
   initKeymaps() {
-    const { keymap, modifiers } = this.props;
-    DAVKeyManager.setMode("browser");
-    DAVKeyManager.turnOnKeymap();
+    const { keymap, modifiers, keyMode } = this.props;
+    this.setMode(keyMode);
     DAVKeyManager.setBrowserKeymap(
       keymapper.convertToNativeFormat(keymap, modifiers)
     );
+  }
+
+  setMode(keyMode: KeyMode): void {
+    switch (keyMode) {
+      case KeyMode.Text:
+        DAVKeyManager.turnOnKeymap();
+        DAVKeyManager.setMode("text");
+        break;
+      case KeyMode.Terminal:
+        DAVKeyManager.turnOnKeymap();
+        DAVKeyManager.setMode("input");
+        break;
+      case KeyMode.Direct:
+        DAVKeyManager.turnOffKeymap();
+        break;
+      case KeyMode.Browser:
+        DAVKeyManager.turnOnKeymap();
+        DAVKeyManager.setMode("browser");
+        break;
+    }
   }
 
   componentDidUpdate(prevProp: Props) {
@@ -86,12 +105,9 @@ class Browser extends Component<Props, State> {
         }, 300);
       }
     }
+
     if (prevProp.keyMode !== keyMode) {
-      if (keyMode === KeyMode.Direct) {
-        DAVKeyManager.setMode("browser");
-      } else {
-        DAVKeyManager.setMode("input");
-      }
+      this.setMode(keyMode);
     }
   }
 

@@ -254,8 +254,8 @@ const defaultKeymap = {
       modifiers: {
         capslockKey: false,
         shiftKey: false,
-        altKey: true,
-        ctrlKey: false,
+        altKey: false,
+        ctrlKey: true,
         metaKey: false
       }
     }

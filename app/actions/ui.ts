@@ -1,13 +1,13 @@
+import { KeyMode } from "../types/index.d";
+
 export const ADD_NEW_TAB = "ADD_NEW_TAB";
 export const SELECT_TAB = "SELECT_TAB";
 export const UPDATE_SITE = "UPDATE_SITE";
 export const CLOSE_TAB = "CLOSE_TAB";
-export const COMPLETED_TO_UPDATE_URL_FOR_ATS =
-  "COMPLETED_TO_UPDATE_URL_FOR_ATS";
-export const UPDATE_URL_FOR_ATS = "UPDATE_URL_FOR_ATS";
 export const TOGGLE_FORWARD = "TOGGLE_FORWARD";
 export const TOGGLE_BACK = "TOGGLE_BACK";
 export const UPDATE_BACK_FORWARD = "UPDATE_BACK_FORWARD";
+export const UPDATE_MODE = "UPDATE_MODE";
 
 export function toggleForward() {
   return {
@@ -60,25 +60,11 @@ export function updateSite(
   };
 }
 
-export function updateUrlForATS(index, url) {
-  return (dispatch, getState) => {
-    dispatch(_updatingUrlForATS(index, url));
-    setTimeout(() => {
-      dispatch(_completedToUpdateUrlForATS());
-    }, 1);
+export function updateMode(mode: KeyMode) {
+  return {
+    type: UPDATE_MODE,
+    mode: mode
   };
 }
 
-function _updatingUrlForATS(index, url) {
-  return {
-    type: UPDATE_URL_FOR_ATS,
-    index: index,
-    url: url
-  };
-}
 
-function _completedToUpdateUrlForATS() {
-  return {
-    type: COMPLETED_TO_UPDATE_URL_FOR_ATS
-  };
-}

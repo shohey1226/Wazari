@@ -61,10 +61,10 @@ class TabWindow extends Component<Props, State, any> {
       ),
       DAVKeyManagerEmitter.addListener("RNKeyEvent", data => {
         if (this.state.isActive) {
-          if (this.props.keyMode === KeyMode.Input) {
+          if (this.props.keyMode === KeyMode.Terminal) {
             this.typing(data);
-          } else if (this.props.keyMode === KeyMode.Direct) {
-            this.typingToInput(data);
+          } else if (this.props.keyMode === KeyMode.Text) {
+            this.textTyping(data);
           }
         }
       })
@@ -258,9 +258,15 @@ class TabWindow extends Component<Props, State, any> {
     }
   }
 
-  typingToInput(data) {
+  textTyping(data) {
     console.log(data);
-    this.webref.injectJavaScript(`typingFromRN('${data.key}')`);
+    switch (data.key) {
+      case "Backspace":
+        this.webref.injectJavaScript(`deletePreviousChar()`);
+        break;
+      default:
+        this.webref.injectJavaScript(`typingFromRN('${data.key}')`);
+    }
   }
 
   onLoadEnd(syntheticEvent) {
@@ -339,29 +345,15 @@ class TabWindow extends Component<Props, State, any> {
 }
 
 function mapStateToProps(state, ownProps) {
-  // const activeWindow = state.navigation.get("activeWindow");
-  // const isFullScreen = state.navigation.get("isFullScreen");
-  // const isLandscape = state.navigation.get("isLandscape");
-  // const appState = state.navigation.get("appState");
-  // const isHelp = state.navigation.get("isHelp");
   const keymap = selectBrowserKeymap(state);
   const modifiers = selectModifiers(state);
   const activeTabIndex = state.ui.get("activeTabIndex");
-  // const isUpdatingUrlForATS = state.browser.get("isUpdatingUrlForATS");
   const sites = selectSites(state);
   const keyMode = state.ui.get("keyMode");
   const backToggled = state.ui.get("backToggled");
   const forwardToggled = state.ui.get("forwardToggled");
   const homeUrl = state.user.get("homeUrl");
-  // const {
-  //   fontSize: fontSize,
-  //   isSecured: isSecured,
-  //   browserWidth: browserWidth,
-  //   homePage: homePage
-  // } = selectCurrentConfig(state);
   return {
-    // activeWindow,
-    // isHelp,
     backToggled,
     forwardToggled,
     keymap,
@@ -370,14 +362,6 @@ function mapStateToProps(state, ownProps) {
     activeTabIndex,
     keyMode,
     homeUrl
-    // fontSize,
-    // isFullScreen,
-    // isSecured,
-    // isUpdatingUrlForATS,
-    // appState,
-    // browserWidth,
-    // isLandscape,
-    // homePage
   };
 }
 
