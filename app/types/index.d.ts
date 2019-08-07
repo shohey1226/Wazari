@@ -1,5 +1,6 @@
 //
 export enum KeyMode {
   Direct,
-  Terminal
+  Input,
+  Browser
 }

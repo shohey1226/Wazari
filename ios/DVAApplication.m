@@ -16,9 +16,9 @@
 {
   NSLog(@"init DVAApplication now");
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(activeModeReceived:) name:@"activeMode" object:nil];
-  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(desktopKeymapReceived:) name:@"desktopKeymap" object:nil];
+  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(appKeymapReceived:) name:@"appKeymap" object:nil];
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(browserKeymapReceived:) name:@"browserKeymap" object:nil];
-  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(terminalKeymapReceived:) name:@"terminalKeymap" object:nil];
+  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(inputKeymapReceived:) name:@"inputKeymap" object:nil];
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(turnOnKeymapReceived:) name:@"turnOnKeymap" object:nil];
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(turnOffKeymapReceived:) name:@"turnOffKeymap" object:nil];
   self = [super init];
@@ -27,7 +27,7 @@
 
 - (NSArray<NSString *> *)supportedEvents
 {
-  return @[@"activeMode", @"desktopKeymap", @"browserKeymap"];
+  return @[@"activeMode", @"appKeymap", @"browserKeymap"];
 }
 
 - (void)activeModeReceived:(NSNotification *)notification
@@ -37,10 +37,10 @@
   NSLog(@"mode: %@", _currentMode);
 }
 
-- (void)desktopKeymapReceived:(NSNotification *)notification
+- (void)appKeymapReceived:(NSNotification *)notification
 {
-  NSLog(@"Notification - You recieved desktopKeymap!");
-  _desktopKeymap = notification.userInfo[@"desktopKeymap"];
+  NSLog(@"Notification - You recieved appKeymap!");
+  _appKeymap = notification.userInfo[@"appKeymap"];
 }
 
 - (void)browserKeymapReceived:(NSNotification *)notification
@@ -49,10 +49,10 @@
   _browserKeymap = notification.userInfo[@"browserKeymap"];
 }
 
-- (void)terminalKeymapReceived:(NSNotification *)notification
+- (void)inputKeymapReceived:(NSNotification *)notification
 {
-  NSLog(@"Notification - You recieved terminalKeymap!");
-  _terminalKeymap = notification.userInfo[@"terminalKeymap"];
+  NSLog(@"Notification - You recieved inputKeymap!");
+  _inputKeymap = notification.userInfo[@"inputKeymap"];
 }
 
 - (void) turnOnKeymapReceived:(NSNotification *)notification
@@ -76,13 +76,13 @@
 - (NSMutableArray *)buildDAKeymap :(NSString*)mode
 {
   NSDictionary* _keymap;
-  if([mode isEqual: @"desktop"]){
-    _keymap = _desktopKeymap;
+  if([mode isEqual: @"app"]){
+    _keymap = _appKeymap;
   }else if([mode isEqual: @"browser"]){
     _keymap = _browserKeymap;
   }
-  else if([mode isEqual: @"terminal"]){
-    _keymap = _terminalKeymap;
+  else if([mode isEqual: @"input"]){
+    _keymap = _inputKeymap;
   }
   
   NSMutableArray *_commands = [[NSMutableArray alloc] init];
@@ -91,12 +91,12 @@
     NSString* key = keyModArray[0];
     NSString* modStr = keyModArray[1];
     NSInteger intMod = [[modStr stringByTrimmingCharactersInSet:[[NSCharacterSet decimalDigitCharacterSet] invertedSet]] intValue];
-    if([mode  isEqual: @"desktop"]){
-      [_commands addObject:[UIKeyCommand keyCommandWithInput:key modifierFlags:intMod action:@selector(handleDesktopCommand:)]];
+    if([mode  isEqual: @"app"]){
+      [_commands addObject:[UIKeyCommand keyCommandWithInput:key modifierFlags:intMod action:@selector(handleAppCommand:)]];
     }else if([mode  isEqual: @"browser"]){
       [_commands addObject:[UIKeyCommand keyCommandWithInput:key modifierFlags:intMod action:@selector(handleBrowserCommand:)]];
-    }else if([mode  isEqual: @"terminal"]){
-      [_commands addObject:[UIKeyCommand keyCommandWithInput:key modifierFlags:intMod action:@selector(handleTerminalCommand:)]];
+    }else if([mode  isEqual: @"input"]){
+      [_commands addObject:[UIKeyCommand keyCommandWithInput:key modifierFlags:intMod action:@selector(handleInputCommand:)]];
     }
   }
   
@@ -105,18 +105,18 @@
 
 // Override keyCommands to handle shortcut or others
 // _keymapEnabled: boolean to turn on/off keymapping
-// buildDAKeymap(desktop/browser) to set up keymaps and execute handle*Command funtion
-// If activeWindow is not browser, then all keys is changed to push back to RN side - Terminal
+// buildDAKeymap(app/browser) to set up keymaps and execute handle*Command funtion
+// If activeWindow is not browser, then all keys is changed to push back to RN side - Input
 - (NSArray *)keyCommands {
 
   if(_keymapEnabled == NO){
     return [NSArray array];
   }
   
-  NSMutableSet *desktopKeymapSet = [NSMutableSet setWithArray: [self buildDAKeymap :@"desktop"]];
+  NSMutableSet *appKeymapSet = [NSMutableSet setWithArray: [self buildDAKeymap :@"app"]];
   
   if([_currentMode  isEqual: @"browser"]){
-    [desktopKeymapSet addObjectsFromArray:  [self buildDAKeymap :@"browser"]];
+    [appKeymapSet addObjectsFromArray:  [self buildDAKeymap :@"browser"]];
   }
 
   if(!_commands){
@@ -233,16 +233,16 @@
     [_commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputEscape modifierFlags:kNilOptions action:@selector(handleCommand:)]];
     
   }
-  [desktopKeymapSet addObjectsFromArray:  _commands];
+  [appKeymapSet addObjectsFromArray:  _commands];
   
-  return [desktopKeymapSet allObjects];
+  return [appKeymapSet allObjects];
 
 }
 
 
-- (void)handleDesktopCommand:(UIKeyCommand *)command {
-  NSLog(@"handleDesktopCommand!!");
-  [self _handleDACommand:command :@"desktop"];
+- (void)handleAppCommand:(UIKeyCommand *)command {
+  NSLog(@"handleAppCommand!!");
+  [self _handleDACommand:command :@"app"];
 }
 
 - (void)handleBrowserCommand:(UIKeyCommand *)command {
@@ -250,9 +250,9 @@
   [self _handleDACommand:command :@"browser"];
 }
 
-- (void)handleTerminalCommand:(UIKeyCommand *)command {
-  NSLog(@"handleTerminalCommand!!");
-  [self _handleDACommand:command :@"terminal"];
+- (void)handleInputCommand:(UIKeyCommand *)command {
+  NSLog(@"handleInputCommand!!");
+  [self _handleDACommand:command :@"input"];
 }
 
 
@@ -266,9 +266,9 @@
   if([mode isEqual: @"browser"]){
     _keymap = _browserKeymap;
     _notificatinName = @"BrowserKeyEvent";
-  }else if([mode isEqual: @"desktop"]){
-    _keymap = _desktopKeymap;
-    _notificatinName = @"DesktopKeyEvent";
+  }else if([mode isEqual: @"app"]){
+    _keymap = _appKeymap;
+    _notificatinName = @"AppKeyEvent";
   }
   
   for (NSString* keyMod in [_keymap allKeys]) {

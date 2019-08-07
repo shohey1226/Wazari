@@ -90,7 +90,7 @@ class Browser extends Component<Props, State> {
       if (keyMode === KeyMode.Direct) {
         DAVKeyManager.setMode("browser");
       } else {
-        DAVKeyManager.setMode("terminal");
+        DAVKeyManager.setMode("input");
       }
     }
   }

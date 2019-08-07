@@ -10,10 +10,9 @@
 @interface DVAApplication : UIApplication {
   NSMutableArray *_commands;
   NSString *_currentMode;
-  NSDictionary *_desktopKeymap;
+  NSDictionary *_appKeymap;
   NSDictionary *_browserKeymap;
-//  NSDictionary *_editorKeymap;
-  NSDictionary *_terminalKeymap;
+  NSDictionary *_inputKeymap;
   BOOL _keymapEnabled;
 }
 @end

@@ -61,7 +61,7 @@ class TabWindow extends Component<Props, State, any> {
       ),
       DAVKeyManagerEmitter.addListener("RNKeyEvent", data => {
         if (this.state.isActive) {
-          if (this.props.keyMode === KeyMode.Terminal) {
+          if (this.props.keyMode === KeyMode.Input) {
             this.typing(data);
           } else if (this.props.keyMode === KeyMode.Direct) {
             this.typingToInput(data);
@@ -192,6 +192,7 @@ class TabWindow extends Component<Props, State, any> {
   };
 
   typing(data) {
+    console.log("terminal input", data);
     let charCode;
     let modifiers = Object.assign({}, data.modifiers);
     switch (data.key) {

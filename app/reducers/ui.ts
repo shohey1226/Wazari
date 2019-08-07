@@ -54,7 +54,7 @@ export default function ui(state = initialState, action) {
           state.get("sites").getIn([action.index, "url"])
         )
       ) {
-        mode = KeyMode.Terminal;
+        mode = KeyMode.Input;
       }
       return state.set("activeTabIndex", action.index).set("keyMode", mode);
     case CLOSE_TAB:
