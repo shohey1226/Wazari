@@ -103,22 +103,29 @@
   return _commands;
 }
 
-// Override keyCommands to handle shortcut or others
-// _keymapEnabled: boolean to turn on/off keymapping
-// buildDAKeymap(app/browser) to set up keymaps and execute handle*Command funtion
-// If activeWindow is not browser, then all keys is changed to push back to RN side - Input
+/* ============================================================================================================
+This is main function for keymapping - API to call key notification to RN side.
+buildDAKeymap(app/browser/input) to set up keymaps and execute handle*Command funtion listed in reducers/keymap
+Browser Mode = App + Browser + Input
+Input Mode - App + Input
+=============================================================================================================== */
 - (NSArray *)keyCommands {
 
+  //_keymapEnabled: boolean to turn on/off keymapping
   if(_keymapEnabled == NO){
     return [NSArray array];
   }
   
+  // *appKeymapSet is return objects to catch keys
+  // app mode doesn't have anything for now - 2019 Aug 7
   NSMutableSet *appKeymapSet = [NSMutableSet setWithArray: [self buildDAKeymap :@"app"]];
   
-  if([_currentMode  isEqual: @"browser"]){
+  // If it's browser mode, add the keys on the top of appKeymapSet
+  if([_currentMode isEqual: @"browser"]){
     [appKeymapSet addObjectsFromArray:  [self buildDAKeymap :@"browser"]];
   }
 
+  // keymap for input - cache as it's long list of hooks
   if(!_commands){
 
     // https://github.com/kishikawakatsumi/KeyboardShortcuts/blob/master/KeyCommands/ViewController.m
@@ -228,7 +235,6 @@
     /* Right + Option(Alt) */
     [_commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputRightArrow modifierFlags:UIKeyModifierAlternate action:@selector(handleCommand:)]];
     
-    
     /* Esc */
     [_commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputEscape modifierFlags:kNilOptions action:@selector(handleCommand:)]];
     
@@ -238,7 +244,6 @@
   return [appKeymapSet allObjects];
 
 }
-
 
 - (void)handleAppCommand:(UIKeyCommand *)command {
   NSLog(@"handleAppCommand!!");
@@ -349,7 +354,6 @@
   }
   
   NSLog(@"input: %@", input);
-  //NSLog(@"modifier: %@", modifierSymbols);
   NSLog(@"modifierDict: %@", modifierDict);
   NSLog(@"inputCharacterds: %@", inputCharacters);
   
