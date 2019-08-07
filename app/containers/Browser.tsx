@@ -68,7 +68,7 @@ class Browser extends Component<Props, State> {
 
   initKeymaps() {
     const { keymap, modifiers } = this.props;
-    DAVKeyManager.setWindow("browser");
+    DAVKeyManager.setMode("browser");
     DAVKeyManager.turnOnKeymap();
     DAVKeyManager.setBrowserKeymap(
       keymapper.convertToNativeFormat(keymap, modifiers)
@@ -88,9 +88,9 @@ class Browser extends Component<Props, State> {
     }
     if (prevProp.keyMode !== keyMode) {
       if (keyMode === KeyMode.Direct) {
-        DAVKeyManager.setWindow("browser");
+        DAVKeyManager.setMode("browser");
       } else {
-        DAVKeyManager.setWindow("terminal");
+        DAVKeyManager.setMode("terminal");
       }
     }
   }

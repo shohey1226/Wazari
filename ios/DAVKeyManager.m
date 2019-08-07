@@ -113,11 +113,11 @@ RCT_EXPORT_METHOD(updateModifiers:(NSDictionary *)modifiers )
   NSLog(@"%@", _modifiers);
 }
 
-// Set window name using notification
-RCT_EXPORT_METHOD(setWindow:(NSString *)windowName)
+// Set Mode name using notification
+RCT_EXPORT_METHOD(setMode:(NSString *)modeName)
 {
-  NSDictionary *window = @{@"windowName": windowName};
-  [[NSNotificationCenter defaultCenter] postNotificationName:@"activeWindow" object:self userInfo:window];
+  NSDictionary *mode = @{@"modeName": modeName};
+  [[NSNotificationCenter defaultCenter] postNotificationName:@"activeMode" object:self userInfo:mode];
 }
 
 RCT_EXPORT_METHOD(setDesktopKeymap:(NSDictionary *)keymap)
