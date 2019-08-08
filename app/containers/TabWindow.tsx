@@ -276,8 +276,6 @@ class TabWindow extends Component<Props, State, any> {
       case "Backspace":
         this.webref.injectJavaScript(`deletePreviousChar()`);
         break;
-      case "Tab":
-        break;
       default:
         this.webref.injectJavaScript(`typingFromRN('${data.key}')`);
     }

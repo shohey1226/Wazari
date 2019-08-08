@@ -129,6 +129,15 @@ Input Mode - App + Input
   } else if([_currentMode isEqual: @"text"]){
     [appKeymapSet addObjectsFromArray:  [self buildDAKeymap :@"browser"]];
   }
+  
+  // Tab and Enter key should not be handled if it's text mode
+  // TODO we need to clarify it's input mode rather than "not text" mode
+  if(![_currentMode isEqual: @"text"]){
+    /* Enter */
+    [appKeymapSet addObject:[UIKeyCommand keyCommandWithInput:@"\r" modifierFlags:kNilOptions action:@selector(handleCommand:)]];
+    /* Tab */
+    [appKeymapSet addObject:[UIKeyCommand keyCommandWithInput:@"\t" modifierFlags:kNilOptions action:@selector(handleCommand:)]];
+  }
 
   // keymap for input - cache as it's long list of hooks
   if(!_commands){
@@ -178,8 +187,6 @@ Input Mode - App + Input
     /* Alt + Delete */
     [_commands addObject:[UIKeyCommand keyCommandWithInput:@"\b" modifierFlags:UIKeyModifierAlternate action:@selector(handleCommand:)]];
     
-    /* Tab */
-    [_commands addObject:[UIKeyCommand keyCommandWithInput:@"\t" modifierFlags:kNilOptions action:@selector(handleCommand:)]];
     /* Tab + Option(Alt) */
     [_commands addObject:[UIKeyCommand keyCommandWithInput:@"\t" modifierFlags:UIKeyModifierAlternate action:@selector(handleCommand:)]];
     /* Tab + Control */
@@ -189,8 +196,6 @@ Input Mode - App + Input
     /* Tab + Control + Shift */
     [_commands addObject:[UIKeyCommand keyCommandWithInput:@"\t" modifierFlags:UIKeyModifierShift | UIKeyModifierControl action:@selector(handleCommand:)]];
     
-    /* Enter */
-    [_commands addObject:[UIKeyCommand keyCommandWithInput:@"\r" modifierFlags:kNilOptions action:@selector(handleCommand:)]];
     
     /* Up */
     [_commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputUpArrow modifierFlags:kNilOptions action:@selector(handleCommand:)]];
