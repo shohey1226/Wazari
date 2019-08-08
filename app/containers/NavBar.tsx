@@ -2,9 +2,13 @@ import React, { Component } from "react";
 import { View, NativeModules, NativeEventEmitter } from "react-native";
 import { connect } from "react-redux";
 import { Button, Icon, Header, Item, Input, Left } from "native-base";
+import MCIcon from "react-native-vector-icons/MaterialCommunityIcons";
 import { selectBrowserKeymap, selectModifiers } from "../selectors/keymap";
 import { selectSites } from "../selectors/ui";
+import { updateMode } from "../actions/ui";
 import { SearchEngine } from "../components/SearchEnginePicker";
+import { KeyMode } from "../types/index.d";
+
 import {
   addNewTab,
   selectTab,
@@ -19,6 +23,7 @@ interface IState {
   text: string;
   canGoBack: boolean;
   canGoForward: boolean;
+  switchOn: boolean;
 }
 
 interface Props {
@@ -36,7 +41,8 @@ class NavBar extends Component<Props, IState, any> {
     this.state = {
       text: "",
       canGoBack: site && site.canGoBack ? site.canGoBack : false,
-      canGoForward: site && site.canGoForward ? site.canGoForward : false
+      canGoForward: site && site.canGoForward ? site.canGoForward : false,
+      switchOn: true
     };
   }
 
@@ -93,6 +99,34 @@ class NavBar extends Component<Props, IState, any> {
     this.props.navigate({ routeName: "Setting" });
   }
 
+  onPressSwitch() {
+    const { dispatch } = this.props;
+    if (this.state.switchOn) {
+      dispatch(updateMode(KeyMode.Browser));
+    } else {
+      dispatch(updateMode(KeyMode.Text));
+    }
+    this.setState({ switchOn: !this.state.switchOn });
+  }
+
+  switchIcon() {
+    if (this.state.switchOn) {
+      return (
+        <MCIcon
+          name="toggle-switch"
+          style={{ color: "#30d158", fontSize: 22 }}
+        />
+      );
+    } else {
+      return (
+        <MCIcon
+          name="toggle-switch-off"
+          style={{ color: "#aaa", fontSize: 22 }}
+        />
+      );
+    }
+  }
+
   render() {
     const { searchEngine } = this.props;
     return (
@@ -126,6 +160,9 @@ class NavBar extends Component<Props, IState, any> {
             autoCapitalize="none"
           />
         </Item>
+        <Button transparent light onPress={() => this.onPressSwitch()}>
+          {this.switchIcon()}
+        </Button>
         <Button transparent light onPress={() => this.onPressAdd()}>
           <Icon name="md-add" />
         </Button>
