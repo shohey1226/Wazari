@@ -5,7 +5,7 @@ import {
   View,
   NativeModules,
   NativeEventEmitter,
-  TextInput
+  Keyboard
 } from "react-native";
 import { connect } from "react-redux";
 import {
@@ -22,7 +22,7 @@ import {
 import TabWindow from "./TabWindow";
 import { selectSites } from "../selectors/ui";
 import { selectBrowserKeymap, selectModifiers } from "../selectors/keymap";
-import { addNewTab, selectTab, closeTab } from "../actions/ui";
+import { addNewTab, selectTab, closeTab, updateMode } from "../actions/ui";
 import keymapper from "../utils/Keymapper";
 import { KeyMode } from "../types/index.d";
 
@@ -50,6 +50,8 @@ interface Props {
 /* Browser is whole browser controls each windows(tabs) */
 class Browser extends Component<Props, State> {
   tabsRef: Tabs | null = null;
+  keyboardDidShowListener: any;
+  keyboardDidHideListener: any;
 
   constructor(props) {
     super(props);
@@ -64,6 +66,19 @@ class Browser extends Component<Props, State> {
       dispatch(addNewTab("https://www.google.com"));
     }
     this.initKeymaps();
+
+    // virtual keyboard is used
+    this.keyboardDidShowListener = Keyboard.addListener("keyboardDidShow", () =>
+      dispatch(updateMode(KeyMode.Direct))
+    );
+    this.keyboardDidHideListener = Keyboard.addListener("keyboardDidHide", () =>
+      dispatch(updateMode(KeyMode.Text))
+    );
+  }
+
+  componentWillUnmount() {
+    this.keyboardDidShowListener.remove();
+    this.keyboardDidHideListener.remove();
   }
 
   initKeymaps() {
