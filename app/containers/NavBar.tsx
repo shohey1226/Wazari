@@ -35,6 +35,7 @@ interface Props {
   searchEngine: SearchEngine;
   homeUrl: string;
   excludedPatterns: Array<string>;
+  excludedPatternHasChanged: boolean;
 }
 
 class NavBar extends Component<Props, IState, any> {
@@ -56,7 +57,12 @@ class NavBar extends Component<Props, IState, any> {
   }
 
   componentDidUpdate(prevProp) {
-    const { activeTabIndex, sites, excludedPatterns } = this.props;
+    const {
+      activeTabIndex,
+      sites,
+      excludedPatterns,
+      excludedPatternHasChanged
+    } = this.props;
     const site = sites[activeTabIndex];
     const prevSite = prevProp.sites[prevProp.activeTabIndex];
     if (
@@ -70,7 +76,10 @@ class NavBar extends Component<Props, IState, any> {
       this.setSwitch(site.url);
     }
 
-    if (site && excludedPatterns.length !== prevProp.excludedPatterns.length) {
+    if (
+      site &&
+      excludedPatternHasChanged !== prevProp.excludedPatternHasChanged
+    ) {
       this.setSwitch(site.url);
     }
   }
@@ -222,6 +231,7 @@ function mapStateToProps(state, ownProps) {
   const searchEngine = state.user.get("searchEngine");
   const homeUrl = state.user.get("homeUrl");
   const excludedPatterns = state.user.get("excludedPatterns").toArray();
+  const excludedPatternHasChanged = state.user.get("excludedPatternHasChanged");
   return {
     keymap,
     modifiers,
@@ -229,7 +239,8 @@ function mapStateToProps(state, ownProps) {
     sites,
     searchEngine,
     homeUrl,
-    excludedPatterns
+    excludedPatterns,
+    excludedPatternHasChanged
   };
 }
 
