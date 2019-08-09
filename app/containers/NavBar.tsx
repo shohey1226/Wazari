@@ -6,7 +6,7 @@ import MCIcon from "react-native-vector-icons/MaterialCommunityIcons";
 import { selectBrowserKeymap, selectModifiers } from "../selectors/keymap";
 import { selectSites } from "../selectors/ui";
 import { updateMode } from "../actions/ui";
-import { addExcludedPattern } from "../actions/user";
+import { addExcludedPattern, removeExcludedPattern } from "../actions/user";
 import { SearchEngine } from "../components/SearchEnginePicker";
 import { KeyMode } from "../types/index.d";
 
@@ -25,6 +25,7 @@ interface IState {
   canGoBack: boolean;
   canGoForward: boolean;
   switchOn: boolean;
+  excludedPattern: string | null;
 }
 
 interface Props {
@@ -55,7 +56,7 @@ class NavBar extends Component<Props, IState, any> {
   }
 
   componentDidUpdate(prevProp) {
-    const { activeTabIndex, sites } = this.props;
+    const { activeTabIndex, sites, excludedPatterns } = this.props;
     const site = sites[activeTabIndex];
     const prevSite = prevProp.sites[prevProp.activeTabIndex];
     if (
@@ -66,6 +67,10 @@ class NavBar extends Component<Props, IState, any> {
         canGoBack: site.canGoBack,
         canGoForward: site.canGoForward
       });
+      this.setSwitch(site.url);
+    }
+
+    if (site && excludedPatterns.length !== prevProp.excludedPatterns.length) {
       this.setSwitch(site.url);
     }
   }
@@ -113,6 +118,8 @@ class NavBar extends Component<Props, IState, any> {
       dispatch(updateMode(KeyMode.Browser));
       dispatch(addExcludedPattern(this.urlToPattern(site.url)));
     } else {
+      this.state.excludedPattern &&
+        dispatch(removeExcludedPattern(this.state.excludedPattern));
       dispatch(updateMode(KeyMode.Text));
     }
   }
@@ -146,15 +153,17 @@ class NavBar extends Component<Props, IState, any> {
   setSwitch(url) {
     const { excludedPatterns } = this.props;
     let switchOn = true;
-    for (let p in excludedPatterns) {
+    let pattern: string | null = null;
+    for (let p of excludedPatterns) {
       let regex = new RegExp(p);
       if (regex.test(url)) {
         switchOn = false;
+        pattern = p;
         break;
       }
     }
     if (this.state.switchOn !== switchOn) {
-      this.setState({ switchOn: switchOn });
+      this.setState({ switchOn: switchOn, excludedPattern: pattern });
     }
   }
 
