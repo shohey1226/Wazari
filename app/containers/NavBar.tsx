@@ -6,6 +6,7 @@ import MCIcon from "react-native-vector-icons/MaterialCommunityIcons";
 import { selectBrowserKeymap, selectModifiers } from "../selectors/keymap";
 import { selectSites } from "../selectors/ui";
 import { updateMode } from "../actions/ui";
+import { addExcludedPattern } from "../actions/user";
 import { SearchEngine } from "../components/SearchEnginePicker";
 import { KeyMode } from "../types/index.d";
 
@@ -32,6 +33,7 @@ interface Props {
   sites: any;
   searchEngine: SearchEngine;
   homeUrl: string;
+  excludedPatterns: Array<string>;
 }
 
 class NavBar extends Component<Props, IState, any> {
@@ -46,7 +48,11 @@ class NavBar extends Component<Props, IState, any> {
     };
   }
 
-  componentDidMount() {}
+  componentDidMount() {
+    const { sites, activeTabIndex } = this.props;
+    const site = sites[activeTabIndex];
+    site && this.setSwitch(site.url);
+  }
 
   componentDidUpdate(prevProp) {
     const { activeTabIndex, sites } = this.props;
@@ -60,6 +66,7 @@ class NavBar extends Component<Props, IState, any> {
         canGoBack: site.canGoBack,
         canGoForward: site.canGoForward
       });
+      this.setSwitch(site.url);
     }
   }
 
@@ -100,13 +107,22 @@ class NavBar extends Component<Props, IState, any> {
   }
 
   onPressSwitch() {
-    const { dispatch } = this.props;
+    const { dispatch, sites, activeTabIndex } = this.props;
+    const site = sites[activeTabIndex];
     if (this.state.switchOn) {
       dispatch(updateMode(KeyMode.Browser));
+      dispatch(addExcludedPattern(this.urlToPattern(site.url)));
     } else {
       dispatch(updateMode(KeyMode.Text));
     }
-    this.setState({ switchOn: !this.state.switchOn });
+  }
+
+  urlToPattern(url) {
+    /^(.*:)\/\/([A-Za-z0-9\-\.]+)(:[0-9]+)?(.*)$/.test(url);
+    const host = RegExp.$2;
+    const port = RegExp.$3;
+    const pattern = port ? `https?://${host}${port}/*` : `https?://${host}/*`;
+    return pattern;
   }
 
   switchIcon() {
@@ -124,6 +140,21 @@ class NavBar extends Component<Props, IState, any> {
           style={{ color: "#aaa", fontSize: 22 }}
         />
       );
+    }
+  }
+
+  setSwitch(url) {
+    const { excludedPatterns } = this.props;
+    let switchOn = true;
+    for (let p in excludedPatterns) {
+      let regex = new RegExp(p);
+      if (regex.test(url)) {
+        switchOn = false;
+        break;
+      }
+    }
+    if (this.state.switchOn !== switchOn) {
+      this.setState({ switchOn: switchOn });
     }
   }
 
@@ -181,13 +212,15 @@ function mapStateToProps(state, ownProps) {
   const sites = selectSites(state);
   const searchEngine = state.user.get("searchEngine");
   const homeUrl = state.user.get("homeUrl");
+  const excludedPatterns = state.user.get("excludedPatterns").toArray();
   return {
     keymap,
     modifiers,
     activeTabIndex,
     sites,
     searchEngine,
-    homeUrl
+    homeUrl,
+    excludedPatterns
   };
 }
 

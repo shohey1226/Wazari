@@ -68,12 +68,20 @@ class Browser extends Component<Props, State> {
     this.initKeymaps();
 
     // virtual keyboard is used
-    this.keyboardDidShowListener = Keyboard.addListener("keyboardDidShow", () =>
-      dispatch(updateMode(KeyMode.Direct))
-    );
-    this.keyboardDidHideListener = Keyboard.addListener("keyboardDidHide", () =>
-      dispatch(updateMode(KeyMode.Text))
-    );
+    // this.keyboardDidShowListener = Keyboard.addListener(
+    //   "keyboardDidShow",
+    //   () => {
+    //     const { keyMode } = this.props;
+    //     keyMode !== KeyMode.Direct && dispatch(updateMode(KeyMode.Direct));
+    //   }
+    // );
+    // this.keyboardDidHideListener = Keyboard.addListener(
+    //   "keyboardDidHide",
+    //   () => {
+    //     const { keyMode } = this.props;
+    //     keyMode !== KeyMode.Direct && dispatch(updateMode(KeyMode.Text));
+    //   }
+    // );
   }
 
   componentWillUnmount() {
