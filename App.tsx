@@ -25,6 +25,7 @@ import Browser from "./app/containers/Browser";
 import Setting from "./app/components/Setting";
 import KeySetting from "./app/containers/KeySetting";
 import GeneralSetting from "./app/containers/GeneralSetting";
+import ExcludedPatternList from "./app/containers/ExcludedPatternList";
 import NavBar from "./app/containers/NavBar";
 import SettingBackButton from "./app/components/SettingBackButton";
 import configureStore from "./app/configureStore";
@@ -59,6 +60,12 @@ let RootStack = createStackNavigator({
     screen: GeneralSetting,
     navigationOptions: () => ({
       title: "General Setting"
+    })
+  },
+  ExcludedPatternList: {
+    screen: ExcludedPatternList,
+    navigationOptions: () => ({
+      title: "Excluded Patterns"
     })
   }
 });

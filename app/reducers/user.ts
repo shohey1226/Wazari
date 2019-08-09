@@ -48,6 +48,22 @@ export default function user(state = initialState, action) {
           "excludedPatternHasChanged",
           !state.get("excludedPatternHasChanged")
         );
+    case UPDATE_EXCLUDED_PATTERN:
+      return state
+        .set(
+          "excludedPatterns",
+          state.get("excludedPatterns").map(p => {
+            if (p === action.origPattern) {
+              return action.newPattern;
+            } else {
+              return p;
+            }
+          })
+        )
+        .set(
+          "excludedPatternHasChanged",
+          !state.get("excludedPatternHasChanged")
+        );
     default:
       return state;
   }

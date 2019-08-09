@@ -4,6 +4,7 @@ import { Col, Row, Grid } from "react-native-easy-grid";
 import { default as SettingMenu, MenuItem } from "./SettingMenu";
 import KeySetting from "../containers/KeySetting";
 import GeneralSetting from "../containers/GeneralSetting";
+import ExcludedPatternList from "../containers/ExcludedPatternList";
 import { StackActions } from "react-navigation";
 
 interface State {
@@ -42,6 +43,9 @@ class Setting extends Component<Props, State> {
         case MenuItem.General:
           this.setState({ currentMenuItem: MenuItem.General });
           break;
+        case MenuItem.ExcludedPatterns:
+          this.setState({ currentMenuItem: MenuItem.ExcludedPatterns });
+          break;
       }
     } else {
       switch (item) {
@@ -50,6 +54,9 @@ class Setting extends Component<Props, State> {
           break;
         case MenuItem.General:
           this.props.navigation.navigate({ routeName: "GeneralSetting" });
+          break;
+        case MenuItem.General:
+          this.props.navigation.navigate({ routeName: "ExcludedPatternList" });
           break;
       }
     }
@@ -61,6 +68,8 @@ class Setting extends Component<Props, State> {
         return <KeySetting />;
       case MenuItem.General:
         return <GeneralSetting />;
+      case MenuItem.ExcludedPatterns:
+        return <ExcludedPatternList />;
     }
   }
 

@@ -32,10 +32,11 @@ export function removeExcludedPattern(pattern: string) {
   };
 }
 
-export function updateExcludedPattern(pattern: string) {
+export function updateExcludedPattern(origPattern: string, newPattern: string) {
   return {
     type: UPDATE_EXCLUDED_PATTERN,
-    pattern: pattern
+    origPattern: origPattern,
+    newPattern: newPattern
   };
 }
 
