@@ -1,5 +1,10 @@
 import React, { Component } from "react";
-import { View, NativeModules, NativeEventEmitter } from "react-native";
+import {
+  View,
+  NativeModules,
+  NativeEventEmitter,
+  TextInput
+} from "react-native";
 import { connect } from "react-redux";
 import { Button, Icon, Header, Item, Input, Left } from "native-base";
 import MCIcon from "react-native-vector-icons/MaterialCommunityIcons";
@@ -29,6 +34,8 @@ interface IState {
   excludedPattern: string | null;
   searchIsFocused: boolean;
   previousKeyMode: KeyMode | null;
+  selectionStart: number;
+  selectionEnd: number;
 }
 
 interface Props {
@@ -43,7 +50,7 @@ interface Props {
 }
 
 class NavBar extends Component<Props, IState, any> {
-  searchRef: Input;
+  searchRef: TextInput | null = null;
 
   constructor(props) {
     super(props);
@@ -54,7 +61,9 @@ class NavBar extends Component<Props, IState, any> {
       canGoForward: site && site.canGoForward ? site.canGoForward : false,
       switchOn: true,
       searchIsFocused: false,
-      previousKeyMode: null
+      previousKeyMode: null,
+      selectionStart: 0,
+      selectionEnd: 0
     };
   }
 
@@ -70,6 +79,7 @@ class NavBar extends Component<Props, IState, any> {
         }
       }
     });
+    DAVKeyManagerEmitter.addListener("RNBrowserKeyEvent", this.handleActions);
   }
 
   componentDidUpdate(prevProp) {
@@ -192,6 +202,58 @@ class NavBar extends Component<Props, IState, any> {
     }
   }
 
+  handleActions = async event => {
+    const { dispatch, keyMode } = this.props;
+    if (
+      keyMode === KeyMode.Search &&
+      this.searchRef &&
+      this.state.searchIsFocused
+    ) {
+      console.log(event);
+      switch (event.action) {
+        case "home":
+          this.searchRef.setNativeProps({ selection: { start: 0, end: 0 } });
+          break;
+        case "end":
+          this.searchRef.setNativeProps({
+            selection: {
+              start: this.state.text.length,
+              end: this.state.text.length
+            }
+          });
+          break;
+        case "deletePreviousChar":
+          this.setState({ text: this.state.text.slice(0, -1) });
+          break;
+        case "deleteNextChar":
+          this.webref.injectJavaScript(`deleteNextChar()`);
+          break;
+        case "moveBackOneChar":
+          this.searchRef.setNativeProps({
+            selection: {
+              start: this.state.selectionStart - 1,
+              end: this.state.selectionEnd - 1
+            }
+          });
+          this.setState({
+            selectionStart: this.state.selectionStart - 1,
+            selectionEnd: this.state.selectionEnd - 1
+          });
+          break;
+        case "moveForwardOneChar":
+          this.webref.injectJavaScript(`moveForwardOneChar()`);
+          break;
+        case "copy":
+          this.webref.injectJavaScript(`copyToRN()`);
+          break;
+        case "paste":
+          let content = await Clipboard.getString();
+          this.webref.injectJavaScript(`pasteFromRN("${content}")`);
+          break;
+      }
+    }
+  };
+
   typing(data) {
     console.log(data);
 
@@ -205,10 +267,19 @@ class NavBar extends Component<Props, IState, any> {
     let text = this.state.text;
     switch (data.key) {
       case "Backspace":
-        this.setState({ text: text.slice(0, -1) });
+        this.setState({
+          text: text.slice(0, -1),
+          selectionStart: text.length - 1,
+          selectionEnd: text.length - 1
+        });
         return;
     }
-    this.setState({ text: this.state.text + data.key });
+    let newText = this.state.text + data.key;
+    this.setState({
+      text: newText,
+      selectionStart: newText.length,
+      selectionEnd: newText.length
+    });
   }
 
   onFocusSearch() {

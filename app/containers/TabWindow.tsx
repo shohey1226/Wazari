@@ -101,15 +101,9 @@ class TabWindow extends Component<Props, State, any> {
   }
 
   handleBrowserActions = async event => {
-    const {
-      dispatch,
-      activeTabIndex,
-      sites,
-      isFullScreen,
-      browserWidth,
-      homeUrl
-    } = this.props;
+    const { dispatch, activeTabIndex, keyMode, homeUrl } = this.props;
     if (
+      (keyMode === KeyMode.Terminal || keyMode === KeyMode.Text) &&
       this.webref &&
       this.state.isActive &&
       this.state.isLoadingJSInjection === false
