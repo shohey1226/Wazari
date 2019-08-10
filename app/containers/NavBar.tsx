@@ -194,6 +194,21 @@ class NavBar extends Component<Props, IState, any> {
 
   typing(data) {
     console.log(data);
+
+    // handle shift key to make it Uppercase
+    if (data.modifiers.shiftKey) {
+      if (data.key.match(/[a-z]/)) {
+        data.key = data.key.toUpperCase();
+      }
+    }
+
+    let text = this.state.text;
+    switch (data.key) {
+      case "Backspace":
+        this.setState({ text: text.slice(0, -1) });
+        return;
+    }
+    this.setState({ text: this.state.text + data.key });
   }
 
   onFocusSearch() {
