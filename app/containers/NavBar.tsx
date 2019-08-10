@@ -82,7 +82,7 @@ class NavBar extends Component<Props, IState, any> {
     DAVKeyManagerEmitter.addListener("RNBrowserKeyEvent", this.handleActions);
   }
 
-  componentDidUpdate(prevProp) {
+  componentDidUpdate(prevProp, prevState) {
     const {
       activeTabIndex,
       sites,
@@ -108,6 +108,9 @@ class NavBar extends Component<Props, IState, any> {
     ) {
       this.setSwitch(site.url);
     }
+
+    console.log("prev", prevState.selectionStart);
+    console.log("current", this.state.selectionStart);
   }
 
   onEndEditing() {
@@ -255,16 +258,16 @@ class NavBar extends Component<Props, IState, any> {
               this.state.text.length
             );
             this.setState({
-              text: first + second,
-              selectionStart: this.state.selectionStart + 1,
-              selectionEnd: this.state.selectionEnd + 1
+              text: first + second
             });
-            this.searchRef.setNativeProps({
-              selection: {
-                start: this.state.selectionStart,
-                end: this.state.selectionEnd
-              }
-            });
+            setTimeout(() => {
+              this.searchRef.setNativeProps({
+                selection: {
+                  start: this.state.selectionStart,
+                  end: this.state.selectionEnd
+                }
+              });
+            }, 50);
           }
 
           break;
@@ -296,16 +299,17 @@ class NavBar extends Component<Props, IState, any> {
           break;
         case "deleteLine":
           const newText = this.state.text.slice(0, this.state.selectionStart);
-          this.searchRef.setNativeProps({
-            selection: {
-              start: newText.length,
-              end: newText.length
-            }
-          });
+          // For some reason, need setTimeout..
+          setTimeout(() => {
+            this.searchRef.setNativeProps({
+              selection: {
+                start: this.state.selectionStart,
+                end: this.state.selectionEnd
+              }
+            });
+          }, 50);
           this.setState({
-            text: newText,
-            selectionStart: newText.length,
-            selectionEnd: newText.length
+            text: newText
           });
           break;
         case "copy":
