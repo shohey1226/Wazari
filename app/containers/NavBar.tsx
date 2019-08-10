@@ -339,6 +339,16 @@ class NavBar extends Component<Props, IState, any> {
           selectionEnd: text.length - 1
         });
         return;
+      case "Up":
+        return;
+      case "Down":
+        return;
+      case "Left":
+        this.handleActions({ action: "moveBackOneChar" });
+        return;
+      case "Right":
+        this.handleActions({ action: "moveForwardOneChar" });
+        return;
     }
     let newText = this.state.text + data.key;
     this.setState({
