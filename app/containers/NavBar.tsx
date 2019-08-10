@@ -109,8 +109,8 @@ class NavBar extends Component<Props, IState, any> {
       this.setSwitch(site.url);
     }
 
-    console.log("prev", prevState.selectionStart);
-    console.log("current", this.state.selectionStart);
+    // console.log("prev", prevState.selectionStart);
+    // console.log("current", this.state.selectionStart);
   }
 
   onEndEditing() {
