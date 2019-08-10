@@ -213,6 +213,10 @@ class NavBar extends Component<Props, IState, any> {
       switch (event.action) {
         case "home":
           this.searchRef.setNativeProps({ selection: { start: 0, end: 0 } });
+          this.setState({
+            selectionStart: 0,
+            selectionEnd: 0
+          });
           break;
         case "end":
           this.searchRef.setNativeProps({
@@ -221,12 +225,48 @@ class NavBar extends Component<Props, IState, any> {
               end: this.state.text.length
             }
           });
+          this.setState({
+            selectionStart: this.state.text.length,
+            selectionEnd: this.state.text.length
+          });
           break;
         case "deletePreviousChar":
-          this.setState({ text: this.state.text.slice(0, -1) });
+          if (0 < this.state.selectionStart) {
+            const first = this.state.text.slice(
+              0,
+              this.state.selectionStart - 1
+            );
+            const second = this.state.text.slice(
+              this.state.selectionStart,
+              this.state.text.length
+            );
+            this.setState({
+              text: first + second,
+              selectionStart: this.state.selectionStart - 1,
+              selectionEnd: this.state.selectionEnd - 1
+            });
+          }
           break;
         case "deleteNextChar":
-          this.webref.injectJavaScript(`deleteNextChar()`);
+          if (this.state.text.length > this.state.selectionStart) {
+            const first = this.state.text.slice(0, this.state.selectionStart);
+            const second = this.state.text.slice(
+              this.state.selectionStart + 1,
+              this.state.text.length
+            );
+            this.setState({
+              text: first + second,
+              selectionStart: this.state.selectionStart + 1,
+              selectionEnd: this.state.selectionEnd + 1
+            });
+            this.searchRef.setNativeProps({
+              selection: {
+                start: this.state.selectionStart,
+                end: this.state.selectionEnd
+              }
+            });
+          }
+
           break;
         case "moveBackOneChar":
           this.searchRef.setNativeProps({
@@ -241,14 +281,36 @@ class NavBar extends Component<Props, IState, any> {
           });
           break;
         case "moveForwardOneChar":
-          this.webref.injectJavaScript(`moveForwardOneChar()`);
+          if (this.state.text.length > this.state.selectionStart) {
+            this.searchRef.setNativeProps({
+              selection: {
+                start: this.state.selectionStart + 1,
+                end: this.state.selectionEnd + 1
+              }
+            });
+            this.setState({
+              selectionStart: this.state.selectionStart + 1,
+              selectionEnd: this.state.selectionEnd + 1
+            });
+          }
+          break;
+        case "deleteLine":
+          const newText = this.state.text.slice(0, this.state.selectionStart);
+          this.searchRef.setNativeProps({
+            selection: {
+              start: newText.length,
+              end: newText.length
+            }
+          });
+          this.setState({
+            text: newText,
+            selectionStart: newText.length,
+            selectionEnd: newText.length
+          });
           break;
         case "copy":
-          this.webref.injectJavaScript(`copyToRN()`);
           break;
         case "paste":
-          let content = await Clipboard.getString();
-          this.webref.injectJavaScript(`pasteFromRN("${content}")`);
           break;
       }
     }
