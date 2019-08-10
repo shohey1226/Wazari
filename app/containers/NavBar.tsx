@@ -19,6 +19,7 @@ import {
 } from "../actions/ui";
 
 const { DAVKeyManager } = NativeModules;
+const DAVKeyManagerEmitter = new NativeEventEmitter(DAVKeyManager);
 
 interface IState {
   text: string;
@@ -26,6 +27,8 @@ interface IState {
   canGoForward: boolean;
   switchOn: boolean;
   excludedPattern: string | null;
+  searchIsFocused: boolean;
+  previousKeyMode: KeyMode | null;
 }
 
 interface Props {
@@ -36,9 +39,12 @@ interface Props {
   homeUrl: string;
   excludedPatterns: Array<string>;
   excludedPatternHasChanged: boolean;
+  keyMode: KeyMode;
 }
 
 class NavBar extends Component<Props, IState, any> {
+  searchRef: Input;
+
   constructor(props) {
     super(props);
     const site = props.sites[props.activeTabIndex];
@@ -46,7 +52,9 @@ class NavBar extends Component<Props, IState, any> {
       text: "",
       canGoBack: site && site.canGoBack ? site.canGoBack : false,
       canGoForward: site && site.canGoForward ? site.canGoForward : false,
-      switchOn: true
+      switchOn: true,
+      searchIsFocused: false,
+      previousKeyMode: null
     };
   }
 
@@ -54,6 +62,14 @@ class NavBar extends Component<Props, IState, any> {
     const { sites, activeTabIndex } = this.props;
     const site = sites[activeTabIndex];
     site && this.setSwitch(site.url);
+    let self = this;
+    DAVKeyManagerEmitter.addListener("RNKeyEvent", data => {
+      if (this.state.searchIsFocused) {
+        if (this.props.keyMode === KeyMode.Search) {
+          this.typing(data);
+        }
+      }
+    });
   }
 
   componentDidUpdate(prevProp) {
@@ -176,6 +192,23 @@ class NavBar extends Component<Props, IState, any> {
     }
   }
 
+  typing(data) {
+    console.log(data);
+  }
+
+  onFocusSearch() {
+    const { dispatch, keyMode } = this.props;
+    this.setState({ searchIsFocused: true, previousKeyMode: keyMode });
+    this.props.dispatch(updateMode(KeyMode.Search));
+  }
+
+  onBlurSearch() {
+    const { dispatch } = this.props;
+    this.state.previousKeyMode &&
+      this.props.dispatch(updateMode(this.state.previousKeyMode));
+    this.setState({ searchIsFocused: false, previousKeyMode: null });
+  }
+
   render() {
     const { searchEngine } = this.props;
     return (
@@ -200,6 +233,7 @@ class NavBar extends Component<Props, IState, any> {
         <Item>
           <Icon name="ios-search" />
           <Input
+            ref={r => (this.searchRef = r as any)}
             placeholder={`URL or Search with ${searchEngine}`}
             onChangeText={text => this.setState({ text })}
             value={this.state.text}
@@ -207,6 +241,9 @@ class NavBar extends Component<Props, IState, any> {
             onEndEditing={this.onEndEditing.bind(this)}
             textContentType="URL"
             autoCapitalize="none"
+            style={{ fontSize: 12 }}
+            onFocus={this.onFocusSearch.bind(this)}
+            onBlur={this.onBlurSearch.bind(this)}
           />
         </Item>
         <Button transparent light onPress={() => this.onPressSwitch()}>
@@ -232,6 +269,7 @@ function mapStateToProps(state, ownProps) {
   const homeUrl = state.user.get("homeUrl");
   const excludedPatterns = state.user.get("excludedPatterns").toArray();
   const excludedPatternHasChanged = state.user.get("excludedPatternHasChanged");
+  const keyMode = state.ui.get("keyMode");
   return {
     keymap,
     modifiers,
@@ -240,7 +278,8 @@ function mapStateToProps(state, ownProps) {
     searchEngine,
     homeUrl,
     excludedPatterns,
-    excludedPatternHasChanged
+    excludedPatternHasChanged,
+    keyMode
   };
 }
 

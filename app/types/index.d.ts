@@ -10,5 +10,8 @@ export enum KeyMode {
   Text = "text",
 
   //  Only browser keymap
-  Browser = "browser"
+  Browser = "browser",
+
+  // Address/Search bar
+  Search = "search"
 }
