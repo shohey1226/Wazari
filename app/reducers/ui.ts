@@ -5,7 +5,8 @@ import {
   CLOSE_TAB,
   UPDATE_MODE,
   TOGGLE_FORWARD,
-  TOGGLE_BACK
+  TOGGLE_BACK,
+  UPDATE_ORIENTATION
 } from "../actions/ui";
 import { Map, fromJS } from "immutable";
 import { KeyMode } from "../types/index.d";
@@ -23,6 +24,7 @@ export interface UiState extends Map<any, any> {
   keyMode: KeyMode;
   backToggled: boolean;
   forwardToggled: boolean;
+  orientation: string;
 }
 
 const initialState: UiState = fromJS({
@@ -82,6 +84,9 @@ export default function ui(state = initialState, action) {
 
     case UPDATE_MODE:
       return state.set("keyMode", action.mode);
+
+    case UPDATE_ORIENTATION:
+      return state.set("orientation", action.orientation);
 
     // case LOGOUT:
     //   // make it default state

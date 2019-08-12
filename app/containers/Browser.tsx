@@ -19,6 +19,7 @@ import {
   TabHeading,
   Icon
 } from "native-base";
+import DeviceInfo from "react-native-device-info";
 import TabWindow from "./TabWindow";
 import { selectSites } from "../selectors/ui";
 import { selectBrowserKeymap, selectModifiers } from "../selectors/keymap";
@@ -45,6 +46,7 @@ interface Props {
   keymap: any;
   modifiers: any;
   keyMode: KeyMode;
+  orientation: string;
 }
 
 /* Browser is whole browser controls each windows(tabs) */
@@ -193,14 +195,23 @@ class Browser extends Component<Props, State> {
   }
 
   render() {
-    const { activeTabIndex } = this.props;
+    const { activeTabIndex, orientation } = this.props;
+    let style = {};
+    if (
+      orientation === "LANDSCAPE" &&
+      DeviceInfo.getDeviceType() === "Handset"
+    ) {
+      style = { height: 0 };
+    }
+
     return (
       <Tabs
         ref={r => (this.tabsRef = r as any)}
         renderTabBar={() => (
-          <ScrollableTab style={{ backgroundColor: "#222" }} />
+          <ScrollableTab style={{ backgroundColor: "#222", ...style }} />
         )}
         onChangeTab={this.onChangeTab.bind(this)}
+        style={style}
       >
         {this.renderTabs()}
       </Tabs>
@@ -214,13 +225,15 @@ function mapStateToProps(state, ownProps) {
   const activeTabIndex = state.ui.get("activeTabIndex");
   const sites = selectSites(state);
   const keyMode = state.ui.get("keyMode");
+  const orientation = state.ui.get("orientation");
 
   return {
     sites,
     keymap,
     modifiers,
     activeTabIndex,
-    keyMode
+    keyMode,
+    orientation
   };
 }
 

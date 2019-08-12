@@ -8,6 +8,7 @@ export const TOGGLE_FORWARD = "TOGGLE_FORWARD";
 export const TOGGLE_BACK = "TOGGLE_BACK";
 export const UPDATE_BACK_FORWARD = "UPDATE_BACK_FORWARD";
 export const UPDATE_MODE = "UPDATE_MODE";
+export const UPDATE_ORIENTATION = "UPDATE_ORIENTATION";
 
 export function toggleForward() {
   return {
@@ -67,4 +68,9 @@ export function updateMode(mode: KeyMode) {
   };
 }
 
-
+export function updateOrientation(orientation: string) {
+  return {
+    type: UPDATE_ORIENTATION,
+    orientation: orientation
+  };
+}

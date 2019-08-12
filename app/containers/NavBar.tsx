@@ -6,6 +6,7 @@ import {
   TextInput
 } from "react-native";
 import { connect } from "react-redux";
+import DeviceInfo from "react-native-device-info";
 import { Button, Icon, Header, Item, Input, Left } from "native-base";
 import MCIcon from "react-native-vector-icons/MaterialCommunityIcons";
 import { selectBrowserKeymap, selectModifiers } from "../selectors/keymap";
@@ -47,6 +48,7 @@ interface Props {
   excludedPatterns: Array<string>;
   excludedPatternHasChanged: boolean;
   keyMode: KeyMode;
+  orientation: string;
 }
 
 class NavBar extends Component<Props, IState, any> {
@@ -87,7 +89,8 @@ class NavBar extends Component<Props, IState, any> {
       activeTabIndex,
       sites,
       excludedPatterns,
-      excludedPatternHasChanged
+      excludedPatternHasChanged,
+      orientation
     } = this.props;
     const site = sites[activeTabIndex];
     const prevSite = prevProp.sites[prevProp.activeTabIndex];
@@ -107,6 +110,10 @@ class NavBar extends Component<Props, IState, any> {
       excludedPatternHasChanged !== prevProp.excludedPatternHasChanged
     ) {
       this.setSwitch(site.url);
+    }
+
+    if (orientation !== prevProp.orientation) {
+      this.props.navigate("Home", { orientation: orientation });
     }
 
     // console.log("prev", prevState.selectionStart);
@@ -372,7 +379,13 @@ class NavBar extends Component<Props, IState, any> {
   }
 
   render() {
-    const { searchEngine } = this.props;
+    const { searchEngine, orientation } = this.props;
+    if (
+      orientation === "LANDSCAPE" &&
+      DeviceInfo.getDeviceType() === "Handset"
+    ) {
+      return null;
+    }
     return (
       <Header searchBar rounded>
         <Button
@@ -432,6 +445,7 @@ function mapStateToProps(state, ownProps) {
   const excludedPatterns = state.user.get("excludedPatterns").toArray();
   const excludedPatternHasChanged = state.user.get("excludedPatternHasChanged");
   const keyMode = state.ui.get("keyMode");
+  const orientation = state.ui.get("orientation");
   return {
     keymap,
     modifiers,
@@ -441,7 +455,8 @@ function mapStateToProps(state, ownProps) {
     homeUrl,
     excludedPatterns,
     excludedPatternHasChanged,
-    keyMode
+    keyMode,
+    orientation
   };
 }
 

@@ -36,6 +36,8 @@ target 'Wazari' do
 
   pod 'RNDeviceInfo', :path => '../node_modules/react-native-device-info'
 
+  pod 'react-native-orientation', :path => '../node_modules/react-native-orientation'
+
   target 'WazariTests' do
     inherit! :search_paths
     # Pods for testing

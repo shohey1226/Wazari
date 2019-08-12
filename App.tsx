@@ -17,10 +17,11 @@ import {
   StackActions,
   StatusBar
 } from "react-navigation";
+import Orientation from "react-native-orientation";
 import { StyleProvider } from "native-base";
 import getTheme from "./native-base-theme/components";
 import platform from "./native-base-theme/variables/platform";
-
+import { updateOrientation } from "./app/actions/ui";
 import Browser from "./app/containers/Browser";
 import Setting from "./app/components/Setting";
 import KeySetting from "./app/containers/KeySetting";
@@ -72,6 +73,19 @@ let RootStack = createStackNavigator({
 let Navigation = createAppContainer(RootStack);
 
 class App extends React.Component {
+  componentDidMount() {
+    Orientation.addOrientationListener(this._orientationDidChange);
+  }
+
+  _orientationDidChange = orientation => {
+    const { dispatch } = store;
+    dispatch(updateOrientation(orientation));
+  };
+
+  componentWillUnmount() {
+    Orientation.removeOrientationListener(this._orientationDidChange);
+  }
+
   render() {
     return (
       <StyleProvider style={getTheme(platform)}>
