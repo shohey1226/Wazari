@@ -55,7 +55,7 @@ class Setting extends Component<Props, State> {
         case MenuItem.General:
           this.props.navigation.navigate({ routeName: "GeneralSetting" });
           break;
-        case MenuItem.General:
+        case MenuItem.ExcludedPatterns:
           this.props.navigation.navigate({ routeName: "ExcludedPatternList" });
           break;
       }
