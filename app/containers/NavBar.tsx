@@ -53,6 +53,7 @@ interface Props {
 
 class NavBar extends Component<Props, IState, any> {
   searchRef: TextInput | null = null;
+  subscriptions: Array<any> = [];
 
   constructor(props) {
     super(props);
@@ -73,15 +74,23 @@ class NavBar extends Component<Props, IState, any> {
     const { sites, activeTabIndex } = this.props;
     const site = sites[activeTabIndex];
     site && this.setSwitch(site.url);
-    let self = this;
-    DAVKeyManagerEmitter.addListener("RNKeyEvent", data => {
-      if (this.state.searchIsFocused) {
-        if (this.props.keyMode === KeyMode.Search) {
-          this.typing(data);
+    this.subscriptions.push(
+      DAVKeyManagerEmitter.addListener("RNKeyEvent", data => {
+        if (this.state.searchIsFocused) {
+          if (this.props.keyMode === KeyMode.Search) {
+            this.typing(data);
+          }
         }
-      }
+      }),
+      DAVKeyManagerEmitter.addListener("RNBrowserKeyEvent", this.handleActions),
+      DAVKeyManagerEmitter.addListener("RNAppKeyEvent", this.handleAppActions)
+    );
+  }
+
+  componentWillUnmount() {
+    this.subscriptions.forEach(subscription => {
+      subscription.remove();
     });
-    DAVKeyManagerEmitter.addListener("RNBrowserKeyEvent", this.handleActions);
   }
 
   componentDidUpdate(prevProp, prevState) {
@@ -364,6 +373,15 @@ class NavBar extends Component<Props, IState, any> {
       selectionEnd: newText.length
     });
   }
+
+  handleAppActions = event => {
+    const { dispatch } = this.props;
+    switch (event.action) {
+      case "focusOnSearch":
+        this.searchRef && this.searchRef._root.focus();
+        break;
+    }
+  };
 
   onFocusSearch() {
     const { dispatch, keyMode } = this.props;

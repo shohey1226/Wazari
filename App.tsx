@@ -9,7 +9,7 @@
  */
 
 import React, { Fragment } from "react";
-import { Text, View } from "react-native";
+import { Text, View, NativeModules, NativeEventEmitter } from "react-native";
 import { Provider } from "react-redux";
 import {
   createStackNavigator,
@@ -31,6 +31,10 @@ import NavBar from "./app/containers/NavBar";
 import SettingBackButton from "./app/components/SettingBackButton";
 import configureStore from "./app/configureStore";
 import { PersistGate } from "redux-persist/integration/react";
+import { selectAppKeymap, selectModifiers } from "./app/selectors/keymap";
+import keymapper from "./app/utils/Keymapper";
+const { DAVKeyManager } = NativeModules;
+const DAVKeyManagerEmitter = new NativeEventEmitter(DAVKeyManager);
 
 const { store, persistor } = configureStore({});
 
@@ -74,6 +78,13 @@ let Navigation = createAppContainer(RootStack);
 
 class App extends React.Component {
   componentDidMount() {
+    const state = store.getState();
+    const keymap = selectAppKeymap(state);
+    const modifiers = selectModifiers(state);
+    DAVKeyManager.updateModifiers(modifiers);
+    DAVKeyManager.setAppKeymap(
+      keymapper.convertToNativeFormat(keymap, modifiers)
+    );
     Orientation.addOrientationListener(this._orientationDidChange);
   }
 

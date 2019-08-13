@@ -3,9 +3,9 @@ import { isEqual } from "lodash";
 
 const createDeepEqualSelector = createSelectorCreator(defaultMemoize, isEqual);
 
-const desktopKeymapSelector = state => state.keymap.get("desktop").toJS();
-export const selectDesktopKeymap = createDeepEqualSelector(
-  [desktopKeymapSelector],
+const appKeymapSelector = state => state.keymap.get("app").toJS();
+export const selectAppKeymap = createDeepEqualSelector(
+  [appKeymapSelector],
   keymap => {
     return keymap;
   }

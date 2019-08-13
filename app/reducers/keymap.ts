@@ -18,7 +18,7 @@ const defaultKeymap = {
     altKey: "altKey",
     metaKey: "metaKey"
   },
-  browser: {
+  app: {
     // fullWindow: {
     //   key: "?",
     //   modifiers: {
@@ -29,6 +29,18 @@ const defaultKeymap = {
     //     metaKey: true
     //   }
     // },
+    focusOnSearch: {
+      key: "i",
+      modifiers: {
+        capslockKey: false,
+        shiftKey: false,
+        altKey: true,
+        ctrlKey: false,
+        metaKey: false
+      }
+    }
+  },
+  browser: {
     copy: {
       key: "c",
       modifiers: {
