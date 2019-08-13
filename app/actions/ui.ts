@@ -9,6 +9,7 @@ export const TOGGLE_BACK = "TOGGLE_BACK";
 export const UPDATE_BACK_FORWARD = "UPDATE_BACK_FORWARD";
 export const UPDATE_MODE = "UPDATE_MODE";
 export const UPDATE_ORIENTATION = "UPDATE_ORIENTATION";
+export const UPDATE_FOUCUSED_PANE = "UPDATE_FOUCUSED_PANE";
 
 export function toggleForward() {
   return {
@@ -72,5 +73,12 @@ export function updateOrientation(orientation: string) {
   return {
     type: UPDATE_ORIENTATION,
     orientation: orientation
+  };
+}
+
+export function updateFocusedPane(pane: string) {
+  return {
+    type: UPDATE_FOUCUSED_PANE,
+    pane: pane
   };
 }

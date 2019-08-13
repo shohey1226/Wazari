@@ -74,7 +74,7 @@ class TabWindow extends Component<Props, State, any> {
   }
 
   componentDidUpdate(prevProp) {
-    const { backToggled, forwardToggled, keyMode } = this.props;
+    const { backToggled, forwardToggled, keyMode, focusedPane } = this.props;
     if (prevProp.activeTabIndex !== this.props.activeTabIndex) {
       if (this.props.tabNumber === this.props.activeTabIndex) {
         this.setState({ isActive: true });
@@ -93,8 +93,8 @@ class TabWindow extends Component<Props, State, any> {
 
     if (
       this.state.isActive === true &&
-      prevProp.keyMode === "search" &&
-      prevProp.keyMode !== keyMode
+      prevProp.foucsedPane !== focusedPane &&
+      focusedPane === "browser"
     ) {
       this.focusWindow();
     }
@@ -366,6 +366,7 @@ function mapStateToProps(state, ownProps) {
   const activeTabIndex = state.ui.get("activeTabIndex");
   const sites = selectSites(state);
   const keyMode = state.ui.get("keyMode");
+  const focusedPane = state.ui.get("focusedPane");
   const backToggled = state.ui.get("backToggled");
   const forwardToggled = state.ui.get("forwardToggled");
   const homeUrl = state.user.get("homeUrl");
@@ -377,7 +378,8 @@ function mapStateToProps(state, ownProps) {
     sites,
     activeTabIndex,
     keyMode,
-    homeUrl
+    homeUrl,
+    focusedPane
   };
 }
 

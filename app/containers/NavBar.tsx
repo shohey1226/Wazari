@@ -11,7 +11,7 @@ import { Button, Icon, Header, Item, Input, Left } from "native-base";
 import MCIcon from "react-native-vector-icons/MaterialCommunityIcons";
 import { selectBrowserKeymap, selectModifiers } from "../selectors/keymap";
 import { selectSites } from "../selectors/ui";
-import { updateMode } from "../actions/ui";
+import { updateMode, updateFocusedPane } from "../actions/ui";
 import { addExcludedPattern, removeExcludedPattern } from "../actions/user";
 import { SearchEngine } from "../components/SearchEnginePicker";
 import { KeyMode } from "../types/index.d";
@@ -340,6 +340,7 @@ class NavBar extends Component<Props, IState, any> {
   };
 
   typing(data) {
+    const { dispatch } = this.props;
     console.log(data);
 
     // handle shift key to make it Uppercase
@@ -368,6 +369,10 @@ class NavBar extends Component<Props, IState, any> {
       case "Right":
         this.handleActions({ action: "moveForwardOneChar" });
         return;
+      case "Esc":
+        this.searchRef && this.searchRef._root.blur();
+        dispatch(updateFocusedPane("browser"));
+        return;
     }
     let newText = this.state.text + data.key;
     this.setState({
@@ -381,6 +386,7 @@ class NavBar extends Component<Props, IState, any> {
     const { dispatch } = this.props;
     switch (event.action) {
       case "focusOnSearch":
+        dispatch(updateFocusedPane("search"));
         this.searchRef && this.searchRef._root.focus();
         break;
     }
@@ -397,6 +403,7 @@ class NavBar extends Component<Props, IState, any> {
     this.state.previousKeyMode &&
       this.props.dispatch(updateMode(this.state.previousKeyMode));
     this.setState({ searchIsFocused: false, previousKeyMode: null });
+    this.props.dispatch(updateFocusedPane("browser"));
   }
 
   render() {
