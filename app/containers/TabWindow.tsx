@@ -29,6 +29,8 @@ interface Props {
   tabNumber: number;
   homeUrl: string;
   keyMode: KeyMode;
+  backToggled: boolean;
+  forwardToggled: boolean;
 }
 
 class TabWindow extends Component<Props, State, any> {
@@ -72,9 +74,10 @@ class TabWindow extends Component<Props, State, any> {
   }
 
   componentDidUpdate(prevProp) {
-    const { backToggled, forwardToggled } = this.props;
+    const { backToggled, forwardToggled, keyMode } = this.props;
     if (prevProp.activeTabIndex !== this.props.activeTabIndex) {
       if (this.props.tabNumber === this.props.activeTabIndex) {
+        this.setState({ isActive: true });
         this.focusWindow();
       } else {
         this.blurWindow();
@@ -82,15 +85,22 @@ class TabWindow extends Component<Props, State, any> {
     }
 
     if (prevProp.backToggled !== backToggled && this.state.isActive) {
-      this.webref.goBack();
+      this.webref && this.webref.goBack();
     }
     if (prevProp.forwardToggled !== forwardToggled && this.state.isActive) {
-      this.webref.goForward();
+      this.webref && this.webref.goForward();
+    }
+
+    if (
+      this.state.isActive === true &&
+      prevProp.keyMode === "search" &&
+      prevProp.keyMode !== keyMode
+    ) {
+      this.focusWindow();
     }
   }
 
   focusWindow() {
-    this.setState({ isActive: true });
     this.webref && this.webref.injectJavaScript(focusJS);
   }
 

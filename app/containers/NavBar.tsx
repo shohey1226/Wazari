@@ -131,7 +131,10 @@ class NavBar extends Component<Props, IState, any> {
 
   onEndEditing() {
     const { dispatch, activeTabIndex, sites, searchEngine } = this.props;
-    if (/^http/.test(this.state.text)) {
+    const trimmedText = this.state.text.replace(/^\s+|\s+$/g, "");
+    if (trimmedText === "") {
+      this.searchRef && this.searchRef._root.blur();
+    } else if (/^http/.test(this.state.text)) {
       dispatch(addNewTab(this.state.text));
     } else {
       if (searchEngine === SearchEngine.Google) {
