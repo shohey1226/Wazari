@@ -111,7 +111,7 @@ class TabWindow extends Component<Props, State, any> {
   }
 
   handleBrowserActions = async event => {
-    const { dispatch, activeTabIndex, keyMode, homeUrl } = this.props;
+    const { dispatch, activeTabIndex, keyMode, homeUrl, sites } = this.props;
     if (
       (keyMode === KeyMode.Terminal || keyMode === KeyMode.Text) &&
       this.webref &&
@@ -289,7 +289,6 @@ class TabWindow extends Component<Props, State, any> {
     const { nativeEvent } = syntheticEvent;
     const { dispatch, tabNumber, activeTabIndex } = this.props;
     if (tabNumber === activeTabIndex) {
-      this.focusWindow();
       dispatch(
         updateSite(
           activeTabIndex,
@@ -299,6 +298,8 @@ class TabWindow extends Component<Props, State, any> {
           nativeEvent.canGoForward
         )
       );
+      this.focusWindow();
+      this.setState({ isActive: true });
     }
   }
 
