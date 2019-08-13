@@ -38,7 +38,7 @@ const DAVKeyManagerEmitter = new NativeEventEmitter(DAVKeyManager);
 
 const { store, persistor } = configureStore({});
 
-persistor.purge();
+//persistor.purge();
 
 let RootStack = createStackNavigator({
   Home: {

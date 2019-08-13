@@ -10,7 +10,7 @@ import DeviceInfo from "react-native-device-info";
 import { Button, Icon, Header, Item, Input, Left } from "native-base";
 import MCIcon from "react-native-vector-icons/MaterialCommunityIcons";
 import { selectBrowserKeymap, selectModifiers } from "../selectors/keymap";
-import { selectSites } from "../selectors/ui";
+import { selectActiveUrl, selectActiveSite } from "../selectors/ui";
 import { updateMode, updateFocusedPane } from "../actions/ui";
 import { addExcludedPattern, removeExcludedPattern } from "../actions/user";
 import { SearchEngine } from "../components/SearchEnginePicker";
@@ -42,13 +42,14 @@ interface IState {
 interface Props {
   dispatch: (any) => void;
   activeTabIndex: number;
-  sites: any;
   searchEngine: SearchEngine;
   homeUrl: string;
   excludedPatterns: Array<string>;
   excludedPatternHasChanged: boolean;
   keyMode: KeyMode;
   orientation: string;
+  activeUrl: string | null;
+  activeSite: any | null;
 }
 
 class NavBar extends Component<Props, IState, any> {
@@ -57,7 +58,7 @@ class NavBar extends Component<Props, IState, any> {
 
   constructor(props) {
     super(props);
-    const site = props.sites[props.activeTabIndex];
+    const site = props.activeSite;
     this.state = {
       text: "",
       canGoBack: site && site.canGoBack ? site.canGoBack : false,
@@ -71,9 +72,8 @@ class NavBar extends Component<Props, IState, any> {
   }
 
   componentDidMount() {
-    const { sites, activeTabIndex } = this.props;
-    const site = sites[activeTabIndex];
-    site && this.setSwitch(site.url);
+    const { activeSite, activeUrl } = this.props;
+    activeSite && this.setSwitch(activeUrl);
     this.subscriptions.push(
       DAVKeyManagerEmitter.addListener("RNKeyEvent", data => {
         if (this.state.searchIsFocused) {
@@ -96,29 +96,30 @@ class NavBar extends Component<Props, IState, any> {
   componentDidUpdate(prevProp, prevState) {
     const {
       activeTabIndex,
-      sites,
       excludedPatterns,
       excludedPatternHasChanged,
-      orientation
+      orientation,
+      activeUrl,
+      activeSite
     } = this.props;
-    const site = sites[activeTabIndex];
-    const prevSite = prevProp.sites[prevProp.activeTabIndex];
     if (
-      site &&
-      (activeTabIndex !== prevProp.activeTabIndex || site.url !== prevSite.url)
+      activeSite &&
+      (activeTabIndex !== prevProp.activeTabIndex ||
+        activeUrl !== prevProp.activeUrl)
     ) {
-      this.setState({
-        canGoBack: site.canGoBack,
-        canGoForward: site.canGoForward
-      });
-      this.setSwitch(site.url);
+      activeSite &&
+        this.setState({
+          canGoBack: activeSite.canGoBack,
+          canGoForward: activeSite.canGoForward
+        });
+      this.setSwitch(activeUrl);
     }
 
     if (
-      site &&
+      activeSite &&
       excludedPatternHasChanged !== prevProp.excludedPatternHasChanged
     ) {
-      this.setSwitch(site.url);
+      this.setSwitch(activeUrl);
     }
 
     if (orientation !== prevProp.orientation) {
@@ -130,7 +131,7 @@ class NavBar extends Component<Props, IState, any> {
   }
 
   onEndEditing() {
-    const { dispatch, activeTabIndex, sites, searchEngine } = this.props;
+    const { dispatch, activeTabIndex, searchEngine } = this.props;
     const trimmedText = this.state.text.replace(/^\s+|\s+$/g, "");
     if (trimmedText === "") {
       this.searchRef && this.searchRef._root.blur();
@@ -169,11 +170,10 @@ class NavBar extends Component<Props, IState, any> {
   }
 
   onPressSwitch() {
-    const { dispatch, sites, activeTabIndex } = this.props;
-    const site = sites[activeTabIndex];
+    const { dispatch, activeUrl } = this.props;
     if (this.state.switchOn) {
       dispatch(updateMode(KeyMode.Browser));
-      dispatch(addExcludedPattern(this.urlToPattern(site.url)));
+      dispatch(addExcludedPattern(this.urlToPattern(activeUrl)));
     } else {
       this.state.excludedPattern &&
         dispatch(removeExcludedPattern(this.state.excludedPattern));
@@ -467,7 +467,8 @@ function mapStateToProps(state, ownProps) {
   const keymap = selectBrowserKeymap(state);
   const modifiers = selectModifiers(state);
   const activeTabIndex = state.ui.get("activeTabIndex");
-  const sites = selectSites(state);
+  const activeUrl = selectActiveUrl(state);
+  const activeSite = selectActiveSite(state);
   const searchEngine = state.user.get("searchEngine");
   const homeUrl = state.user.get("homeUrl");
   const excludedPatterns = state.user.get("excludedPatterns").toArray();
@@ -478,13 +479,14 @@ function mapStateToProps(state, ownProps) {
     keymap,
     modifiers,
     activeTabIndex,
-    sites,
     searchEngine,
     homeUrl,
     excludedPatterns,
     excludedPatternHasChanged,
     keyMode,
-    orientation
+    orientation,
+    activeUrl,
+    activeSite
   };
 }
 

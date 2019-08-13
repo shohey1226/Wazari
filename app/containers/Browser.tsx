@@ -47,6 +47,7 @@ interface Props {
   modifiers: any;
   keyMode: KeyMode;
   orientation: string;
+  homeUrl: string;
 }
 
 /* Browser is whole browser controls each windows(tabs) */
@@ -62,10 +63,9 @@ class Browser extends Component<Props, State> {
   }
 
   componentDidMount() {
-    const { dispatch, sites, activeTabIndex } = this.props;
+    const { dispatch, sites, activeTabIndex, homeUrl } = this.props;
     if (sites.length === 0) {
-      dispatch(addNewTab("https://www.wazaterm.com"));
-      dispatch(addNewTab("https://www.google.com"));
+      dispatch(addNewTab(homeUrl));
     }
     this.initKeymaps();
 
@@ -226,6 +226,7 @@ function mapStateToProps(state, ownProps) {
   const sites = selectSites(state);
   const keyMode = state.ui.get("keyMode");
   const orientation = state.ui.get("orientation");
+  const homeUrl = state.user.get("homeUrl");
 
   return {
     sites,
@@ -233,7 +234,8 @@ function mapStateToProps(state, ownProps) {
     modifiers,
     activeTabIndex,
     keyMode,
-    orientation
+    orientation,
+    homeUrl
   };
 }
 
