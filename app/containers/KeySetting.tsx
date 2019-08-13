@@ -20,7 +20,12 @@ import {
   Left,
   Icon
 } from "native-base";
-import { selectModifiers, selectBrowserKeymap } from "../selectors/keymap";
+import ModalFrame from "../components/ModalFrame";
+import {
+  selectModifiers,
+  selectBrowserKeymap,
+  selectAppKeymap
+} from "../selectors/keymap";
 import {
   updateModifier,
   updateActionModifier,
@@ -48,6 +53,7 @@ enum ModalType {
 interface Props {
   modifiers: any;
   browserKeymap: any;
+  appKeymap: any;
   dispatch: (any) => void;
 }
 
@@ -226,13 +232,24 @@ class KeySetting extends Component<Props, States> {
     return word.charAt(0).toUpperCase() + word.substring(1);
   }
 
-  _actionKeyValueChanged(value) {
-    const { dispatch, browserKeymap } = this.props;
+  _actionKeyValueChanged(key) {
+    const { dispatch, browserKeymap, appKeymap } = this.props;
     if (!this.state.action) return;
 
-    const keyFrom = browserKeymap[this.state.action].key;
-    if (this._isUniqueActionKey(this.state.action, value)) {
-      dispatch(updateActionKey(this.state.window, this.state.action, value));
+    let keyFrom = null;
+    switch (this.state.window) {
+      case "app":
+        keyFrom = appKeymap[this.state.action].key;
+        break;
+      case "browser":
+        keyFrom = browserKeymap[this.state.action].key;
+        break;
+      default:
+        return;
+    }
+
+    if (this._isUniqueActionKey(this.state.action, key)) {
+      dispatch(updateActionKey(this.state.window, this.state.action, key));
     } else {
       Alert.alert(`The key and modifiers are being used`, "");
       dispatch(updateActionKey(this.state.window, this.state.action, keyFrom));
@@ -240,10 +257,20 @@ class KeySetting extends Component<Props, States> {
   }
 
   _actionModifierValueChanged(value, modifier) {
-    const { dispatch, browserKeymap } = this.props;
+    const { dispatch, browserKeymap, appKeymap } = this.props;
     if (!this.state.action) return;
+    let valueFrom = null;
+    switch (this.state.window) {
+      case "app":
+        valueFrom = appKeymap[this.state.action].modifiers[modifier];
+        break;
+      case "browser":
+        valueFrom = browserKeymap[this.state.action].modifiers[modifier];
+        break;
+      default:
+        return;
+    }
 
-    const valueFrom = browserKeymap[this.state.action].modifiers[modifier];
     if (this._isUniqueActionModifer(this.state.action, modifier, value)) {
       dispatch(
         updateActionModifier(
@@ -255,6 +282,7 @@ class KeySetting extends Component<Props, States> {
       );
     } else {
       Alert.alert(`The key and modifiers are being used`, "");
+      // revert the change
       dispatch(
         updateActionModifier(
           this.state.window,
@@ -267,17 +295,16 @@ class KeySetting extends Component<Props, States> {
   }
 
   private _isUniqueActionKey(actionName: string, keyTo: string) {
-    const { browserKeymap } = this.props;
-    for (let action in browserKeymap) {
+    const { browserKeymap, appKeymap } = this.props;
+    const allKeymap = { ...browserKeymap, ...appKeymap };
+    for (let action in allKeymap) {
       if (actionName === action) {
+        // ignore itself
         continue;
       }
       if (
-        keyTo === browserKeymap[action].key &&
-        equals(
-          browserKeymap[actionName].modifiers,
-          browserKeymap[action].modifiers
-        )
+        keyTo === allKeymap[action].key &&
+        equals(allKeymap[actionName].modifiers, allKeymap[action].modifiers)
       ) {
         // already being used
         return false;
@@ -291,16 +318,27 @@ class KeySetting extends Component<Props, States> {
     modifier: string,
     value: boolean
   ) {
-    const { browserKeymap } = this.props;
-    let modifiersTo = Object.assign({}, browserKeymap[actionName].modifiers);
+    const { browserKeymap, appKeymap } = this.props;
+    const allKeymap = { ...browserKeymap, ...appKeymap };
+    let modifiersTo;
+    switch (this.state.window) {
+      case "app":
+        modifiersTo = Object.assign({}, appKeymap[actionName].modifiers);
+        break;
+      case "browser":
+        modifiersTo = Object.assign({}, browserKeymap[actionName].modifiers);
+        break;
+      default:
+        return;
+    }
     modifiersTo[modifier] = value;
-    for (let action in browserKeymap) {
+    for (let action in allKeymap) {
       if (actionName === action) {
         continue;
       }
       if (
-        browserKeymap[actionName].key === browserKeymap[action].key &&
-        equals(browserKeymap[action].modifiers, modifiersTo)
+        allKeymap[actionName].key === allKeymap[action].key &&
+        equals(allKeymap[action].modifiers, modifiersTo)
       ) {
         return false;
       }
@@ -326,153 +364,104 @@ class KeySetting extends Component<Props, States> {
   }
 
   renderModalContent() {
-    const { modifiers, browserKeymap } = this.props;
+    const { modifiers, browserKeymap, appKeymap } = this.props;
 
     if (this.state.modalType === ModalType.Mod) {
       return (
-        <View
-          style={{
-            flex: 1,
-            justifyContent: "center",
-            alignItems: "center"
-          }}
-        >
-          <View
-            style={{
-              width: 300,
-              backgroundColor: "white",
-              justifyContent: "center",
-              margin: 10,
-              shadowColor: "#666",
-              shadowOffset: {
-                width: 0,
-                height: 3
-              },
-              shadowRadius: 5,
-              shadowOpacity: 1.0,
-              padding: 10
-            }}
+        <ModalFrame>
+          <Picker
+            selectedValue={modifiers[this.state.focusedModifier]}
+            onValueChange={value => this.onModifierValueChange(value)}
           >
-            <Picker
-              selectedValue={modifiers[this.state.focusedModifier]}
-              onValueChange={value => this.onModifierValueChange(value)}
-            >
-              {this.renderModifierPickerItems()}
-            </Picker>
-            <Button
-              block
-              onPress={() => this.setState({ modalVisible: false })}
-            >
-              <Text style={{ color: "white" }}>CANCEL</Text>
-            </Button>
-          </View>
-        </View>
+            {this.renderModifierPickerItems()}
+          </Picker>
+          <Button block onPress={() => this.setState({ modalVisible: false })}>
+            <Text style={{ color: "white" }}>CANCEL</Text>
+          </Button>
+        </ModalFrame>
       );
     } else {
       let keymap = null;
       if (this.state.window === "browser") {
         keymap = browserKeymap[this.state.action];
+      } else if (this.state.window === "app") {
+        keymap = appKeymap[this.state.action];
       }
+
       if (!keymap) {
         return <View />;
       }
 
       return (
-        <View
-          style={{
-            flex: 1,
-            justifyContent: "center",
-            alignItems: "center"
-          }}
-        >
-          <View
-            style={{
-              width: 300,
-              backgroundColor: "white",
-              justifyContent: "center",
-              margin: 10,
-              shadowColor: "#666",
-              shadowOffset: {
-                width: 0,
-                height: 3
-              },
-              shadowRadius: 5,
-              shadowOpacity: 1.0,
-              padding: 10
-            }}
+        <ModalFrame>
+          <Picker
+            selectedValue={keymap.key}
+            onValueChange={this._actionKeyValueChanged.bind(this)}
           >
-            <Picker
-              selectedValue={keymap.key}
-              onValueChange={this._actionKeyValueChanged.bind(this)}
-            >
-              {this.renderActionKeyPickerItems()}
-            </Picker>
-            <ListItem icon>
-              <Body>
-                <Text>Control(^)</Text>
-              </Body>
-              <Right>
-                <Switch
-                  onValueChange={value =>
-                    this._actionModifierValueChanged(value, "ctrlKey")
-                  }
-                  value={keymap.modifiers.ctrlKey}
-                />
-              </Right>
-            </ListItem>
-            <ListItem icon>
-              <Body>
-                <Text>Alt/Option(⌥)</Text>
-              </Body>
-              <Right>
-                <Switch
-                  onValueChange={value =>
-                    this._actionModifierValueChanged(value, "altKey")
-                  }
-                  value={keymap.modifiers.altKey}
-                />
-              </Right>
-            </ListItem>
-            <ListItem icon>
-              <Body>
-                <Text>Meta/Command(⌘)</Text>
-              </Body>
-              <Right>
-                <Switch
-                  onValueChange={value =>
-                    this._actionModifierValueChanged(value, "metaKey")
-                  }
-                  value={keymap.modifiers.metaKey}
-                />
-              </Right>
-            </ListItem>
-            <ListItem icon>
-              <Body>
-                <Text>Shift(⇧)</Text>
-              </Body>
-              <Right>
-                <Switch
-                  onValueChange={value =>
-                    this._actionModifierValueChanged(value, "shiftKey")
-                  }
-                  value={keymap.modifiers.shiftKey}
-                />
-              </Right>
-            </ListItem>
-            <Button
-              block
-              onPress={() => this.setState({ modalVisible: false })}
-            >
-              <Text style={{ color: "white" }}>CLOSE</Text>
-            </Button>
-          </View>
-        </View>
+            {this.renderActionKeyPickerItems()}
+          </Picker>
+          <ListItem icon>
+            <Body>
+              <Text>Control(^)</Text>
+            </Body>
+            <Right>
+              <Switch
+                onValueChange={value =>
+                  this._actionModifierValueChanged(value, "ctrlKey")
+                }
+                value={keymap.modifiers.ctrlKey}
+              />
+            </Right>
+          </ListItem>
+          <ListItem icon>
+            <Body>
+              <Text>Alt/Option(⌥)</Text>
+            </Body>
+            <Right>
+              <Switch
+                onValueChange={value =>
+                  this._actionModifierValueChanged(value, "altKey")
+                }
+                value={keymap.modifiers.altKey}
+              />
+            </Right>
+          </ListItem>
+          <ListItem icon>
+            <Body>
+              <Text>Meta/Command(⌘)</Text>
+            </Body>
+            <Right>
+              <Switch
+                onValueChange={value =>
+                  this._actionModifierValueChanged(value, "metaKey")
+                }
+                value={keymap.modifiers.metaKey}
+              />
+            </Right>
+          </ListItem>
+          <ListItem icon>
+            <Body>
+              <Text>Shift(⇧)</Text>
+            </Body>
+            <Right>
+              <Switch
+                onValueChange={value =>
+                  this._actionModifierValueChanged(value, "shiftKey")
+                }
+                value={keymap.modifiers.shiftKey}
+              />
+            </Right>
+          </ListItem>
+          <Button block onPress={() => this.setState({ modalVisible: false })}>
+            <Text style={{ color: "white" }}>CLOSE</Text>
+          </Button>
+        </ModalFrame>
       );
     }
   }
 
   render() {
-    const { modifiers } = this.props;
+    const { modifiers, browserKeymap, appKeymap } = this.props;
     return (
       <ScrollView>
         <Separator bordered>
@@ -482,7 +471,8 @@ class KeySetting extends Component<Props, States> {
         <Separator bordered>
           <Text>Shortcuts</Text>
         </Separator>
-        {this.renderActionKeys("browser", this.props.browserKeymap)}
+        {this.renderActionKeys("app", appKeymap)}
+        {this.renderActionKeys("browser", browserKeymap)}
         <Separator bordered>
           <Text style={{ color: "red" }}>Danger zone</Text>
         </Separator>
@@ -509,9 +499,11 @@ class KeySetting extends Component<Props, States> {
 function mapStateToProps(state, ownProps) {
   const modifiers = selectModifiers(state);
   const browserKeymap = selectBrowserKeymap(state);
+  const appKeymap = selectAppKeymap(state);
   return {
     modifiers,
-    browserKeymap
+    browserKeymap,
+    appKeymap
   };
 }
 
