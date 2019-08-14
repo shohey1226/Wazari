@@ -55,6 +55,7 @@ class Browser extends Component<Props, State> {
   tabsRef: Tabs | null = null;
   keyboardDidShowListener: any;
   keyboardDidHideListener: any;
+  subscriptions: Array<any> = [];
 
   constructor(props) {
     super(props);
@@ -68,6 +69,13 @@ class Browser extends Component<Props, State> {
       dispatch(addNewTab(homeUrl));
     }
     this.initKeymaps();
+
+    this.subscriptions.push(
+      DAVKeyManagerEmitter.addListener(
+        "RNBrowserKeyEvent",
+        this.handleBrowserActions
+      )
+    );
 
     // virtual keyboard is used
     // this.keyboardDidShowListener = Keyboard.addListener(
@@ -89,6 +97,9 @@ class Browser extends Component<Props, State> {
   componentWillUnmount() {
     this.keyboardDidShowListener.remove();
     this.keyboardDidHideListener.remove();
+    this.subscriptions.forEach(subscription => {
+      subscription.remove();
+    });
   }
 
   initKeymaps() {
@@ -124,10 +135,7 @@ class Browser extends Component<Props, State> {
 
     if (prevProp.activeTabIndex !== activeTabIndex) {
       if (this.state.activeIndex !== activeTabIndex) {
-        // https://github.com/ptomasroos/react-native-scrollable-tab-view/issues/818
-        setTimeout(() => {
-          this.tabsRef.goToPage(activeTabIndex);
-        }, 300);
+        this.tabsRef.goToPage(activeTabIndex);
       }
     }
 
@@ -135,6 +143,38 @@ class Browser extends Component<Props, State> {
       this.setMode(keyMode);
     }
   }
+
+  handleBrowserActions = async event => {
+    const { dispatch, activeTabIndex, keyMode, homeUrl, sites } = this.props;
+    if (
+      keyMode === KeyMode.Terminal ||
+      keyMode === KeyMode.Text ||
+      keyMode === KeyMode.Browser
+    ) {
+      console.log("action at browser", event);
+      switch (event.action) {
+        case "newTab":
+          dispatch(addNewTab(homeUrl));
+          break;
+        case "nextTab":
+          let nextIndex =
+            activeTabIndex + 1 < sites.length ? activeTabIndex + 1 : 0;
+          dispatch(selectTab(nextIndex));
+          break;
+        case "previousTab":
+          let prevIndex =
+            0 <= activeTabIndex - 1 ? activeTabIndex - 1 : sites.length - 1;
+          dispatch(selectTab(prevIndex));
+          break;
+        case "closeTab":
+          let newSites = sites.slice();
+          newSites.splice(activeTabIndex, 1);
+          let focusedIndex = newSites.length > 0 ? newSites.length - 1 : null;
+          dispatch(closeTab(activeTabIndex, focusedIndex));
+          break;
+      }
+    }
+  };
 
   // https://qiita.com/hirocueki2/items/137400e236189a0a6b3e
   _truncate(str, len) {
@@ -154,10 +194,11 @@ class Browser extends Component<Props, State> {
   //   dispatch(selectTab(index));
   // }
   onChangeTab(tab) {
-    const { dispatch } = this.props;
-    //console.log(tab);
+    const { dispatch, activeTabIndex } = this.props;
+    if (activeTabIndex !== tab.i) {
+      dispatch(selectTab(tab.i));
+    }
     this.setState({ activeIndex: tab.i });
-    dispatch(selectTab(tab.i));
   }
 
   renderTabs() {

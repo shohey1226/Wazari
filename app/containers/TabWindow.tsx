@@ -73,6 +73,12 @@ class TabWindow extends Component<Props, State, any> {
     );
   }
 
+  componentWillUnmount() {
+    this.subscriptions.forEach(subscription => {
+      subscription.remove();
+    });
+  }
+
   componentDidUpdate(prevProp) {
     const { backToggled, forwardToggled, keyMode, focusedPane } = this.props;
     if (prevProp.activeTabIndex !== this.props.activeTabIndex) {
@@ -118,7 +124,7 @@ class TabWindow extends Component<Props, State, any> {
       this.state.isActive &&
       this.state.isLoadingJSInjection === false
     ) {
-      console.log(event);
+      console.log("action at tabwindow", event);
       switch (event.action) {
         case "home":
           this.webref.injectJavaScript(`cursorToBeginning()`);
@@ -143,19 +149,6 @@ class TabWindow extends Component<Props, State, any> {
           break;
         case "goForward":
           this.webref.goForward();
-          break;
-        case "newTab":
-          dispatch(addNewTab(homeUrl));
-          break;
-        case "nextTab":
-          let nextIndex =
-            activeTabIndex + 1 < sites.length ? activeTabIndex + 1 : 0;
-          dispatch(selectTab(nextIndex));
-          break;
-        case "previousTab":
-          let prevIndex =
-            0 <= activeTabIndex - 1 ? activeTabIndex - 1 : sites.length - 1;
-          dispatch(selectTab(prevIndex));
           break;
         case "reload":
           this.webref.reload();
@@ -185,12 +178,6 @@ class TabWindow extends Component<Props, State, any> {
         case "paste":
           let content = await Clipboard.getString();
           this.webref.injectJavaScript(`pasteFromRN("${content}")`);
-          break;
-        case "closeTab":
-          let newSites = sites.slice();
-          newSites.splice(activeTabIndex, 1);
-          let focusedIndex = newSites.length > 0 ? newSites.length - 1 : null;
-          dispatch(closeTab(activeTabIndex, focusedIndex));
           break;
       }
     }
