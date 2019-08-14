@@ -224,7 +224,7 @@ class Browser extends Component<Props, State> {
                 transparent
                 light
                 onPress={() => this.pressCloseTab(i)}
-                style={{ marginTop: 3 }}
+                style={{ alignSelf: "center" }}
               >
                 <Icon
                   name="md-close"
@@ -243,7 +243,7 @@ class Browser extends Component<Props, State> {
 
   render() {
     const { activeTabIndex, orientation } = this.props;
-    let style = {};
+    let style = { height: 35 };
     if (
       orientation === "LANDSCAPE" &&
       DeviceInfo.getDeviceType() === "Handset"
