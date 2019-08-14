@@ -55,6 +55,7 @@ interface Props {
   activeUrl: string | null;
   activeSite: any | null;
   focusedPane: string;
+  sites: any;
 }
 
 class NavBar extends Component<Props, IState, any> {
@@ -146,7 +147,7 @@ class NavBar extends Component<Props, IState, any> {
   }
 
   onEndEditing() {
-    const { dispatch, activeTabIndex, searchEngine } = this.props;
+    const { dispatch, activeTabIndex, searchEngine, sites } = this.props;
     const trimmedText = this.state.text.replace(/^\s+|\s+$/g, "");
     if (trimmedText === "") {
       this.searchRef && this.searchRef._root.blur();
@@ -161,6 +162,9 @@ class NavBar extends Component<Props, IState, any> {
         dispatch(addNewTab(`https://duckduckgo.com/?q=${this.state.text}`));
       }
     }
+    setTimeout(() => {
+      dispatch(selectTab(sites.length));
+    }, 50);
     this.setState({ text: "" });
   }
 
