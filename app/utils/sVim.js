@@ -104,9 +104,9 @@ sVimTab.settings = sVimGlobal.settings;
 // Adding style on hints
 var head = document.head || document.getElementsByTagName('head')[0],
     style = document.createElement('style');
-var css = '.sVim-hint.sVim-hint-form {background-color: #3EFEFF;}';    
+var css = '.sVim-hint.sVim-hint-form {background-color: #007AFF; color: #FFFFFF}';    
 css += ' .sVim-hint.sVim-hint-focused {opacity: 1;font-weight: bold;}';
-css += ' .sVim-hint { background-color: #feda31; border-radius: 2px !important; box-shadow: inset 0 -2px 0 #b39922 !important; color: #000000;font-size: 11px;font-family: Helvetica, Arial, sans-serif; line-height: 10pt; padding:2px 3px;opacity: 0.8; letter-spacing: 0.2em;}';
+css += ' .sVim-hint { background-color: #ff6702; border-radius: 3px !important; color: #FFFFFF;font-size: 11px;font-family: Helvetica, Arial, sans-serif; line-height: 10pt; padding:2px 3px;opacity: 0.8; letter-spacing: 0.2em;}';
 css += ' #sVim-command { -webkit-animation: fadein .2s !important; -webkit-appearance: none !important; background-color: rgba(0, 0, 0, 0.80) !important;  background-position: none !important;  background-repeat: none !important;  border-radius: 0 !important;  border: 0 !important;  box-shadow: none !important;  box-sizing: content-box !important;  color: #FFFFFF !important;  display: none;  font-family: "Helvetica Neue" !important;  font-size: 13px !important;  font-style: normal !important;  left: 0 !important;  letter-spacing: normal !important;  line-height: 1 !important;  margin: 0 !important;  min-height: 0 !important;  outline-style: none !important;  outline: 0 !important;  padding: 2px 0 0 10px !important;  position: fixed !important;  right: 0 !important;  text-align: start !important;  text-indent: 0px !important;  text-shadow: none !important;  text-transform: none !important;  vertical-align: none !important;  width: 100% !important;  word-spacing: normal !important;  z-index: 2147483647 !important;}';
 css += ' @-webkit-keyframes fadein {  from {    opacity: 0;  }  to {    opacity: 1;  }}';
 style.type = 'text/css';
