@@ -170,18 +170,7 @@ class Browser extends Component<Props, State> {
           dispatch(selectTab(prevIndex));
           break;
         case "closeTab":
-          dispatch(closeTab(activeTabIndex));
-          let newSites = sites.slice();
-          newSites.splice(activeTabIndex, 1);
-          if (newSites.length > 0) {
-            let focusedIndex = newSites.length - 1;
-            dispatch(selectTab(focusedIndex));
-          }
-
-          // let newSites = sites.slice();
-          // newSites.splice(activeTabIndex, 1);
-          // let focusedIndex = newSites.length > 0 ? newSites.length - 1 : null;
-          // dispatch(closeTab(activeTabIndex, focusedIndex));
+          this.pressCloseTab(activeTabIndex);
           break;
       }
     }
@@ -193,13 +182,16 @@ class Browser extends Component<Props, State> {
   }
 
   pressCloseTab(i) {
-    const { dispatch, sites } = this.props;
+    const { dispatch, sites, activeTabIndex } = this.props;
     dispatch(closeTab(i));
-    let newSites = sites.slice();
-    newSites.splice(i, 1);
-    if (newSites.length > 0) {
-      let focusedIndex = newSites.length - 1;
-      dispatch(selectTab(focusedIndex));
+    if (i === activeTabIndex) {
+      if (sites.length > i + 1) {
+        dispatch(selectTab(i));
+      } else {
+        setTimeout(() => {
+          dispatch(selectTab(i - 1));
+        }, 50);
+      }
     }
   }
 
@@ -221,7 +213,7 @@ class Browser extends Component<Props, State> {
     for (let i = 0; i < sites.length; i++) {
       const tabTitle = sites[i].title
         ? this._truncate(sites[i].title, 12)
-        : sites[i].url;
+        : this._truncate(sites[i].url, 12);
       tabs.push(
         <Tab
           key={`tab-${i}`}
