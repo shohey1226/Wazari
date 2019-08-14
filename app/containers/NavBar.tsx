@@ -10,7 +10,11 @@ import DeviceInfo from "react-native-device-info";
 import { Button, Icon, Header, Item, Input, Left } from "native-base";
 import MCIcon from "react-native-vector-icons/MaterialCommunityIcons";
 import { selectBrowserKeymap, selectModifiers } from "../selectors/keymap";
-import { selectActiveUrl, selectActiveSite } from "../selectors/ui";
+import {
+  selectActiveUrl,
+  selectActiveSite,
+  selectSites
+} from "../selectors/ui";
 import { updateMode, updateFocusedPane } from "../actions/ui";
 import { addExcludedPattern, removeExcludedPattern } from "../actions/user";
 import { SearchEngine } from "../components/SearchEnginePicker";
@@ -160,8 +164,11 @@ class NavBar extends Component<Props, IState, any> {
   }
 
   onPressAdd() {
-    const { dispatch, homeUrl } = this.props;
+    const { dispatch, homeUrl, sites } = this.props;
     dispatch(addNewTab(homeUrl));
+    setTimeout(() => {
+      dispatch(selectTab(sites.length));
+    }, 50);
   }
 
   onPressSetting() {
@@ -468,6 +475,7 @@ function mapStateToProps(state, ownProps) {
   const modifiers = selectModifiers(state);
   const activeTabIndex = state.ui.get("activeTabIndex");
   const activeUrl = selectActiveUrl(state);
+  const sites = selectSites(state);
   const activeSite = selectActiveSite(state);
   const searchEngine = state.user.get("searchEngine");
   const homeUrl = state.user.get("homeUrl");
@@ -486,7 +494,8 @@ function mapStateToProps(state, ownProps) {
     keyMode,
     orientation,
     activeUrl,
-    activeSite
+    activeSite,
+    sites
   };
 }
 

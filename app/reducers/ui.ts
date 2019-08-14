@@ -63,10 +63,10 @@ export default function ui(state = initialState, action) {
         mode = KeyMode.Terminal;
       }
       return state.set("activeTabIndex", action.index).set("keyMode", mode);
+
     case CLOSE_TAB:
-      return state
-        .set("sites", state.get("sites").delete(action.index))
-        .set("activeTabIndex", action.focusedIndex);
+      return state.set("sites", state.get("sites").delete(action.index));
+
     case SELECT_TAB:
       return state.set("activeTabIndex", action.index);
     case UPDATE_SITE:
