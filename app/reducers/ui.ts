@@ -48,9 +48,11 @@ export default function ui(state = initialState, action) {
       return state.set("forwardToggled", !state.get("forwardToggled"));
 
     case ADD_NEW_TAB:
-      return state
-        .set("sites", state.get("sites").push(Map({ url: action.url })))
-        .set("activeTabIndex", state.get("sites").size);
+      return state.set(
+        "sites",
+        state.get("sites").push(Map({ url: action.url }))
+      );
+
     case SELECT_TAB:
       mode = KeyMode.Text;
       if (

@@ -155,6 +155,9 @@ class Browser extends Component<Props, State> {
       switch (event.action) {
         case "newTab":
           dispatch(addNewTab(homeUrl));
+          setTimeout(() => {
+            dispatch(selectTab(sites.length));
+          }, 50);
           break;
         case "nextTab":
           let nextIndex =
