@@ -35,7 +35,7 @@ const initialState: UiState = fromJS({
   keyMode: KeyMode.Text,
   backToggled: false,
   forwardToggled: false,
-  foucsedPane: "browser"
+  focusedPane: "browser"
 });
 
 export default function ui(state = initialState, action) {

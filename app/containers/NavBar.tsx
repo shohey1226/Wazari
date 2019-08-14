@@ -54,6 +54,7 @@ interface Props {
   orientation: string;
   activeUrl: string | null;
   activeSite: any | null;
+  focusedPane: string;
 }
 
 class NavBar extends Component<Props, IState, any> {
@@ -99,12 +100,14 @@ class NavBar extends Component<Props, IState, any> {
 
   componentDidUpdate(prevProp, prevState) {
     const {
+      dispatch,
       activeTabIndex,
       excludedPatterns,
       excludedPatternHasChanged,
       orientation,
       activeUrl,
-      activeSite
+      activeSite,
+      focusedPane
     } = this.props;
     if (
       activeSite &&
@@ -128,6 +131,14 @@ class NavBar extends Component<Props, IState, any> {
 
     if (orientation !== prevProp.orientation) {
       this.props.navigate("Home", { orientation: orientation });
+    }
+
+    if (prevProp.focusedPane !== focusedPane) {
+      if (focusedPane === "search") {
+        dispatch(updateMode(KeyMode.Search));
+      } else if (focusedPane === "browser") {
+        dispatch(updateMode(KeyMode.Text));
+      }
     }
 
     // console.log("prev", prevState.selectionStart);
@@ -378,7 +389,6 @@ class NavBar extends Component<Props, IState, any> {
         return;
       case "Esc":
         this.searchRef && this.searchRef._root.blur();
-        dispatch(updateFocusedPane("browser"));
         return;
     }
     let newText = this.state.text + data.key;
@@ -393,7 +403,6 @@ class NavBar extends Component<Props, IState, any> {
     const { dispatch } = this.props;
     switch (event.action) {
       case "focusOnSearch":
-        dispatch(updateFocusedPane("search"));
         this.searchRef && this.searchRef._root.focus();
         break;
     }
@@ -401,16 +410,14 @@ class NavBar extends Component<Props, IState, any> {
 
   onFocusSearch() {
     const { dispatch, keyMode } = this.props;
-    this.setState({ searchIsFocused: true, previousKeyMode: keyMode });
-    this.props.dispatch(updateMode(KeyMode.Search));
+    this.setState({ searchIsFocused: true });
+    dispatch(updateFocusedPane("search"));
   }
 
   onBlurSearch() {
     const { dispatch } = this.props;
-    this.state.previousKeyMode &&
-      this.props.dispatch(updateMode(this.state.previousKeyMode));
-    this.setState({ searchIsFocused: false, previousKeyMode: null });
-    this.props.dispatch(updateFocusedPane("browser"));
+    this.setState({ searchIsFocused: false });
+    dispatch(updateFocusedPane("browser"));
   }
 
   render() {
@@ -483,6 +490,7 @@ function mapStateToProps(state, ownProps) {
   const excludedPatternHasChanged = state.user.get("excludedPatternHasChanged");
   const keyMode = state.ui.get("keyMode");
   const orientation = state.ui.get("orientation");
+  const focusedPane = state.ui.get("focusedPane");
   return {
     keymap,
     modifiers,
@@ -495,7 +503,8 @@ function mapStateToProps(state, ownProps) {
     orientation,
     activeUrl,
     activeSite,
-    sites
+    sites,
+    focusedPane
   };
 }
 
