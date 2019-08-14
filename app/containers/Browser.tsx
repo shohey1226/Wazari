@@ -228,7 +228,7 @@ class Browser extends Component<Props, State> {
               >
                 <Icon
                   name="md-close"
-                  style={{ marginLeft: 5, marginRight: 1 }}
+                  style={{ marginLeft: 5, marginRight: 1, fontSize: 13 }}
                 />
               </Button>
             </TabHeading>
