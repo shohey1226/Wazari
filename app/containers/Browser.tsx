@@ -22,6 +22,7 @@ import {
 import DeviceInfo from "react-native-device-info";
 import TabWindow from "./TabWindow";
 import { selectSites } from "../selectors/ui";
+import { selectBrowserKeymap, selectModifiers } from "../selectors/keymap";
 import { addNewTab, selectTab, closeTab, updateMode } from "../actions/ui";
 import keymapper from "../utils/Keymapper";
 import { KeyMode } from "../types/index.d";
@@ -63,11 +64,25 @@ class Browser extends Component<Props, State> {
   }
 
   componentDidMount() {
-    const { dispatch, sites, activeTabIndex, homeUrl, keyMode } = this.props;
+    const {
+      dispatch,
+      sites,
+      activeTabIndex,
+      homeUrl,
+      keyMode,
+      modifiers,
+      keymap
+    } = this.props;
+
     if (sites.length === 0) {
       dispatch(addNewTab(homeUrl));
     }
+
     this.setIOSMode(keyMode);
+
+    DAVKeyManager.setBrowserKeymap(
+      keymapper.convertToNativeFormat(keymap, modifiers)
+    );
 
     this.subscriptions.push(
       DAVKeyManagerEmitter.addListener(
@@ -132,7 +147,7 @@ class Browser extends Component<Props, State> {
         break;
       case KeyMode.Search:
         DAVKeyManager.turnOnKeymap();
-        DAVKeyManager.setMode("text");
+        DAVKeyManager.setMode("browser");
         break;
     }
   }
@@ -140,15 +155,15 @@ class Browser extends Component<Props, State> {
   componentDidUpdate(prevProp: Props) {
     const { activeTabIndex, sites, keyMode } = this.props;
 
-    // Set iOS keymap!!!
-    if (prevProp.keyMode !== keyMode) {
-      this.setIOSMode(keyMode);
-    }
-
     if (prevProp.activeTabIndex !== activeTabIndex) {
       if (this.state.activeIndex !== activeTabIndex) {
         this.tabsRef.goToPage(activeTabIndex);
       }
+    }
+
+    // Set iOS keymap!!!
+    if (prevProp.keyMode !== keyMode) {
+      this.setIOSMode(keyMode);
     }
   }
 
@@ -275,6 +290,8 @@ class Browser extends Component<Props, State> {
 }
 
 function mapStateToProps(state, ownProps) {
+  const keymap = selectBrowserKeymap(state);
+  const modifiers = selectModifiers(state);
   const activeTabIndex = state.ui.get("activeTabIndex");
   const sites = selectSites(state);
   const keyMode = state.ui.get("keyMode");
@@ -283,6 +300,8 @@ function mapStateToProps(state, ownProps) {
 
   return {
     sites,
+    keymap,
+    modifiers,
     activeTabIndex,
     keyMode,
     orientation,

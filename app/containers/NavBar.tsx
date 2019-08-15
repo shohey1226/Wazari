@@ -230,7 +230,7 @@ class NavBar extends Component<Props, IState, any> {
   }
 
   setSwitch(url) {
-    const { excludedPatterns } = this.props;
+    const { excludedPatterns, dispatch, keyMode } = this.props;
     let switchOn = true;
     let pattern: string | null = null;
     for (let p of excludedPatterns) {
@@ -244,6 +244,15 @@ class NavBar extends Component<Props, IState, any> {
     if (this.state.switchOn !== switchOn) {
       this.setState({ switchOn: switchOn, excludedPattern: pattern });
     }
+    // if (switchOn) {
+    //   if (keyMode !== KeyMode.Text) {
+    //     dispatch(updateMode(KeyMode.Text));
+    //   }
+    // } else {
+    //   if (keyMode !== KeyMode.Browser) {
+    //     dispatch(updateMode(KeyMode.Browser));
+    //   }
+    // }
   }
 
   handleActions = async event => {
