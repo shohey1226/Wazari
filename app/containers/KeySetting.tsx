@@ -86,7 +86,7 @@ class KeySetting extends Component<Props, States> {
   }
 
   componentDidUpdate(prevProps) {
-    const { modifiers, browserKeymap } = this.props;
+    const { modifiers, browserKeymap, appKeymap } = this.props;
 
     // Update modifiers
     if (!equals(modifiers, prevProps.modifiers)) {
@@ -94,11 +94,20 @@ class KeySetting extends Component<Props, States> {
       DAVKeyManager.setBrowserKeymap(
         keymapper.convertToNativeFormat(browserKeymap, modifiers)
       );
+      DAVKeyManager.setAppKeymap(
+        keymapper.convertToNativeFormat(appKeymap, modifiers)
+      );
     }
 
     if (!isEqual(browserKeymap, prevProps.browserKeymap)) {
       DAVKeyManager.setBrowserKeymap(
         keymapper.convertToNativeFormat(browserKeymap, modifiers)
+      );
+    }
+
+    if (!isEqual(appKeymap, prevProps.appKeymap)) {
+      DAVKeyManager.setAppKeymap(
+        keymapper.convertToNativeFormat(appKeymap, modifiers)
       );
     }
   }
