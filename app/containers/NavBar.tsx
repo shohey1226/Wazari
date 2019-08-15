@@ -77,13 +77,7 @@ class NavBar extends Component<Props, IState, any> {
   componentDidMount() {
     const { activeSite, activeUrl } = this.props;
     this.subscriptions.push(
-      DAVKeyManagerEmitter.addListener("RNKeyEvent", data => {
-        if (this.state.searchIsFocused) {
-          if (this.props.keyMode === KeyMode.Search) {
-            this.typing(data);
-          }
-        }
-      }),
+      DAVKeyManagerEmitter.addListener("RNKeyEvent", this.typing),
       DAVKeyManagerEmitter.addListener("RNBrowserKeyEvent", this.handleActions),
       DAVKeyManagerEmitter.addListener("RNAppKeyEvent", this.handleAppActions)
     );
@@ -333,47 +327,48 @@ class NavBar extends Component<Props, IState, any> {
     }
   };
 
-  typing(data) {
-    const { dispatch } = this.props;
+  typing = data => {
+    const { dispatch, keyMode } = this.props;
     console.log(data);
-
-    // handle shift key to make it Uppercase
-    if (data.modifiers.shiftKey) {
-      if (data.key.match(/[a-z]/)) {
-        data.key = data.key.toUpperCase();
+    if (this.state.searchIsFocused && keyMode === KeyMode.Search) {
+      // handle shift key to make it Uppercase
+      if (data.modifiers.shiftKey) {
+        if (data.key.match(/[a-z]/)) {
+          data.key = data.key.toUpperCase();
+        }
       }
-    }
 
-    let text = this.state.text;
-    switch (data.key) {
-      case "Backspace":
-        this.setState({
-          text: text.slice(0, -1),
-          selectionStart: text.length - 1,
-          selectionEnd: text.length - 1
-        });
-        return;
-      case "Up":
-        return;
-      case "Down":
-        return;
-      case "Left":
-        this.handleActions({ action: "moveBackOneChar" });
-        return;
-      case "Right":
-        this.handleActions({ action: "moveForwardOneChar" });
-        return;
-      case "Esc":
-        this.searchRef && this.searchRef._root.blur();
-        return;
+      let text = this.state.text;
+      switch (data.key) {
+        case "Backspace":
+          this.setState({
+            text: text.slice(0, -1),
+            selectionStart: text.length - 1,
+            selectionEnd: text.length - 1
+          });
+          return;
+        case "Up":
+          return;
+        case "Down":
+          return;
+        case "Left":
+          this.handleActions({ action: "moveBackOneChar" });
+          return;
+        case "Right":
+          this.handleActions({ action: "moveForwardOneChar" });
+          return;
+        case "Esc":
+          this.searchRef && this.searchRef._root.blur();
+          return;
+      }
+      let newText = this.state.text + data.key;
+      this.setState({
+        text: newText,
+        selectionStart: newText.length,
+        selectionEnd: newText.length
+      });
     }
-    let newText = this.state.text + data.key;
-    this.setState({
-      text: newText,
-      selectionStart: newText.length,
-      selectionEnd: newText.length
-    });
-  }
+  };
 
   handleAppActions = event => {
     const { dispatch } = this.props;

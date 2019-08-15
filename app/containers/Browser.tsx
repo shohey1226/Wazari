@@ -148,7 +148,7 @@ class Browser extends Component<Props, State> {
         break;
       case KeyMode.Search:
         DAVKeyManager.turnOnKeymap();
-        DAVKeyManager.setMode("browser");
+        DAVKeyManager.setMode("text");
         break;
     }
   }
