@@ -102,7 +102,8 @@ class NavBar extends Component<Props, IState, any> {
       orientation,
       activeUrl,
       activeSite,
-      focusedPane
+      focusedPane,
+      keyMode
     } = this.props;
     if (
       activeSite &&
@@ -123,8 +124,10 @@ class NavBar extends Component<Props, IState, any> {
     if (prevProp.focusedPane !== focusedPane) {
       if (focusedPane === "search") {
         dispatch(updateMode(KeyMode.Search));
+        this.setState({ previousKeyMode: keyMode });
       } else if (focusedPane === "browser") {
-        dispatch(updateMode(KeyMode.Text));
+        dispatch(updateMode(this.state.previousKeyMode));
+        this.setState({ previousKeyMode: null });
       }
     }
 
@@ -137,6 +140,7 @@ class NavBar extends Component<Props, IState, any> {
     const trimmedText = this.state.text.replace(/^\s+|\s+$/g, "");
     if (trimmedText === "") {
       this.searchRef && this.searchRef._root.blur();
+      return;
     } else if (/^http/.test(this.state.text)) {
       dispatch(addNewTab(this.state.text));
     } else {
