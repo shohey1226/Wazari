@@ -7,7 +7,8 @@ import {
   TOGGLE_FORWARD,
   TOGGLE_BACK,
   UPDATE_ORIENTATION,
-  UPDATE_FOUCUSED_PANE
+  UPDATE_FOUCUSED_PANE,
+  UPDATE_KEY_SWITCH
 } from "../actions/ui";
 import { Map, fromJS } from "immutable";
 import { KeyMode } from "../types/index.d";
@@ -27,6 +28,7 @@ export interface UiState extends Map<any, any> {
   forwardToggled: boolean;
   orientation: string;
   focusedPane: string;
+  keySwitchOn: boolean;
 }
 
 const initialState: UiState = fromJS({
@@ -35,7 +37,8 @@ const initialState: UiState = fromJS({
   keyMode: KeyMode.Text,
   backToggled: false,
   forwardToggled: false,
-  focusedPane: "browser"
+  focusedPane: "browser",
+  keySwitchOn: true
 });
 
 export default function ui(state = initialState, action) {
@@ -89,6 +92,9 @@ export default function ui(state = initialState, action) {
 
     case UPDATE_MODE:
       return state.set("keyMode", action.mode);
+
+    case UPDATE_KEY_SWITCH:
+      return state.set("keySwitchOn", action.switchState);
 
     case UPDATE_FOUCUSED_PANE:
       return state.set("focusedPane", action.pane);

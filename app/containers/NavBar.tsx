@@ -15,7 +15,7 @@ import {
   selectActiveSite,
   selectSites
 } from "../selectors/ui";
-import { updateMode, updateFocusedPane } from "../actions/ui";
+import { updateMode, updateFocusedPane, updateKeySwitch } from "../actions/ui";
 import { addExcludedPattern, removeExcludedPattern } from "../actions/user";
 import { SearchEngine } from "../components/SearchEnginePicker";
 import { KeyMode } from "../types/index.d";
@@ -35,7 +35,6 @@ interface IState {
   text: string;
   canGoBack: boolean;
   canGoForward: boolean;
-  switchOn: boolean;
   excludedPattern: string | null;
   searchIsFocused: boolean;
   previousKeyMode: KeyMode | null;
@@ -48,14 +47,13 @@ interface Props {
   activeTabIndex: number;
   searchEngine: SearchEngine;
   homeUrl: string;
-  excludedPatterns: Array<string>;
-  excludedPatternHasChanged: boolean;
   keyMode: KeyMode;
   orientation: string;
   activeUrl: string | null;
   activeSite: any | null;
   focusedPane: string;
   sites: any;
+  keySwitchOn: boolean;
 }
 
 class NavBar extends Component<Props, IState, any> {
@@ -69,7 +67,6 @@ class NavBar extends Component<Props, IState, any> {
       text: "",
       canGoBack: site && site.canGoBack ? site.canGoBack : false,
       canGoForward: site && site.canGoForward ? site.canGoForward : false,
-      switchOn: true,
       searchIsFocused: false,
       previousKeyMode: null,
       selectionStart: 0,
@@ -79,7 +76,6 @@ class NavBar extends Component<Props, IState, any> {
 
   componentDidMount() {
     const { activeSite, activeUrl } = this.props;
-    activeSite && this.setSwitch(activeUrl);
     this.subscriptions.push(
       DAVKeyManagerEmitter.addListener("RNKeyEvent", data => {
         if (this.state.searchIsFocused) {
@@ -103,8 +99,6 @@ class NavBar extends Component<Props, IState, any> {
     const {
       dispatch,
       activeTabIndex,
-      excludedPatterns,
-      excludedPatternHasChanged,
       orientation,
       activeUrl,
       activeSite,
@@ -120,14 +114,6 @@ class NavBar extends Component<Props, IState, any> {
           canGoBack: activeSite.canGoBack,
           canGoForward: activeSite.canGoForward
         });
-      this.setSwitch(activeUrl);
-    }
-
-    if (
-      activeSite &&
-      excludedPatternHasChanged !== prevProp.excludedPatternHasChanged
-    ) {
-      this.setSwitch(activeUrl);
     }
 
     if (orientation !== prevProp.orientation) {
@@ -192,15 +178,14 @@ class NavBar extends Component<Props, IState, any> {
   }
 
   onPressSwitch() {
-    const { dispatch, activeUrl } = this.props;
-    if (this.state.switchOn) {
-      dispatch(updateMode(KeyMode.Browser));
-      dispatch(addExcludedPattern(this.urlToPattern(activeUrl)));
+    const { dispatch, activeUrl, keySwitchOn } = this.props;
+    const pattern = this.urlToPattern(activeUrl);
+    if (keySwitchOn) {
+      dispatch(addExcludedPattern(pattern));
     } else {
-      this.state.excludedPattern &&
-        dispatch(removeExcludedPattern(this.state.excludedPattern));
-      dispatch(updateMode(KeyMode.Text));
+      dispatch(removeExcludedPattern(pattern));
     }
+    dispatch(updateKeySwitch(!keySwitchOn));
   }
 
   urlToPattern(url) {
@@ -212,7 +197,7 @@ class NavBar extends Component<Props, IState, any> {
   }
 
   switchIcon() {
-    if (this.state.switchOn) {
+    if (this.props.keySwitchOn) {
       return (
         <MCIcon
           name="toggle-switch"
@@ -227,32 +212,6 @@ class NavBar extends Component<Props, IState, any> {
         />
       );
     }
-  }
-
-  setSwitch(url) {
-    const { excludedPatterns, dispatch, keyMode } = this.props;
-    let switchOn = true;
-    let pattern: string | null = null;
-    for (let p of excludedPatterns) {
-      let regex = new RegExp(p);
-      if (regex.test(url)) {
-        switchOn = false;
-        pattern = p;
-        break;
-      }
-    }
-    if (this.state.switchOn !== switchOn) {
-      this.setState({ switchOn: switchOn, excludedPattern: pattern });
-    }
-    // if (switchOn) {
-    //   if (keyMode !== KeyMode.Text) {
-    //     dispatch(updateMode(KeyMode.Text));
-    //   }
-    // } else {
-    //   if (keyMode !== KeyMode.Browser) {
-    //     dispatch(updateMode(KeyMode.Browser));
-    //   }
-    // }
   }
 
   handleActions = async event => {
@@ -509,25 +468,23 @@ function mapStateToProps(state, ownProps) {
   const activeSite = selectActiveSite(state);
   const searchEngine = state.user.get("searchEngine");
   const homeUrl = state.user.get("homeUrl");
-  const excludedPatterns = state.user.get("excludedPatterns").toArray();
-  const excludedPatternHasChanged = state.user.get("excludedPatternHasChanged");
   const keyMode = state.ui.get("keyMode");
   const orientation = state.ui.get("orientation");
   const focusedPane = state.ui.get("focusedPane");
+  const keySwitchOn = state.ui.get("keySwitchOn");
   return {
     keymap,
     modifiers,
     activeTabIndex,
     searchEngine,
     homeUrl,
-    excludedPatterns,
-    excludedPatternHasChanged,
     keyMode,
     orientation,
     activeUrl,
     activeSite,
     sites,
-    focusedPane
+    focusedPane,
+    keySwitchOn
   };
 }
 

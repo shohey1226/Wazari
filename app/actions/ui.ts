@@ -10,6 +10,7 @@ export const UPDATE_BACK_FORWARD = "UPDATE_BACK_FORWARD";
 export const UPDATE_MODE = "UPDATE_MODE";
 export const UPDATE_ORIENTATION = "UPDATE_ORIENTATION";
 export const UPDATE_FOUCUSED_PANE = "UPDATE_FOUCUSED_PANE";
+export const UPDATE_KEY_SWITCH = "UPDATE_KEY_SWITCH";
 
 export function toggleForward() {
   return {
@@ -65,6 +66,13 @@ export function updateMode(mode: KeyMode) {
   return {
     type: UPDATE_MODE,
     mode: mode
+  };
+}
+
+export function updateKeySwitch(switchState: boolean) {
+  return {
+    type: UPDATE_KEY_SWITCH,
+    switchState: switchState
   };
 }
 

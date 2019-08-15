@@ -48,6 +48,7 @@ interface Props {
   keyMode: KeyMode;
   orientation: string;
   homeUrl: string;
+  keySwitchOn: boolean;
 }
 
 /* Browser is whole browser controls each windows(tabs) */
@@ -153,7 +154,13 @@ class Browser extends Component<Props, State> {
   }
 
   componentDidUpdate(prevProp: Props) {
-    const { activeTabIndex, sites, keyMode } = this.props;
+    const {
+      activeTabIndex,
+      sites,
+      keyMode,
+      keySwitchOn,
+      dispatch
+    } = this.props;
 
     if (prevProp.activeTabIndex !== activeTabIndex) {
       if (this.state.activeIndex !== activeTabIndex) {
@@ -164,6 +171,14 @@ class Browser extends Component<Props, State> {
     // Set iOS keymap!!!
     if (prevProp.keyMode !== keyMode) {
       this.setIOSMode(keyMode);
+    }
+
+    if (prevProp.keySwitchOn !== keySwitchOn) {
+      if (keySwitchOn) {
+        dispatch(updateMode(KeyMode.Text));
+      } else {
+        dispatch(updateMode(KeyMode.Browser));
+      }
     }
   }
 
@@ -297,6 +312,7 @@ function mapStateToProps(state, ownProps) {
   const keyMode = state.ui.get("keyMode");
   const orientation = state.ui.get("orientation");
   const homeUrl = state.user.get("homeUrl");
+  const keySwitchOn = state.ui.get("keySwitchOn");
 
   return {
     sites,
@@ -305,7 +321,8 @@ function mapStateToProps(state, ownProps) {
     activeTabIndex,
     keyMode,
     orientation,
-    homeUrl
+    homeUrl,
+    keySwitchOn
   };
 }
 

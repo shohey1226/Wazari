@@ -26,5 +26,4 @@ export enum KeyMode {
 | terminal | input    | app+input         |
 | browser  | browser  | app+browser       |
 +----------+----------+-------------------+
-
 */

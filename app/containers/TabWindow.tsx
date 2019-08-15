@@ -10,8 +10,14 @@ import { connect } from "react-redux";
 import DeviceInfo from "react-native-device-info";
 import sVim from "../utils/sVim";
 import { selectBrowserKeymap, selectModifiers } from "../selectors/keymap";
-import { addNewTab, selectTab, updateSite, closeTab } from "../actions/ui";
-import { selectSites } from "../selectors/ui";
+import {
+  addNewTab,
+  selectTab,
+  updateSite,
+  closeTab,
+  updateKeySwitch
+} from "../actions/ui";
+import { selectSites, selectActiveUrl } from "../selectors/ui";
 import { KeyMode } from "../types/index.d";
 
 const { DAVKeyManager } = NativeModules;
@@ -31,6 +37,9 @@ interface Props {
   keyMode: KeyMode;
   backToggled: boolean;
   forwardToggled: boolean;
+  excludedPatterns: Array<string>;
+  keySwitchOn: boolean;
+  activeUrl: string;
 }
 
 class TabWindow extends Component<Props, State, any> {
@@ -80,16 +89,30 @@ class TabWindow extends Component<Props, State, any> {
   }
 
   componentDidUpdate(prevProp) {
-    const { backToggled, forwardToggled, keyMode, focusedPane } = this.props;
+    const {
+      backToggled,
+      forwardToggled,
+      keyMode,
+      focusedPane,
+      activeUrl,
+      keySwitchOn
+    } = this.props;
+
+    // tab is chagned
     if (prevProp.activeTabIndex !== this.props.activeTabIndex) {
       if (this.props.tabNumber === this.props.activeTabIndex) {
         this.setState({ isActive: true });
         this.focusWindow();
+
+        if (activeUrl !== prevProp.activeUrl) {
+          this.setSwitch(activeUrl);
+        }
       } else {
         this.blurWindow();
       }
     }
 
+    // toggle back and forward buttons
     if (prevProp.backToggled !== backToggled && this.state.isActive) {
       this.webref && this.webref.goBack();
     }
@@ -97,6 +120,7 @@ class TabWindow extends Component<Props, State, any> {
       this.webref && this.webref.goForward();
     }
 
+    // focused pane is changed to browser
     if (
       this.state.isActive === true &&
       prevProp.foucsedPane !== focusedPane &&
@@ -104,6 +128,21 @@ class TabWindow extends Component<Props, State, any> {
     ) {
       this.focusWindow();
     }
+  }
+
+  setSwitch(url) {
+    const { excludedPatterns, dispatch, keyMode, keySwitchOn } = this.props;
+    let switchOn = true;
+    let pattern: string | null = null;
+    for (let p of excludedPatterns) {
+      let regex = new RegExp(p);
+      if (regex.test(url)) {
+        switchOn = false;
+        pattern = p;
+        break;
+      }
+    }
+    keySwitchOn !== switchOn && dispatch(updateKeySwitch(switchOn));
   }
 
   focusWindow() {
@@ -352,12 +391,15 @@ function mapStateToProps(state, ownProps) {
   const keymap = selectBrowserKeymap(state);
   const modifiers = selectModifiers(state);
   const activeTabIndex = state.ui.get("activeTabIndex");
+  const activeUrl = selectActiveUrl(state);
   const sites = selectSites(state);
   const keyMode = state.ui.get("keyMode");
   const focusedPane = state.ui.get("focusedPane");
   const backToggled = state.ui.get("backToggled");
   const forwardToggled = state.ui.get("forwardToggled");
   const homeUrl = state.user.get("homeUrl");
+  const keySwitchOn = state.ui.get("keySwitchOn");
+  const excludedPatterns = state.user.get("excludedPatterns").toArray();
   return {
     backToggled,
     forwardToggled,
@@ -367,7 +409,10 @@ function mapStateToProps(state, ownProps) {
     activeTabIndex,
     keyMode,
     homeUrl,
-    focusedPane
+    focusedPane,
+    excludedPatterns,
+    activeUrl,
+    keySwitchOn
   };
 }
 
