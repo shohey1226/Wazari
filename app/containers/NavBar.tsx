@@ -7,7 +7,7 @@ import {
 } from "react-native";
 import { connect } from "react-redux";
 import DeviceInfo from "react-native-device-info";
-import { Button, Icon, Header, Item, Input, Left } from "native-base";
+import { Button, Icon, Header, Item, Input, Left, Text } from "native-base";
 import MCIcon from "react-native-vector-icons/MaterialCommunityIcons";
 import { selectBrowserKeymap, selectModifiers } from "../selectors/keymap";
 import {
@@ -425,7 +425,7 @@ class NavBar extends Component<Props, IState, any> {
   }
 
   render() {
-    const { searchEngine, orientation } = this.props;
+    const { searchEngine, orientation, keyMode } = this.props;
     if (
       orientation === "LANDSCAPE" &&
       DeviceInfo.getDeviceType() === "Handset"
@@ -467,6 +467,16 @@ class NavBar extends Component<Props, IState, any> {
             onBlur={this.onBlurSearch.bind(this)}
           />
         </Item>
+        {__DEV__ ? (
+          <Text
+            style={{
+              fontSize: 10,
+              color: "yellow"
+            }}
+          >
+            {keyMode}
+          </Text>
+        ) : null}
         <Button transparent light onPress={() => this.onPressSwitch()}>
           {this.switchIcon()}
         </Button>

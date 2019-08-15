@@ -15,3 +15,16 @@ export enum KeyMode {
   // Address/Search bar
   Search = "search"
 }
+/*
+
++----------+----------+-------------------+
+| RN mode  | iOS mode |    iOS Keymap     |
++----------+----------+-------------------+
+| search   | text     | app+browser+input |
+| text     | text     | app+browser+input |
+| direct   | n/a      | n/a turned-off    |
+| terminal | input    | app+input         |
+| browser  | browser  | app+browser       |
++----------+----------+-------------------+
+
+*/

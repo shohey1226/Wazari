@@ -19,13 +19,13 @@ export const selectBrowserKeymap = createDeepEqualSelector(
   }
 );
 
-const terminalKeymapSelector = state => state.keymap.get("terminal").toJS();
-export const selectTerminalKeymap = createDeepEqualSelector(
-  [terminalKeymapSelector],
-  keymap => {
-    return keymap;
-  }
-);
+// const terminalKeymapSelector = state => state.keymap.get("terminal").toJS();
+// export const selectTerminalKeymap = createDeepEqualSelector(
+//   [terminalKeymapSelector],
+//   keymap => {
+//     return keymap;
+//   }
+// );
 
 const modifiersSelector = state => state.keymap.get("modifiers").toJS();
 export const selectModifiers = createDeepEqualSelector(
@@ -35,10 +35,3 @@ export const selectModifiers = createDeepEqualSelector(
   }
 );
 
-// const filecontentsSelector = state => state.editor.get("entities").toObject();
-// export const selectFileContents = createDeepEqualSelector(
-//   [filecontentsSelector],
-//   contents => {
-//     return contents;
-//   }
-// );

@@ -22,7 +22,6 @@ import {
 import DeviceInfo from "react-native-device-info";
 import TabWindow from "./TabWindow";
 import { selectSites } from "../selectors/ui";
-import { selectBrowserKeymap, selectModifiers } from "../selectors/keymap";
 import { addNewTab, selectTab, closeTab, updateMode } from "../actions/ui";
 import keymapper from "../utils/Keymapper";
 import { KeyMode } from "../types/index.d";
@@ -64,11 +63,11 @@ class Browser extends Component<Props, State> {
   }
 
   componentDidMount() {
-    const { dispatch, sites, activeTabIndex, homeUrl } = this.props;
+    const { dispatch, sites, activeTabIndex, homeUrl, keyMode } = this.props;
     if (sites.length === 0) {
       dispatch(addNewTab(homeUrl));
     }
-    this.initKeymaps();
+    this.setIOSMode(keyMode);
 
     this.subscriptions.push(
       DAVKeyManagerEmitter.addListener(
@@ -102,15 +101,19 @@ class Browser extends Component<Props, State> {
     });
   }
 
-  initKeymaps() {
-    const { keymap, modifiers, keyMode } = this.props;
-    this.setMode(keyMode);
-    DAVKeyManager.setBrowserKeymap(
-      keymapper.convertToNativeFormat(keymap, modifiers)
-    );
-  }
+  /*
+  +----------+----------+-------------------+
+  | RN mode  | iOS mode |    iOS Keymap     |
+  +----------+----------+-------------------+
+  | search   | text     | app+browser+input |
+  | text     | text     | app+browser+input |
+  | direct   | n/a      | n/a turned-off    |
+  | terminal | input    | app+input         |
+  | browser  | browser  | app+browser       |
+  +----------+----------+-------------------+
+  */
 
-  setMode(keyMode: KeyMode): void {
+  setIOSMode(keyMode: KeyMode): void {
     switch (keyMode) {
       case KeyMode.Text:
         DAVKeyManager.turnOnKeymap();
@@ -127,20 +130,25 @@ class Browser extends Component<Props, State> {
         DAVKeyManager.turnOnKeymap();
         DAVKeyManager.setMode("browser");
         break;
+      case KeyMode.Search:
+        DAVKeyManager.turnOnKeymap();
+        DAVKeyManager.setMode("text");
+        break;
     }
   }
 
   componentDidUpdate(prevProp: Props) {
     const { activeTabIndex, sites, keyMode } = this.props;
 
+    // Set iOS keymap!!!
+    if (prevProp.keyMode !== keyMode) {
+      this.setIOSMode(keyMode);
+    }
+
     if (prevProp.activeTabIndex !== activeTabIndex) {
       if (this.state.activeIndex !== activeTabIndex) {
         this.tabsRef.goToPage(activeTabIndex);
       }
-    }
-
-    if (prevProp.keyMode !== keyMode) {
-      this.setMode(keyMode);
     }
   }
 
@@ -267,8 +275,6 @@ class Browser extends Component<Props, State> {
 }
 
 function mapStateToProps(state, ownProps) {
-  const keymap = selectBrowserKeymap(state);
-  const modifiers = selectModifiers(state);
   const activeTabIndex = state.ui.get("activeTabIndex");
   const sites = selectSites(state);
   const keyMode = state.ui.get("keyMode");
@@ -277,8 +283,6 @@ function mapStateToProps(state, ownProps) {
 
   return {
     sites,
-    keymap,
-    modifiers,
     activeTabIndex,
     keyMode,
     orientation,
