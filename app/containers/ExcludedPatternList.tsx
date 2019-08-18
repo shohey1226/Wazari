@@ -35,9 +35,21 @@ class ExcludedPatterns extends Component<Props, State> {
 
   onSubmitHomeEditing(index) {
     const { dispatch, excludedPatterns } = this.props;
-    dispatch(
-      updateExcludedPattern(excludedPatterns[index], this.state.patterns[index])
-    );
+    if (this.state.patterns[index] !== excludedPatterns[index]) {
+      dispatch(
+        updateExcludedPattern(
+          excludedPatterns[index],
+          this.state.patterns[index]
+        )
+      );
+    }
+  }
+
+  componentDidUpdate(prevProp) {
+    const { excludedPatterns } = this.props;
+    if (prevProp.excludedPatterns.length !== excludedPatterns.length) {
+      this.setState({ patterns: excludedPatterns });
+    }
   }
 
   onPressDelete(pattern) {
@@ -47,6 +59,7 @@ class ExcludedPatterns extends Component<Props, State> {
 
   renderPatterns() {
     const { excludedPatterns } = this.props;
+
     return excludedPatterns.map((pattern, i) => {
       return (
         <ListItem key={`excluded-pattern-${i}`}>
@@ -59,6 +72,7 @@ class ExcludedPatterns extends Component<Props, State> {
               }}
               value={this.state.patterns[i]}
               onSubmitEditing={() => this.onSubmitHomeEditing(i)}
+              onBlur={() => this.onSubmitHomeEditing(i)}
             />
           </Body>
           <Right>
@@ -94,7 +108,11 @@ class ExcludedPatterns extends Component<Props, State> {
 }
 
 function mapStateToProps(state, ownProps) {
-  const excludedPatterns = state.user.get("excludedPatterns").toArray();
+  const excludedPatterns = state.user
+    .get("excludedPatterns")
+    .toArray()
+    .sort();
+
   return {
     excludedPatterns
   };
