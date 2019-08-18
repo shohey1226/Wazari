@@ -250,14 +250,23 @@ class Browser extends Component<Props, State> {
     let tabs = [];
     for (let i = 0; i < sites.length; i++) {
       const tabTitle = sites[i].title
-        ? this._truncate(sites[i].title, 12)
-        : this._truncate(sites[i].url, 12);
+        ? this._truncate(sites[i].title, 10)
+        : this._truncate(sites[i].url, 10);
       tabs.push(
         <Tab
           key={`tab-${i}`}
           heading={
             <TabHeading style={{ paddingLeft: 10, paddingRight: 10 }}>
-              <Text style={{ fontSize: 12, marginLeft: 1 }}>{tabTitle}</Text>
+              <Text
+                style={{
+                  fontSize: 10.5,
+                  marginLeft: 1,
+                  width: 105,
+                  textAlign: "center"
+                }}
+              >
+                {tabTitle}
+              </Text>
               <Button
                 transparent
                 light
