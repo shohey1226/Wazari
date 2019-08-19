@@ -434,16 +434,6 @@ class NavBar extends Component<Props, IState, any> {
             onBlur={this.onBlurSearch.bind(this)}
           />
         </Item>
-        {__DEV__ ? (
-          <Text
-            style={{
-              fontSize: 10,
-              color: "yellow"
-            }}
-          >
-            {keyMode}
-          </Text>
-        ) : null}
         <Button transparent light onPress={() => this.onPressSwitch()}>
           {this.switchIcon()}
         </Button>
