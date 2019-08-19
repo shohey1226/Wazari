@@ -95,12 +95,13 @@ class TabWindow extends Component<Props, State, any> {
       keyMode,
       focusedPane,
       activeUrl,
-      keySwitchOn
+      keySwitchOn,
+      activeTabIndex
     } = this.props;
 
     // tab is chagned
-    if (prevProp.activeTabIndex !== this.props.activeTabIndex) {
-      if (this.props.tabNumber === this.props.activeTabIndex) {
+    if (prevProp.activeTabIndex !== activeTabIndex) {
+      if (this.props.tabNumber === activeTabIndex) {
         this.setState({ isActive: true });
         this.focusWindow();
 
@@ -122,8 +123,8 @@ class TabWindow extends Component<Props, State, any> {
 
     // focused pane is changed to browser
     if (
-      this.state.isActive === true &&
-      prevProp.foucsedPane !== focusedPane &&
+      this.props.tabNumber === activeTabIndex &&
+      prevProp.focusedPane !== focusedPane &&
       focusedPane === "browser"
     ) {
       this.focusWindow();
