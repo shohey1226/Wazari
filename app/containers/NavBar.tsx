@@ -7,7 +7,18 @@ import {
 } from "react-native";
 import { connect } from "react-redux";
 import DeviceInfo from "react-native-device-info";
-import { Button, Icon, Header, Item, Input, Left, Text } from "native-base";
+import {
+  Button,
+  Icon,
+  Header,
+  Item,
+  Input,
+  Left,
+  Text,
+  List,
+  ListItem,
+  Content
+} from "native-base";
 import MCIcon from "react-native-vector-icons/MaterialCommunityIcons";
 import { selectBrowserKeymap, selectModifiers } from "../selectors/keymap";
 import {
@@ -19,6 +30,7 @@ import { updateMode, updateFocusedPane, updateKeySwitch } from "../actions/ui";
 import { addExcludedPattern, removeExcludedPattern } from "../actions/user";
 import { SearchEngine } from "../components/SearchEnginePicker";
 import { KeyMode } from "../types/index.d";
+import Modal from "react-native-modal";
 
 import {
   addNewTab,
@@ -40,6 +52,7 @@ interface IState {
   previousKeyMode: KeyMode | null;
   selectionStart: number;
   selectionEnd: number;
+  searchModalIsVisiable: boolean;
 }
 
 interface Props {
@@ -70,7 +83,8 @@ class NavBar extends Component<Props, IState, any> {
       searchIsFocused: false,
       previousKeyMode: null,
       selectionStart: 0,
-      selectionEnd: 0
+      selectionEnd: 0,
+      searchModalIsVisiable: false
     };
   }
 
@@ -391,6 +405,14 @@ class NavBar extends Component<Props, IState, any> {
     dispatch(updateFocusedPane("browser"));
   }
 
+  onPressSearch() {
+    this.setState({ searchModalIsVisiable: true });
+  }
+
+  onPressCloseSearch() {
+    this.setState({ searchModalIsVisiable: false });
+  }
+
   render() {
     const { searchEngine, orientation, keyMode } = this.props;
     if (
@@ -419,20 +441,17 @@ class NavBar extends Component<Props, IState, any> {
           <Icon name="ios-arrow-forward" />
         </Button>
         <Item>
-          <Icon name="ios-search" />
-          <Input
-            ref={r => (this.searchRef = r as any)}
-            placeholder={`URL or Search with ${searchEngine}`}
-            onChangeText={text => this.setState({ text })}
-            value={this.state.text}
-            autoCorrect={false}
-            onEndEditing={this.onEndEditing.bind(this)}
-            textContentType="URL"
-            autoCapitalize="none"
-            style={{ fontSize: 12 }}
-            onFocus={this.onFocusSearch.bind(this)}
-            onBlur={this.onBlurSearch.bind(this)}
-          />
+          <Button
+            iconLeft
+            light
+            onPress={() => this.onPressSearch()}
+            style={{ height: 30, borderRadius: 15, width: "100%" }}
+          >
+            <Icon name="ios-search" style={{ fontSize: 15, width: 20 }} />
+            <Text
+              style={{ fontSize: 12, textAlign: "left", width: "100%" }}
+            >{`URL or Search with ${searchEngine}`}</Text>
+          </Button>
         </Item>
         <Button transparent light onPress={() => this.onPressSwitch()}>
           {this.switchIcon()}
@@ -443,6 +462,59 @@ class NavBar extends Component<Props, IState, any> {
         <Button transparent light onPress={this.onPressSetting.bind(this)}>
           <Icon name="settings" />
         </Button>
+        <Modal isVisible={this.state.searchModalIsVisiable}>
+          <Content
+            style={{
+              backgroundColor: "white"
+            }}
+          >
+            <Item>
+              <Icon name="ios-search" style={{ paddingLeft: 10 }} />
+              <Input
+                ref={r => (this.searchRef = r as any)}
+                placeholder={`URL or Search with ${searchEngine}`}
+                onChangeText={text => this.setState({ text })}
+                value={this.state.text}
+                autoCorrect={false}
+                onEndEditing={this.onEndEditing.bind(this)}
+                textContentType="URL"
+                autoCapitalize="none"
+                style={{ fontSize: 16 }}
+                onFocus={this.onFocusSearch.bind(this)}
+                onBlur={this.onBlurSearch.bind(this)}
+              />
+              <Button
+                dark
+                transparent
+                onPress={() => this.onPressCloseSearch()}
+                style={{ margin: 10 }}
+              >
+                <Text
+                  style={{
+                    paddingRight: 0,
+                    paddingLeft: 10,
+                    fontSize: 12,
+                    color: "#999"
+                  }}
+                >
+                  ESC
+                </Text>
+                <Icon
+                  name="ios-close"
+                  style={{ paddingLeft: 0, fontSize: 30 }}
+                />
+              </Button>
+            </Item>
+            <List>
+              <ListItem>
+                <Text>test</Text>
+              </ListItem>
+              <ListItem>
+                <Text>test</Text>
+              </ListItem>
+            </List>
+          </Content>
+        </Modal>
       </Header>
     );
   }
