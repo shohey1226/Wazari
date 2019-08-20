@@ -8,6 +8,7 @@ import {
 import { WebView } from "react-native-webview";
 import { connect } from "react-redux";
 import DeviceInfo from "react-native-device-info";
+import Loader from "../components/Loader";
 import sVim from "../utils/sVim";
 import { selectBrowserKeymap, selectModifiers } from "../selectors/keymap";
 import {
@@ -375,6 +376,8 @@ class TabWindow extends Component<Props, State, any> {
           onLoadEnd={this.onLoadEnd.bind(this)}
           onNavigationStateChange={this.onNavigationStateChange.bind(this)}
           onMessage={this.onMessage.bind(this)}
+          renderLoading={() => <Loader />}
+          startInLoadingState={true}
           injectedJavaScript={injectingJs
             .replace("SVIM_PREDEFINE", sVim.sVimPredefine)
             .replace("SVIM_GLOBAL", sVim.sVimGlobal)
