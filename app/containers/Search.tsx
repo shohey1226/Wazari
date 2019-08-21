@@ -48,6 +48,7 @@ interface IState {
   previousKeyMode: KeyMode | null;
   selectionStart: number;
   selectionEnd: number;
+  selectedItemIndex: number | null;
 }
 
 interface Props {
@@ -76,7 +77,8 @@ class Search extends Component<Props, IState, any> {
       text: "",
       previousKeyMode: null,
       selectionStart: 0,
-      selectionEnd: 0
+      selectionEnd: 0,
+      selectedItemIndex: null
     };
   }
 
@@ -267,6 +269,26 @@ class Search extends Component<Props, IState, any> {
     }
   };
 
+  nextHistoryItem() {
+    let index =
+      this.state.selectedItemIndex !== null
+        ? this.state.selectedItemIndex + 1
+        : 0;
+    this.setState({
+      selectedItemIndex: index
+    });
+  }
+
+  previousHistoryItem() {
+    let index =
+      this.state.selectedItemIndex !== null && this.state.selectedItemIndex > 0
+        ? this.state.selectedItemIndex - 1
+        : 0;
+    this.setState({
+      selectedItemIndex: index
+    });
+  }
+
   typing = data => {
     const { dispatch, keyMode } = this.props;
     if (this.props.searchIsFocused && keyMode === KeyMode.Search) {
@@ -287,8 +309,10 @@ class Search extends Component<Props, IState, any> {
           });
           return;
         case "Up":
+          this.previousHistoryItem();
           return;
         case "Down":
+          this.nextHistoryItem();
           return;
         case "Left":
           this.handleActions({ action: "moveBackOneChar" });
@@ -311,9 +335,16 @@ class Search extends Component<Props, IState, any> {
 
   renderHistory() {
     const { history } = this.props;
+    console.log(this.state.selectedItemIndex);
     return history.map((item, i) => {
       return (
-        <ListItem key={`history-${i}`}>
+        <ListItem
+          key={`history-${i}`}
+          style={{
+            backgroundColor:
+              i === this.state.selectedItemIndex ? "blue" : "transparent"
+          }}
+        >
           <Text>
             {item.url} - {item.title}
           </Text>
