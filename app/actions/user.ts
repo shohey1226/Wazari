@@ -46,9 +46,6 @@ export function addHistory(url: string, title: string) {
   return (dispatch, getState) => {
     const maxHistoryCount = getState().user.get("maxHistoryCount");
     let history = getState().user.get("history");
-    if (!history) {
-      history = List();
-    }
     const index = history.findIndex(h => h.url === url);
     if (index === -1) {
       // not found

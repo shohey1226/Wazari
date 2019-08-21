@@ -40,6 +40,8 @@ import {
   toggleForward
 } from "../actions/ui";
 
+import Fuse from "fuse.js";
+
 const { DAVKeyManager } = NativeModules;
 const DAVKeyManagerEmitter = new NativeEventEmitter(DAVKeyManager);
 
@@ -108,12 +110,26 @@ class Search extends Component<Props, IState, any> {
       activeSite,
       focusedPane,
       keyMode,
-      searchIsFocused
+      searchIsFocused,
+      history
     } = this.props;
 
     if (searchIsFocused !== prevProp.searchIsFocused) {
       if (searchIsFocused === true) {
         this.searchRef && this.searchRef._root.focus();
+        console.log(history);
+        let fuse = new Fuse(history, {
+          shouldSort: true,
+          includeMatches: true,
+          threshold: 0.6,
+          location: 0,
+          distance: 100,
+          maxPatternLength: 32,
+          minMatchCharLength: 1,
+          keys: ["url", "title"]
+        });
+        console.log(fuse);
+        this.setState({ fuse: fuse });
       } else {
         this.searchRef && this.searchRef._root.blur();
       }
@@ -335,6 +351,8 @@ class Search extends Component<Props, IState, any> {
 
   renderHistory() {
     const { history } = this.props;
+    console.log(this.state.result);
+    console.log(this.state.fuse);
     console.log(this.state.selectedItemIndex);
     return history.map((item, i) => {
       return (
@@ -372,7 +390,10 @@ class Search extends Component<Props, IState, any> {
           <Input
             ref={r => (this.searchRef = r as any)}
             placeholder={`URL or Search with ${searchEngine}`}
-            onChangeText={text => this.setState({ text })}
+            onChangeText={text => {
+              let result = this.state.fuse.search(text);
+              this.setState({ text: text, result: result });
+            }}
             value={this.state.text}
             autoCorrect={false}
             onEndEditing={this.onEndEditing.bind(this)}

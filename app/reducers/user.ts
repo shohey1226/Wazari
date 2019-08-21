@@ -6,7 +6,7 @@ import {
   UPDATE_EXCLUDED_PATTERN,
   UPDATE_HISTORY
 } from "../actions/user";
-import { Map, fromJS, Set } from "immutable";
+import { Map, fromJS, Set, List } from "immutable";
 import { SearchEngine } from "../components/SearchEnginePicker";
 
 export interface UserState extends Map<any, any> {
@@ -28,7 +28,7 @@ const initialState: UserState = Map({
   searchEngine: SearchEngine.Google,
   excludedPatterns: Set(),
   excludedPatternHasChanged: false,
-  history: [],
+  history: List(),
   maxHistoryCount: 100
 });
 

@@ -317,7 +317,6 @@ function mapStateToProps(state, ownProps) {
   const sites = selectSites(state);
   const activeSite = selectActiveSite(state);
   const searchEngine = state.user.get("searchEngine");
-  const history = state.user.get("history").toJS();
   const homeUrl = state.user.get("homeUrl");
   const keyMode = state.ui.get("keyMode");
   const orientation = state.ui.get("orientation");
@@ -335,8 +334,7 @@ function mapStateToProps(state, ownProps) {
     activeSite,
     sites,
     focusedPane,
-    keySwitchOn,
-    history
+    keySwitchOn
   };
 }
 
