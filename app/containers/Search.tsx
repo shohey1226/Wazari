@@ -69,8 +69,9 @@ interface Props {
 }
 
 class Search extends Component<Props, IState, any> {
-  searchRef: TextInput | null = null;
-  subscriptions: Array<any> = [];
+  private searchRef: TextInput | null = null;
+  private subscriptions: Array<any> = [];
+  private fuse: any;
 
   constructor(props) {
     super(props);
@@ -85,7 +86,7 @@ class Search extends Component<Props, IState, any> {
   }
 
   componentDidMount() {
-    const { activeSite, activeUrl } = this.props;
+    const { activeSite, activeUrl, history } = this.props;
     this.subscriptions.push(
       DAVKeyManagerEmitter.addListener("RNKeyEvent", this.typing),
       DAVKeyManagerEmitter.addListener("RNBrowserKeyEvent", this.handleActions)
@@ -93,6 +94,17 @@ class Search extends Component<Props, IState, any> {
     this.props.searchIsFocused === true &&
       this.searchRef &&
       this.searchRef._root.focus();
+
+    this.fuse = new Fuse(history, {
+      shouldSort: true,
+      includeMatches: false,
+      threshold: 0.6,
+      location: 0,
+      distance: 100,
+      maxPatternLength: 32,
+      minMatchCharLength: 1,
+      keys: ["url", "title"]
+    });
   }
 
   componentWillUnmount() {
@@ -117,19 +129,6 @@ class Search extends Component<Props, IState, any> {
     if (searchIsFocused !== prevProp.searchIsFocused) {
       if (searchIsFocused === true) {
         this.searchRef && this.searchRef._root.focus();
-        console.log(history);
-        let fuse = new Fuse(history, {
-          shouldSort: true,
-          includeMatches: true,
-          threshold: 0.6,
-          location: 0,
-          distance: 100,
-          maxPatternLength: 32,
-          minMatchCharLength: 1,
-          keys: ["url", "title"]
-        });
-        console.log(fuse);
-        this.setState({ fuse: fuse });
       } else {
         this.searchRef && this.searchRef._root.blur();
       }
@@ -351,24 +350,43 @@ class Search extends Component<Props, IState, any> {
 
   renderHistory() {
     const { history } = this.props;
-    console.log(this.state.result);
-    console.log(this.state.fuse);
+
     console.log(this.state.selectedItemIndex);
-    return history.map((item, i) => {
-      return (
-        <ListItem
-          key={`history-${i}`}
-          style={{
-            backgroundColor:
-              i === this.state.selectedItemIndex ? "blue" : "transparent"
-          }}
-        >
-          <Text>
-            {item.url} - {item.title}
-          </Text>
-        </ListItem>
-      );
-    });
+    if (this.state.text.length === 0) {
+      return history.map((item, i) => {
+        return (
+          <ListItem
+            key={`history-${i}`}
+            style={{
+              backgroundColor:
+                i === this.state.selectedItemIndex ? "blue" : "transparent"
+            }}
+          >
+            <Text>
+              {item.url} - {item.title}
+            </Text>
+          </ListItem>
+        );
+      });
+    } else {
+      const result = this.fuse.search(this.state.text);
+      console.log(result);
+      return result.map((h, i) => {
+        return (
+          <ListItem
+            key={`history-result-${i}`}
+            style={{
+              backgroundColor:
+                i === this.state.selectedItemIndex ? "blue" : "transparent"
+            }}
+          >
+            <Text>
+              {h.item.url} - {h.item.title}
+            </Text>
+          </ListItem>
+        );
+      });      
+    }
   }
 
   render() {
@@ -390,10 +408,7 @@ class Search extends Component<Props, IState, any> {
           <Input
             ref={r => (this.searchRef = r as any)}
             placeholder={`URL or Search with ${searchEngine}`}
-            onChangeText={text => {
-              let result = this.state.fuse.search(text);
-              this.setState({ text: text, result: result });
-            }}
+            onChangeText={text => this.setState({ text })}
             value={this.state.text}
             autoCorrect={false}
             onEndEditing={this.onEndEditing.bind(this)}
