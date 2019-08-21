@@ -3,6 +3,8 @@ export const UPDATE_SEARCH_ENGINE = "UPDATE_SEARCH_ENGINE";
 export const ADD_EXCLUDED_PATTERN = "ADD_EXCLUDED_PATTERN";
 export const REMOVE_EXCLUDED_PATTERN = "REMOVE_EXCLUDED_PATTERN";
 export const UPDATE_EXCLUDED_PATTERN = "UPDATE_EXCLUDED_PATTERN";
+export const UPDATE_HISTORY = "UPDATE_HISTORY";
+import { List } from "immutable";
 
 export function updateHome(url: string) {
   return {
@@ -37,6 +39,43 @@ export function updateExcludedPattern(origPattern: string, newPattern: string) {
     type: UPDATE_EXCLUDED_PATTERN,
     origPattern: origPattern,
     newPattern: newPattern
+  };
+}
+
+export function addHistory(url: string, title: string) {
+  return (dispatch, getState) => {
+    const maxHistoryCount = getState().user.get("maxHistoryCount");
+    let history = getState().user.get("history");
+    if (!history) {
+      history = List();
+    }
+    const index = history.findIndex(h => h.url === url);
+    if (index === -1) {
+      // not found
+      dispatch(
+        _updateHistory(
+          history.unshift({ url: url, title: title }).slice(0, maxHistoryCount)
+        )
+      );
+    } else {
+      // found - move to top
+      const item = history.get(index);
+      dispatch(
+        _updateHistory(
+          history
+            .delete(index)
+            .unshift(item)
+            .slice(0, maxHistoryCount)
+        )
+      );
+    }
+  };
+}
+
+function _updateHistory(history) {
+  return {
+    type: UPDATE_HISTORY,
+    history: history
   };
 }
 

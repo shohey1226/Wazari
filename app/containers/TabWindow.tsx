@@ -19,6 +19,7 @@ import {
   closeTab,
   updateKeySwitch
 } from "../actions/ui";
+import { addHistory } from "../actions/user";
 import { selectSites, selectActiveUrl } from "../selectors/ui";
 import { KeyMode } from "../types/index.d";
 
@@ -329,6 +330,7 @@ class TabWindow extends Component<Props, State, any> {
       );
       this.focusWindow();
       this.setState({ isActive: true });
+      dispatch(addHistory(nativeEvent.url, nativeEvent.title));
     }
   }
 
