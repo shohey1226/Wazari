@@ -164,6 +164,7 @@ class NavBar extends Component<Props, IState, any> {
       dispatch(selectTab(sites.length));
     }, 50);
     this.setState({ text: "" });
+    this.closeSearch();
   }
 
   onPressToggleBack() {
@@ -372,7 +373,7 @@ class NavBar extends Component<Props, IState, any> {
           this.handleActions({ action: "moveForwardOneChar" });
           return;
         case "Esc":
-          this.searchRef && this.searchRef._root.blur();
+          this.closeSearch();
           return;
       }
       let newText = this.state.text + data.key;
@@ -388,29 +389,23 @@ class NavBar extends Component<Props, IState, any> {
     const { dispatch } = this.props;
     switch (event.action) {
       case "focusOnSearch":
-        this.searchRef && this.searchRef._root.focus();
+        this.openSearch();
         break;
     }
   };
 
-  onFocusSearch() {
+  openSearch() {
     const { dispatch, keyMode } = this.props;
-    this.setState({ searchIsFocused: true });
     dispatch(updateFocusedPane("search"));
+    this.setState({ searchModalIsVisiable: true, searchIsFocused: true });
+    this.searchRef && this.searchRef._root.focus();
   }
 
-  onBlurSearch() {
-    const { dispatch } = this.props;
-    this.setState({ searchIsFocused: false });
+  closeSearch() {
+    const { dispatch, keyMode } = this.props;
+    this.searchRef && this.searchRef._root.blur();
+    this.setState({ searchModalIsVisiable: false, searchIsFocused: false });
     dispatch(updateFocusedPane("browser"));
-  }
-
-  onPressSearch() {
-    this.setState({ searchModalIsVisiable: true });
-  }
-
-  onPressCloseSearch() {
-    this.setState({ searchModalIsVisiable: false });
   }
 
   render() {
@@ -444,7 +439,7 @@ class NavBar extends Component<Props, IState, any> {
           <Button
             iconLeft
             light
-            onPress={() => this.onPressSearch()}
+            onPress={() => this.openSearch()}
             style={{ height: 30, borderRadius: 15, width: "100%" }}
           >
             <Icon name="ios-search" style={{ fontSize: 15, width: 20 }} />
@@ -462,7 +457,11 @@ class NavBar extends Component<Props, IState, any> {
         <Button transparent light onPress={this.onPressSetting.bind(this)}>
           <Icon name="settings" />
         </Button>
-        <Modal isVisible={this.state.searchModalIsVisiable}>
+        <Modal
+          isVisible={this.state.searchModalIsVisiable}
+          animationIn="fadeIn"
+          animationOut="fadeOut"
+        >
           <Content
             style={{
               backgroundColor: "white"
@@ -480,13 +479,11 @@ class NavBar extends Component<Props, IState, any> {
                 textContentType="URL"
                 autoCapitalize="none"
                 style={{ fontSize: 16 }}
-                onFocus={this.onFocusSearch.bind(this)}
-                onBlur={this.onBlurSearch.bind(this)}
               />
               <Button
                 dark
                 transparent
-                onPress={() => this.onPressCloseSearch()}
+                onPress={() => this.closeSearch()}
                 style={{ margin: 10 }}
               >
                 <Text
