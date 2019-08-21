@@ -408,6 +408,19 @@ class NavBar extends Component<Props, IState, any> {
     dispatch(updateFocusedPane("browser"));
   }
 
+  renderHistory() {
+    const { history } = this.props;
+    return history.map((item, i) => {
+      return (
+        <ListItem key={`history-${i}`}>
+          <Text>
+            {item.url} - {item.title}
+          </Text>
+        </ListItem>
+      );
+    });
+  }
+
   render() {
     const { searchEngine, orientation, keyMode } = this.props;
     if (
@@ -502,14 +515,7 @@ class NavBar extends Component<Props, IState, any> {
                 />
               </Button>
             </Item>
-            <List>
-              <ListItem>
-                <Text>test</Text>
-              </ListItem>
-              <ListItem>
-                <Text>test</Text>
-              </ListItem>
-            </List>
+            <List>{this.renderHistory()}</List>
           </Content>
         </Modal>
       </Header>
@@ -525,6 +531,7 @@ function mapStateToProps(state, ownProps) {
   const sites = selectSites(state);
   const activeSite = selectActiveSite(state);
   const searchEngine = state.user.get("searchEngine");
+  const history = state.user.get("history").toJS();
   const homeUrl = state.user.get("homeUrl");
   const keyMode = state.ui.get("keyMode");
   const orientation = state.ui.get("orientation");
@@ -542,7 +549,8 @@ function mapStateToProps(state, ownProps) {
     activeSite,
     sites,
     focusedPane,
-    keySwitchOn
+    keySwitchOn,
+    history
   };
 }
 
