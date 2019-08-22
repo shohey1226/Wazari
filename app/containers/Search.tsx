@@ -147,7 +147,7 @@ class Search extends Component<Props, IState, any> {
           this.setState({ result: result });
         }
       } else if (text.length === 0) {
-        this.setState({ result: [] });
+        this.setState({ result: [], selectMode: false });
       }
     }
 
@@ -308,6 +308,12 @@ class Search extends Component<Props, IState, any> {
             text: newText
           });
           break;
+        case "scrollDown":
+          this.nextHistoryItem();
+          break;
+        case "scrollUp":
+          this.previousHistoryItem();
+          break;
         case "copy":
           break;
         case "paste":
@@ -320,6 +326,10 @@ class Search extends Component<Props, IState, any> {
     const { history } = this.props;
     const { result, selectedItemIndex } = this.state;
     const maxItemCount = result.length === 0 ? history.length : result.length;
+
+    if (!this.state.selectMode) {
+      this.setState({ selectMode: true });
+    }
 
     let nextIndex: number = 0;
     if (selectedItemIndex !== null) {
@@ -368,9 +378,6 @@ class Search extends Component<Props, IState, any> {
           this.previousHistoryItem();
           return;
         case "Down":
-          if (!this.state.selectMode) {
-            this.setState({ selectMode: true });
-          }
           this.nextHistoryItem();
           return;
         case "Left":
@@ -380,11 +387,7 @@ class Search extends Component<Props, IState, any> {
           this.handleActions({ action: "moveForwardOneChar" });
           return;
         case "Esc":
-          if (this.state.selectMode) {
-            this.setState({ selectMode: false });
-          } else {
-            this.props.closeSearch();
-          }
+          this.props.closeSearch();
           return;
       }
       let newText = this.state.text + data.key;
@@ -444,15 +447,24 @@ class Search extends Component<Props, IState, any> {
       let s = 0;
       let v: Array<any> = [];
       for (let index of m.indices) {
-        v.push(<Text>{m.value.slice(s, index[0])}</Text>);
         v.push(
-          <Text style={{ fontWeight: "bold", color: "#007aff" }}>
+          <Text key={`${m.value}-start-${index[0]}`}>
+            {m.value.slice(s, index[0])}
+          </Text>
+        );
+        v.push(
+          <Text
+            key={`${m.value}-target-${index[0]}-${index[1]}`}
+            style={{ fontWeight: "bold", color: "#007aff" }}
+          >
             {m.value.slice(index[0], index[1] + 1)}
           </Text>
         );
         s = index[1] + 1;
       }
-      v.push(<Text>{m.value.slice(s, m.value.length)}</Text>);
+      v.push(
+        <Text key={`${m.value}-end`}>{m.value.slice(s, m.value.length)}</Text>
+      );
       if (m.key === "url") {
         urlView = v;
       } else if (m.key === "title") {
