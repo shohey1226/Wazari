@@ -97,7 +97,7 @@ class Search extends Component<Props, IState, any> {
 
     this.fuse = new Fuse(history, {
       shouldSort: true,
-      includeMatches: false,
+      includeMatches: true,
       threshold: 0.6,
       location: 0,
       distance: 100,
@@ -350,7 +350,7 @@ class Search extends Component<Props, IState, any> {
 
   renderHistory() {
     const { history } = this.props;
-
+    console.log(history);
     console.log(this.state.selectedItemIndex);
     if (this.state.text.length === 0) {
       return history.map((item, i) => {
@@ -370,8 +370,8 @@ class Search extends Component<Props, IState, any> {
       });
     } else {
       const result = this.fuse.search(this.state.text);
-      console.log(result);
       return result.map((h, i) => {
+        console.log(h);
         return (
           <ListItem
             key={`history-result-${i}`}
@@ -380,13 +380,51 @@ class Search extends Component<Props, IState, any> {
                 i === this.state.selectedItemIndex ? "blue" : "transparent"
             }}
           >
-            <Text>
-              {h.item.url} - {h.item.title}
-            </Text>
+            {this.renderMatchedText(h)}
           </ListItem>
         );
-      });      
+      });
     }
+  }
+
+  renderMatchedText(h) {
+    let urlView: Array<any> = [];
+    let titleView: Array<any> = [];
+    for (let m of h.matches) {
+      console.log(m);
+      let s = 0;
+      let v: Array<any> = [];
+      for (let index of m.indices) {
+        v.push(<Text>{m.value.slice(s, index[0])}</Text>);
+        v.push(
+          <Text style={{ color: "blue" }}>
+            {m.value.slice(index[0], index[1] + 1)}
+          </Text>
+        );
+        s = index[1] + 1;
+      }
+      v.push(<Text>{m.value.slice(s, m.value.length)}</Text>);
+      if (m.key === "url") {
+        urlView = v;
+      } else if (m.key === "title") {
+        titleView = v;
+      }
+    }
+
+    if (urlView.length === 0) {
+      urlView.push(<Text>{h.item.url}</Text>);
+    }
+    if (titleView.length === 0) {
+      titleView.push(<Text>{h.item.title}</Text>);
+    }
+
+    return (
+      <View style={{ flex: 1, flexDirection: "row" }}>
+        {urlView}
+        <Text> - </Text>
+        {titleView}
+      </View>
+    );
   }
 
   render() {
