@@ -8,7 +8,8 @@ import {
   TOGGLE_BACK,
   UPDATE_ORIENTATION,
   UPDATE_FOUCUSED_PANE,
-  UPDATE_KEY_SWITCH
+  UPDATE_KEY_SWITCH,
+  TOGGLE_RELOAD
 } from "../actions/ui";
 import { Map, fromJS } from "immutable";
 import { KeyMode } from "../types/index.d";
@@ -26,6 +27,7 @@ export interface UiState extends Map<any, any> {
   keyMode: KeyMode;
   backToggled: boolean;
   forwardToggled: boolean;
+  reloadToggled: boolean;
   orientation: string;
   focusedPane: string;
   keySwitchOn: boolean;
@@ -37,6 +39,7 @@ const initialState: UiState = fromJS({
   keyMode: KeyMode.Text,
   backToggled: false,
   forwardToggled: false,
+  reloadToggled: false,
   focusedPane: "browser",
   keySwitchOn: true
 });
@@ -49,6 +52,8 @@ export default function ui(state = initialState, action) {
       return state.set("backToggled", !state.get("backToggled"));
     case TOGGLE_FORWARD:
       return state.set("forwardToggled", !state.get("forwardToggled"));
+    case TOGGLE_RELOAD:
+      return state.set("reloadToggled", !state.get("reloadToggled"));
 
     case ADD_NEW_TAB:
       return state.set(

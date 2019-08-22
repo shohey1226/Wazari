@@ -40,6 +40,7 @@ interface Props {
   keyMode: KeyMode;
   backToggled: boolean;
   forwardToggled: boolean;
+  reloadToggled: boolean;
   excludedPatterns: Array<string>;
   keySwitchOn: boolean;
   activeUrl: string;
@@ -95,6 +96,7 @@ class TabWindow extends Component<Props, State, any> {
     const {
       backToggled,
       forwardToggled,
+      reloadToggled,
       keyMode,
       focusedPane,
       activeUrl,
@@ -122,6 +124,9 @@ class TabWindow extends Component<Props, State, any> {
     }
     if (prevProp.forwardToggled !== forwardToggled && this.state.isActive) {
       this.webref && this.webref.goForward();
+    }
+    if (prevProp.reloadToggled !== reloadToggled && this.state.isActive) {
+      this.webref && this.webref.reload();
     }
 
     // focused pane is changed to browser
@@ -405,12 +410,14 @@ function mapStateToProps(state, ownProps) {
   const focusedPane = state.ui.get("focusedPane");
   const backToggled = state.ui.get("backToggled");
   const forwardToggled = state.ui.get("forwardToggled");
+  const reloadToggled = state.ui.get("reloadToggled");
   const homeUrl = state.user.get("homeUrl");
   const keySwitchOn = state.ui.get("keySwitchOn");
   const excludedPatterns = state.user.get("excludedPatterns").toArray();
   return {
     backToggled,
     forwardToggled,
+    reloadToggled,
     keymap,
     modifiers,
     sites,

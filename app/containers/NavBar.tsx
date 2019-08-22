@@ -38,7 +38,8 @@ import {
   selectTab,
   updateSite,
   toggleBack,
-  toggleForward
+  toggleForward,
+  toggleReload
 } from "../actions/ui";
 
 const { DAVKeyManager } = NativeModules;
@@ -172,6 +173,11 @@ class NavBar extends Component<Props, IState, any> {
     dispatch(toggleForward());
   }
 
+  onPressToggleReload() {
+    const { dispatch } = this.props;
+    dispatch(toggleReload());
+  }
+
   onPressAdd() {
     const { dispatch, homeUrl, sites } = this.props;
     dispatch(addNewTab(homeUrl));
@@ -266,10 +272,17 @@ class NavBar extends Component<Props, IState, any> {
           transparent
           light
           onPress={this.onPressToggleForward.bind(this)}
-          style={{ marginRight: 20 }}
           disabled={!this.state.canGoForward}
         >
           <Icon name="ios-arrow-forward" />
+        </Button>
+        <Button
+          transparent
+          light
+          onPress={this.onPressToggleReload.bind(this)}
+          style={{ marginRight: 20 }}
+        >
+          <Icon name="md-refresh" />
         </Button>
         <Item>
           <Button
