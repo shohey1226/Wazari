@@ -359,7 +359,7 @@ class Search extends Component<Props, IState, any> {
             key={`history-${i}`}
             style={{
               backgroundColor:
-                i === this.state.selectedItemIndex ? "blue" : "transparent"
+                i === this.state.selectedItemIndex ? "#aaa" : "transparent"
             }}
           >
             <Text>
@@ -371,13 +371,12 @@ class Search extends Component<Props, IState, any> {
     } else {
       const result = this.fuse.search(this.state.text);
       return result.map((h, i) => {
-        console.log(h);
         return (
           <ListItem
             key={`history-result-${i}`}
             style={{
               backgroundColor:
-                i === this.state.selectedItemIndex ? "blue" : "transparent"
+                i === this.state.selectedItemIndex ? "#aaa" : "transparent"
             }}
           >
             {this.renderMatchedText(h)}
@@ -391,13 +390,12 @@ class Search extends Component<Props, IState, any> {
     let urlView: Array<any> = [];
     let titleView: Array<any> = [];
     for (let m of h.matches) {
-      console.log(m);
       let s = 0;
       let v: Array<any> = [];
       for (let index of m.indices) {
         v.push(<Text>{m.value.slice(s, index[0])}</Text>);
         v.push(
-          <Text style={{ color: "blue" }}>
+          <Text style={{ fontWeight: "bold", color: "#007aff" }}>
             {m.value.slice(index[0], index[1] + 1)}
           </Text>
         );
