@@ -51,6 +51,7 @@ interface IState {
   selectionStart: number;
   selectionEnd: number;
   selectedItemIndex: number | null;
+  result: Array<any>;
 }
 
 interface Props {
@@ -81,7 +82,8 @@ class Search extends Component<Props, IState, any> {
       previousKeyMode: null,
       selectionStart: 0,
       selectionEnd: 0,
-      selectedItemIndex: null
+      selectedItemIndex: null,
+      result: []
     };
   }
 
@@ -125,6 +127,7 @@ class Search extends Component<Props, IState, any> {
       searchIsFocused,
       history
     } = this.props;
+    const { text } = this.state;
 
     if (searchIsFocused !== prevProp.searchIsFocused) {
       if (searchIsFocused === true) {
@@ -132,6 +135,11 @@ class Search extends Component<Props, IState, any> {
       } else {
         this.searchRef && this.searchRef._root.blur();
       }
+    }
+
+    if (text.length > 0 && prevState.text !== text) {
+      const result = this.fuse.search(text);
+      this.setState({ result: result });
     }
 
     // console.log("prev", prevState.selectionStart);
@@ -350,8 +358,6 @@ class Search extends Component<Props, IState, any> {
 
   renderHistory() {
     const { history } = this.props;
-    console.log(history);
-    console.log(this.state.selectedItemIndex);
     if (this.state.text.length === 0) {
       return history.map((item, i) => {
         return (
@@ -359,7 +365,7 @@ class Search extends Component<Props, IState, any> {
             key={`history-${i}`}
             style={{
               backgroundColor:
-                i === this.state.selectedItemIndex ? "#aaa" : "transparent"
+                i === this.state.selectedItemIndex ? "#ccc" : "transparent"
             }}
           >
             <Text>
@@ -369,14 +375,13 @@ class Search extends Component<Props, IState, any> {
         );
       });
     } else {
-      const result = this.fuse.search(this.state.text);
-      return result.map((h, i) => {
+      return this.state.result.map((h, i) => {
         return (
           <ListItem
             key={`history-result-${i}`}
             style={{
               backgroundColor:
-                i === this.state.selectedItemIndex ? "#aaa" : "transparent"
+                i === this.state.selectedItemIndex ? "#ccc" : "transparent"
             }}
           >
             {this.renderMatchedText(h)}
