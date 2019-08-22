@@ -52,6 +52,7 @@ interface IState {
   selectionEnd: number;
   selectedItemIndex: number | null;
   result: Array<any>;
+  selectMode: boolean;
 }
 
 interface Props {
@@ -83,7 +84,8 @@ class Search extends Component<Props, IState, any> {
       selectionStart: 0,
       selectionEnd: 0,
       selectedItemIndex: null,
-      result: []
+      result: [],
+      selectMode: false
     };
   }
 
@@ -127,7 +129,7 @@ class Search extends Component<Props, IState, any> {
       searchIsFocused,
       history
     } = this.props;
-    const { text } = this.state;
+    const { text, selectMode, selectedItemIndex, result } = this.state;
 
     if (searchIsFocused !== prevProp.searchIsFocused) {
       if (searchIsFocused === true) {
@@ -137,13 +139,35 @@ class Search extends Component<Props, IState, any> {
       }
     }
 
-    if (text.length > 0 && prevState.text !== text) {
-      const result = this.fuse.search(text);
-      this.setState({ result: result });
+    if (prevState.text !== text) {
+      if (text.length > 0) {
+        if (!selectMode) {
+          // only updates when it's not select mode
+          const result = this.fuse.search(text);
+          this.setState({ result: result });
+        }
+      } else if (text.length === 0) {
+        this.setState({ result: [] });
+      }
     }
 
-    // console.log("prev", prevState.selectionStart);
-    // console.log("current", this.state.selectionStart);
+    if (
+      selectMode === true &&
+      prevState.selectedItemIndex !== selectedItemIndex
+    ) {
+      if (result.length === 0) {
+        this.setState({ text: history[selectedItemIndex].url });
+      } else {
+        this.setState({ text: result[selectedItemIndex].item.url });
+      }
+      // cursor to end
+      this.searchRef.setNativeProps({
+        selection: {
+          start: this.state.text.length,
+          end: this.state.text.length
+        }
+      });
+    }
   }
 
   onEndEditing() {
@@ -293,12 +317,21 @@ class Search extends Component<Props, IState, any> {
   };
 
   nextHistoryItem() {
-    let index =
-      this.state.selectedItemIndex !== null
-        ? this.state.selectedItemIndex + 1
-        : 0;
+    const { history } = this.props;
+    const { result, selectedItemIndex } = this.state;
+    const maxItemCount = result.length === 0 ? history.length : result.length;
+
+    let nextIndex: number = 0;
+    if (selectedItemIndex !== null) {
+      if (selectedItemIndex + 1 === maxItemCount) {
+        nextIndex = selectedItemIndex;
+      } else {
+        nextIndex = selectedItemIndex + 1;
+      }
+    }
+
     this.setState({
-      selectedItemIndex: index
+      selectedItemIndex: nextIndex
     });
   }
 
@@ -335,6 +368,9 @@ class Search extends Component<Props, IState, any> {
           this.previousHistoryItem();
           return;
         case "Down":
+          if (!this.state.selectMode) {
+            this.setState({ selectMode: true });
+          }
           this.nextHistoryItem();
           return;
         case "Left":
@@ -344,7 +380,11 @@ class Search extends Component<Props, IState, any> {
           this.handleActions({ action: "moveForwardOneChar" });
           return;
         case "Esc":
-          this.props.closeSearch();
+          if (this.state.selectMode) {
+            this.setState({ selectMode: false });
+          } else {
+            this.props.closeSearch();
+          }
           return;
       }
       let newText = this.state.text + data.key;
@@ -356,9 +396,13 @@ class Search extends Component<Props, IState, any> {
     }
   };
 
+  onPressHistoryItem(url: string) {
+    this.setState({ text: url });
+  }
+
   renderHistory() {
     const { history } = this.props;
-    if (this.state.text.length === 0) {
+    if (this.state.result.length === 0) {
       return history.map((item, i) => {
         return (
           <ListItem
@@ -367,6 +411,7 @@ class Search extends Component<Props, IState, any> {
               backgroundColor:
                 i === this.state.selectedItemIndex ? "#ccc" : "transparent"
             }}
+            onPress={() => this.onPressHistoryItem(item.url)}
           >
             <Text>
               {item.url} - {item.title}
@@ -383,6 +428,7 @@ class Search extends Component<Props, IState, any> {
               backgroundColor:
                 i === this.state.selectedItemIndex ? "#ccc" : "transparent"
             }}
+            onPress={() => this.onPressHistoryItem(h.item.url)}
           >
             {this.renderMatchedText(h)}
           </ListItem>
