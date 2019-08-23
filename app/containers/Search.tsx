@@ -147,7 +147,11 @@ class Search extends Component<Props, IState, any> {
           this.setState({ result: result });
         }
       } else if (text.length === 0) {
-        this.setState({ result: [], selectMode: false });
+        this.setState({
+          result: [],
+          selectMode: false,
+          selectedItemIndex: null
+        });
       }
     }
 
@@ -324,19 +328,19 @@ class Search extends Component<Props, IState, any> {
 
   nextHistoryItem() {
     const { history } = this.props;
-    const { result, selectedItemIndex } = this.state;
+    const { result, selectedItemIndex, selectMode } = this.state;
     const maxItemCount = result.length === 0 ? history.length : result.length;
 
-    if (!this.state.selectMode) {
+    if (!selectMode) {
       this.setState({ selectMode: true });
     }
 
     let nextIndex: number = 0;
     if (selectedItemIndex !== null) {
-      if (selectedItemIndex + 1 === maxItemCount) {
-        nextIndex = selectedItemIndex;
-      } else {
+      if (selectedItemIndex + 1 < maxItemCount) {
         nextIndex = selectedItemIndex + 1;
+      } else {
+        nextIndex = selectedItemIndex;
       }
     }
 
@@ -474,14 +478,19 @@ class Search extends Component<Props, IState, any> {
     }
 
     if (urlView.length === 0) {
-      urlView.push(<Text>{h.item.url}</Text>);
+      urlView.push(<Text key={`text-url-${h.item.url}`}>{h.item.url}</Text>);
     }
     if (titleView.length === 0) {
-      titleView.push(<Text>{h.item.title}</Text>);
+      titleView.push(
+        <Text key={`text-title-${h.item.title}`}>{h.item.title}</Text>
+      );
     }
 
     return (
-      <View style={{ flex: 1, flexDirection: "row" }}>
+      <View
+        key={`view-${h.item.url}`}
+        style={{ flex: 1, flexDirection: "row" }}
+      >
         {urlView}
         <Text> - </Text>
         {titleView}

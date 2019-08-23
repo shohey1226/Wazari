@@ -293,7 +293,13 @@ class NavBar extends Component<Props, IState, any> {
           >
             <Icon name="ios-search" style={{ fontSize: 15, width: 20 }} />
             <Text
-              style={{ fontSize: 12, textAlign: "left", width: "100%" }}
+              style={{
+                paddingLeft: 0,
+                paddingRight: 0,
+                fontSize: 12,
+                textAlign: "left",
+                width: "100%"
+              }}
             >{`URL or Search with ${searchEngine}`}</Text>
           </Button>
         </Item>
