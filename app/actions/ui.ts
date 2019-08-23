@@ -6,6 +6,7 @@ export const UPDATE_SITE = "UPDATE_SITE";
 export const CLOSE_TAB = "CLOSE_TAB";
 export const TOGGLE_FORWARD = "TOGGLE_FORWARD";
 export const TOGGLE_BACK = "TOGGLE_BACK";
+export const TOGGLE_RELOAD = "TOGGLE_RELOAD";
 export const UPDATE_BACK_FORWARD = "UPDATE_BACK_FORWARD";
 export const UPDATE_MODE = "UPDATE_MODE";
 export const UPDATE_ORIENTATION = "UPDATE_ORIENTATION";
@@ -21,6 +22,12 @@ export function toggleForward() {
 export function toggleBack() {
   return {
     type: TOGGLE_BACK
+  };
+}
+
+export function toggleReload() {
+  return {
+    type: TOGGLE_RELOAD
   };
 }
 

@@ -3,11 +3,23 @@ import {
   View,
   NativeModules,
   NativeEventEmitter,
-  TextInput
+  TextInput,
+  Clipboard
 } from "react-native";
 import { connect } from "react-redux";
 import DeviceInfo from "react-native-device-info";
-import { Button, Icon, Header, Item, Input, Left, Text } from "native-base";
+import {
+  Button,
+  Icon,
+  Header,
+  Item,
+  Input,
+  Left,
+  Text,
+  List,
+  ListItem,
+  Content
+} from "native-base";
 import MCIcon from "react-native-vector-icons/MaterialCommunityIcons";
 import { selectBrowserKeymap, selectModifiers } from "../selectors/keymap";
 import {
@@ -18,14 +30,17 @@ import {
 import { updateMode, updateFocusedPane, updateKeySwitch } from "../actions/ui";
 import { addExcludedPattern, removeExcludedPattern } from "../actions/user";
 import { SearchEngine } from "../components/SearchEnginePicker";
+import Search from "./Search";
 import { KeyMode } from "../types/index.d";
+import Modal from "react-native-modal";
 
 import {
   addNewTab,
   selectTab,
   updateSite,
   toggleBack,
-  toggleForward
+  toggleForward,
+  toggleReload
 } from "../actions/ui";
 
 const { DAVKeyManager } = NativeModules;
@@ -36,10 +51,10 @@ interface IState {
   canGoBack: boolean;
   canGoForward: boolean;
   excludedPattern: string | null;
-  searchIsFocused: boolean;
   previousKeyMode: KeyMode | null;
   selectionStart: number;
   selectionEnd: number;
+  searchModalIsVisiable: boolean;
 }
 
 interface Props {
@@ -57,7 +72,6 @@ interface Props {
 }
 
 class NavBar extends Component<Props, IState, any> {
-  searchRef: TextInput | null = null;
   subscriptions: Array<any> = [];
 
   constructor(props) {
@@ -67,18 +81,15 @@ class NavBar extends Component<Props, IState, any> {
       text: "",
       canGoBack: site && site.canGoBack ? site.canGoBack : false,
       canGoForward: site && site.canGoForward ? site.canGoForward : false,
-      searchIsFocused: false,
       previousKeyMode: null,
       selectionStart: 0,
-      selectionEnd: 0
+      selectionEnd: 0,
+      searchModalIsVisiable: false
     };
   }
 
   componentDidMount() {
-    const { activeSite, activeUrl } = this.props;
     this.subscriptions.push(
-      DAVKeyManagerEmitter.addListener("RNKeyEvent", this.typing),
-      DAVKeyManagerEmitter.addListener("RNBrowserKeyEvent", this.handleActions),
       DAVKeyManagerEmitter.addListener("RNAppKeyEvent", this.handleAppActions)
     );
   }
@@ -121,7 +132,7 @@ class NavBar extends Component<Props, IState, any> {
         this.setState({ previousKeyMode: keyMode });
       } else if (focusedPane === "browser") {
         dispatch(updateMode(this.state.previousKeyMode));
-        this.setState({ previousKeyMode: null });
+        this.setState({ previousKeyMode: KeyMode.Browser });
       }
     }
 
@@ -150,6 +161,7 @@ class NavBar extends Component<Props, IState, any> {
       dispatch(selectTab(sites.length));
     }, 50);
     this.setState({ text: "" });
+    this.closeSearch();
   }
 
   onPressToggleBack() {
@@ -160,6 +172,11 @@ class NavBar extends Component<Props, IState, any> {
   onPressToggleForward() {
     const { dispatch } = this.props;
     dispatch(toggleForward());
+  }
+
+  onPressToggleReload() {
+    const { dispatch } = this.props;
+    dispatch(toggleReload());
   }
 
   onPressAdd() {
@@ -212,187 +229,30 @@ class NavBar extends Component<Props, IState, any> {
     }
   }
 
-  handleActions = async event => {
-    const { dispatch, keyMode } = this.props;
-    if (
-      keyMode === KeyMode.Search &&
-      this.searchRef &&
-      this.state.searchIsFocused
-    ) {
-      console.log(event);
-      switch (event.action) {
-        case "home":
-          this.searchRef.setNativeProps({ selection: { start: 0, end: 0 } });
-          this.setState({
-            selectionStart: 0,
-            selectionEnd: 0
-          });
-          break;
-        case "end":
-          this.searchRef.setNativeProps({
-            selection: {
-              start: this.state.text.length,
-              end: this.state.text.length
-            }
-          });
-          this.setState({
-            selectionStart: this.state.text.length,
-            selectionEnd: this.state.text.length
-          });
-          break;
-        case "deletePreviousChar":
-          if (0 < this.state.selectionStart) {
-            const first = this.state.text.slice(
-              0,
-              this.state.selectionStart - 1
-            );
-            const second = this.state.text.slice(
-              this.state.selectionStart,
-              this.state.text.length
-            );
-            this.setState({
-              text: first + second,
-              selectionStart: this.state.selectionStart - 1,
-              selectionEnd: this.state.selectionEnd - 1
-            });
-          }
-          break;
-        case "deleteNextChar":
-          if (this.state.text.length > this.state.selectionStart) {
-            const first = this.state.text.slice(0, this.state.selectionStart);
-            const second = this.state.text.slice(
-              this.state.selectionStart + 1,
-              this.state.text.length
-            );
-            this.setState({
-              text: first + second
-            });
-            setTimeout(() => {
-              this.searchRef.setNativeProps({
-                selection: {
-                  start: this.state.selectionStart,
-                  end: this.state.selectionEnd
-                }
-              });
-            }, 50);
-          }
-
-          break;
-        case "moveBackOneChar":
-          this.searchRef.setNativeProps({
-            selection: {
-              start: this.state.selectionStart - 1,
-              end: this.state.selectionEnd - 1
-            }
-          });
-          this.setState({
-            selectionStart: this.state.selectionStart - 1,
-            selectionEnd: this.state.selectionEnd - 1
-          });
-          break;
-        case "moveForwardOneChar":
-          if (this.state.text.length > this.state.selectionStart) {
-            this.searchRef.setNativeProps({
-              selection: {
-                start: this.state.selectionStart + 1,
-                end: this.state.selectionEnd + 1
-              }
-            });
-            this.setState({
-              selectionStart: this.state.selectionStart + 1,
-              selectionEnd: this.state.selectionEnd + 1
-            });
-          }
-          break;
-        case "deleteLine":
-          const newText = this.state.text.slice(0, this.state.selectionStart);
-          // For some reason, need setTimeout..
-          setTimeout(() => {
-            this.searchRef.setNativeProps({
-              selection: {
-                start: this.state.selectionStart,
-                end: this.state.selectionEnd
-              }
-            });
-          }, 50);
-          this.setState({
-            text: newText
-          });
-          break;
-        case "copy":
-          break;
-        case "paste":
-          break;
-      }
-    }
-  };
-
-  typing = data => {
-    const { dispatch, keyMode } = this.props;
-    console.log(data);
-    if (this.state.searchIsFocused && keyMode === KeyMode.Search) {
-      // handle shift key to make it Uppercase
-      if (data.modifiers.shiftKey) {
-        if (data.key.match(/[a-z]/)) {
-          data.key = data.key.toUpperCase();
-        }
-      }
-
-      let text = this.state.text;
-      switch (data.key) {
-        case "Backspace":
-          this.setState({
-            text: text.slice(0, -1),
-            selectionStart: text.length - 1,
-            selectionEnd: text.length - 1
-          });
-          return;
-        case "Up":
-          return;
-        case "Down":
-          return;
-        case "Left":
-          this.handleActions({ action: "moveBackOneChar" });
-          return;
-        case "Right":
-          this.handleActions({ action: "moveForwardOneChar" });
-          return;
-        case "Esc":
-          this.searchRef && this.searchRef._root.blur();
-          return;
-      }
-      let newText = this.state.text + data.key;
-      this.setState({
-        text: newText,
-        selectionStart: newText.length,
-        selectionEnd: newText.length
-      });
-    }
-  };
-
   handleAppActions = event => {
     const { dispatch } = this.props;
+    console.log(event);
     switch (event.action) {
       case "focusOnSearch":
-        this.searchRef && this.searchRef._root.focus();
+        this.openSearch();
         break;
     }
   };
 
-  onFocusSearch() {
+  openSearch() {
     const { dispatch, keyMode } = this.props;
-    this.setState({ searchIsFocused: true });
     dispatch(updateFocusedPane("search"));
+    this.setState({ searchModalIsVisiable: true });
   }
 
-  onBlurSearch() {
-    const { dispatch } = this.props;
-    this.setState({ searchIsFocused: false });
+  closeSearch() {
+    const { dispatch, keyMode } = this.props;
+    this.setState({ searchModalIsVisiable: false });
     dispatch(updateFocusedPane("browser"));
   }
 
   render() {
-    const { searchEngine, orientation, keyMode } = this.props;
+    const { searchEngine, orientation, keyMode, activeUrl } = this.props;
     if (
       orientation === "LANDSCAPE" &&
       DeviceInfo.getDeviceType() === "Handset"
@@ -413,26 +273,76 @@ class NavBar extends Component<Props, IState, any> {
           transparent
           light
           onPress={this.onPressToggleForward.bind(this)}
-          style={{ marginRight: 20 }}
           disabled={!this.state.canGoForward}
         >
           <Icon name="ios-arrow-forward" />
         </Button>
+        <Button
+          transparent
+          light
+          onPress={this.onPressToggleReload.bind(this)}
+          style={{ marginRight: 20 }}
+        >
+          <Icon name="md-refresh" />
+        </Button>
         <Item>
-          <Icon name="ios-search" />
-          <Input
-            ref={r => (this.searchRef = r as any)}
-            placeholder={`URL or Search with ${searchEngine}`}
-            onChangeText={text => this.setState({ text })}
-            value={this.state.text}
-            autoCorrect={false}
-            onEndEditing={this.onEndEditing.bind(this)}
-            textContentType="URL"
-            autoCapitalize="none"
-            style={{ fontSize: 12 }}
-            onFocus={this.onFocusSearch.bind(this)}
-            onBlur={this.onBlurSearch.bind(this)}
-          />
+          <Button
+            iconLeft
+            dark
+            transparent
+            onPress={() => this.openSearch()}
+            style={{
+              height: 30,
+              borderRadius: 15,
+              flex: 1,
+              justifyContent: "flex-start"
+            }}
+          >
+            <Icon
+              name="ios-search"
+              style={{ minWidth: 20, fontSize: 15, width: 20 }}
+            />
+            <Text
+              style={{
+                paddingLeft: 0,
+                paddingRight: 0,
+                fontSize: 9,
+                textAlign: "left",
+                flex: 0.99,
+                color: "#666"
+              }}
+            >
+              Search or URL {` - ${activeUrl}`}
+            </Text>
+            <Button
+              transparent
+              style={{
+                marginRight: 5,
+                paddingLeft: 0,
+                paddingRight: 0,
+                paddingTop: 0,
+                paddingBottom: 0,
+                width: 20,
+                height: 19,
+                borderRadius: 0
+              }}
+              onPress={() => Clipboard.setString(activeUrl)}
+            >
+              <Icon
+                name="md-copy"
+                style={{
+                  paddingTop: 0,
+                  minWidth: 20,
+                  fontSize: 15,
+                  width: 20,
+                  marginLeft: 8,
+                  marginRight: 3,
+                  alignSelf: "flex-end",
+                  color: "#666"
+                }}
+              />
+            </Button>
+          </Button>
         </Item>
         <Button transparent light onPress={() => this.onPressSwitch()}>
           {this.switchIcon()}
@@ -443,6 +353,17 @@ class NavBar extends Component<Props, IState, any> {
         <Button transparent light onPress={this.onPressSetting.bind(this)}>
           <Icon name="settings" />
         </Button>
+        <Modal
+          isVisible={this.state.searchModalIsVisiable}
+          animationIn="fadeIn"
+          animationOut="fadeOut"
+        >
+          <Search
+            searchIsFocused={this.state.searchModalIsVisiable}
+            closeSearch={this.closeSearch.bind(this)}
+            openSearch={this.openSearch.bind(this)}
+          />
+        </Modal>
       </Header>
     );
   }

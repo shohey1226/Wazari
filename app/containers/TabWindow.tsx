@@ -19,6 +19,7 @@ import {
   closeTab,
   updateKeySwitch
 } from "../actions/ui";
+import { addHistory } from "../actions/user";
 import { selectSites, selectActiveUrl } from "../selectors/ui";
 import { KeyMode } from "../types/index.d";
 
@@ -39,6 +40,7 @@ interface Props {
   keyMode: KeyMode;
   backToggled: boolean;
   forwardToggled: boolean;
+  reloadToggled: boolean;
   excludedPatterns: Array<string>;
   keySwitchOn: boolean;
   activeUrl: string;
@@ -94,6 +96,7 @@ class TabWindow extends Component<Props, State, any> {
     const {
       backToggled,
       forwardToggled,
+      reloadToggled,
       keyMode,
       focusedPane,
       activeUrl,
@@ -121,6 +124,9 @@ class TabWindow extends Component<Props, State, any> {
     }
     if (prevProp.forwardToggled !== forwardToggled && this.state.isActive) {
       this.webref && this.webref.goForward();
+    }
+    if (prevProp.reloadToggled !== reloadToggled && this.state.isActive) {
+      this.webref && this.webref.reload();
     }
 
     // focused pane is changed to browser
@@ -329,6 +335,7 @@ class TabWindow extends Component<Props, State, any> {
       );
       this.focusWindow();
       this.setState({ isActive: true });
+      dispatch(addHistory(nativeEvent.url, nativeEvent.title));
     }
   }
 
@@ -380,6 +387,7 @@ class TabWindow extends Component<Props, State, any> {
           renderLoading={() => <Loader />}
           renderError={errorName => <Error name={errorName} />}
           startInLoadingState={true}
+          decelerationRate="fast"
           injectedJavaScript={injectingJs
             .replace("SVIM_PREDEFINE", sVim.sVimPredefine)
             .replace("SVIM_GLOBAL", sVim.sVimGlobal)
@@ -403,12 +411,14 @@ function mapStateToProps(state, ownProps) {
   const focusedPane = state.ui.get("focusedPane");
   const backToggled = state.ui.get("backToggled");
   const forwardToggled = state.ui.get("forwardToggled");
+  const reloadToggled = state.ui.get("reloadToggled");
   const homeUrl = state.user.get("homeUrl");
   const keySwitchOn = state.ui.get("keySwitchOn");
   const excludedPatterns = state.user.get("excludedPatterns").toArray();
   return {
     backToggled,
     forwardToggled,
+    reloadToggled,
     keymap,
     modifiers,
     sites,
