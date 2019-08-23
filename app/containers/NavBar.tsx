@@ -281,7 +281,7 @@ class NavBar extends Component<Props, IState, any> {
           transparent
           light
           onPress={this.onPressToggleReload.bind(this)}
-          style={{ marginRight: 20 }}
+          style={{ marginRight: 10 }}
         >
           <Icon name="md-refresh" />
         </Button>
@@ -344,7 +344,12 @@ class NavBar extends Component<Props, IState, any> {
             </Button>
           </Button>
         </Item>
-        <Button transparent light onPress={() => this.onPressSwitch()}>
+        <Button
+          transparent
+          light
+          onPress={() => this.onPressSwitch()}
+          style={{ marginLeft: 5 }}
+        >
           {this.switchIcon()}
         </Button>
         <Button transparent light onPress={() => this.onPressAdd()}>
