@@ -3,7 +3,8 @@ import {
   View,
   NativeModules,
   NativeEventEmitter,
-  TextInput
+  TextInput,
+  Clipboard
 } from "react-native";
 import { connect } from "react-redux";
 import DeviceInfo from "react-native-device-info";
@@ -251,7 +252,7 @@ class NavBar extends Component<Props, IState, any> {
   }
 
   render() {
-    const { searchEngine, orientation, keyMode } = this.props;
+    const { searchEngine, orientation, keyMode, activeUrl } = this.props;
     if (
       orientation === "LANDSCAPE" &&
       DeviceInfo.getDeviceType() === "Handset"
@@ -287,20 +288,60 @@ class NavBar extends Component<Props, IState, any> {
         <Item>
           <Button
             iconLeft
-            light
+            dark
+            transparent
             onPress={() => this.openSearch()}
-            style={{ height: 30, borderRadius: 15, width: "100%" }}
+            style={{
+              height: 30,
+              borderRadius: 15,
+              flex: 1,
+              justifyContent: "flex-start"
+            }}
           >
-            <Icon name="ios-search" style={{ fontSize: 15, width: 20 }} />
+            <Icon
+              name="ios-search"
+              style={{ minWidth: 20, fontSize: 15, width: 20 }}
+            />
             <Text
               style={{
                 paddingLeft: 0,
                 paddingRight: 0,
-                fontSize: 12,
+                fontSize: 9,
                 textAlign: "left",
-                width: "100%"
+                flex: 0.99,
+                color: "#666"
               }}
-            >{`URL or Search with ${searchEngine}`}</Text>
+            >
+              Search or URL {` - ${activeUrl}`}
+            </Text>
+            <Button
+              transparent
+              style={{
+                marginRight: 5,
+                paddingLeft: 0,
+                paddingRight: 0,
+                paddingTop: 0,
+                paddingBottom: 0,
+                width: 20,
+                height: 19,
+                borderRadius: 0
+              }}
+              onPress={() => Clipboard.setString(activeUrl)}
+            >
+              <Icon
+                name="md-copy"
+                style={{
+                  paddingTop: 0,
+                  minWidth: 20,
+                  fontSize: 15,
+                  width: 20,
+                  marginLeft: 8,
+                  marginRight: 3,
+                  alignSelf: "flex-end",
+                  color: "#666"
+                }}
+              />
+            </Button>
           </Button>
         </Item>
         <Button transparent light onPress={() => this.onPressSwitch()}>
