@@ -15,57 +15,108 @@ import {
 } from "native-base";
 import { Col, Row, Grid } from "react-native-easy-grid";
 import TreeModel from "tree-model";
+import Browser from "./Browser";
+import { WebView } from "react-native-webview";
 
-interface State {}
+interface State {
+  ids: Array<number>
+}
 
 interface Props {}
 
 class TileRoot extends Component<Props, State> {
   constructor(props) {
     super(props);
-    this.state = {};
     let tree = new TreeModel();
     let root = tree.parse({
-      name: "1",
-      type: "Col"
+      id: 1,
     });
-    // console.log(root);
-    root.addChild(tree.parse({ name: "1.a", size: 50 }));
-    //root.addChild(tree.parse({ name: "1.b" }));
-    let n2 = tree.parse({ name: "2", type: "Row", size: 50 });
-    root.addChild(n2);
-    let n3 = tree.parse({ name: "3", size: 75 });
-    n2.addChild(n3);
-    n2.addChild(tree.parse({ name: "4", size: 25 }));
-    // console.log(n3);
-    // root.addChild(n3);
-    // n3.addChild(tree.parse({ name: "44444444444444444" }));
-    // n3.addChild(tree.parse({ name: "55555555555555555" }));
     console.log(root);
-    this.root = root;
+    this.root = root;    
+
+    let newNodeId = this.addPane("Row", 1)
+    console.log(this.root)
+    let newNodeId2 = this.addPane("Col", newNodeId)
+    console.log(this.root)
+
+ 
+    this.state = {
+      ids: [1, newNodeId, newNodeId2 ]      
+    }
+
+
+ 
+    // console.log(root);
+    // root.addChild(tree.parse({ id: "1.a", size: 50 }));
+    // //root.addChild(tree.parse({ id: "1.b" }));
+    // let n2 = tree.parse({ id: "2", type: "Row", size: 50 });
+    // root.addChild(n2);
+    // let n3 = tree.parse({ id: "3", size: 75 });
+    // n2.addChild(n3);
+    // n2.addChild(tree.parse({ id: "4", size: 25 }));
+    // // console.log(n3);
+    // // root.addChild(n3);
+    // // n3.addChild(tree.parse({ id: "44444444444444444" }));
+    // // n3.addChild(tree.parse({ id: "55555555555555555" }));
+
   }
 
   componentDidMount() {
-    // let n3 = root.first(node => {
-    //   if (node.model.name === 3) {
-    //     return true;
-    //   }
-    // });
+    setTimeout(()=>{
+      this.removePane(1);
+      this.setState({ids: this.state.ids.filter(i=> i !== 1)})
+    }, 3000)
+
+  }
+
+  addPane(type: "Row" | "Col", targetPaneId: string): number|null {
+    let targetNode = this.root.first(node => {
+      if (node.model.id === targetPaneId) {
+        return true;
+      }
+    });
+    if(!targetNode){return null}
+
+
+    let tree = new TreeModel();
+    // make current node branch and create a new node with targetNode.id
+    targetNode.model.type = type;    
+    targetNode.addChild(tree.parse({ id: targetNode.model.id}));          
+    targetNode.model.id = 'branch'        
+    // add new Node
+    let id = Date.now();
+    targetNode.addChild(tree.parse({ id: id }));
+
+    return id;
+  }
+
+  removePane(targetPaneId){
+    let targetNode = this._findNode(targetPaneId);
+    targetNode.drop();
+  }
+
+  _findNode(id){
+    let targetNode = this.root.first(node => {
+      if (node.model.id === id) {
+        return true;
+      }
+    });  
+    return targetNode ? targetNode : null;  
   }
 
   renderRecursively(node) {
     let childViews = [];
     if (node.children.length === 0) {
-      childViews.push(<Text>{node.model.name}</Text>);
+      childViews.push(<Text>{node.model.id}</Text>);
     } else {
       node.children.forEach(child => {
         if (node.model.type === "Col") {
           childViews.push(
-            <Col size={child.model.size}>{this.renderRecursively(child)}</Col>
+            <Col>{this.renderRecursively(child)}</Col>
           );
         } else if (node.model.type === "Row") {
           childViews.push(
-            <Row size={child.model.size}>{this.renderRecursively(child)}</Row>
+            <Row>{this.renderRecursively(child)}</Row>
           );
         }
       });
