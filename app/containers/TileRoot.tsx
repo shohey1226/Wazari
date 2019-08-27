@@ -93,7 +93,13 @@ class TileRoot extends Component<Props, State> {
       n => n.model.id !== targetPaneId
     )[0];
 
-    // if it's branch, then move up the node
+    // Assume this tree
+    // R + - + - 1
+    //   |   |
+    //   |   + - 2
+    //   + - 3
+
+    // When we delete 3, the counter part is branch, which we need to move them up.
     if (theOtherNode.model.id === "branch") {
       theOtherNode.children.forEach(n => {
         targetNode.parent.addChild(n);
@@ -103,11 +109,17 @@ class TileRoot extends Component<Props, State> {
       targetNode.drop();
       theOtherNode.drop();
     } else {
+      // R + - 1
+      //   |
+      //   + - 2
+      // When the parent is Root, then only have one node
       if (targetNode.parent.isRoot()) {
         targetNode.parent.model.type = null;
         targetNode.parent.model.id = theOtherNode.model.id;
         targetNode.drop();
         theOtherNode.drop();
+
+        // When we delete 1, remove the branch and move the counter part up.
       } else {
         let grandParent = targetNode.parent.parent;
         grandParent.addChild(theOtherNode);
