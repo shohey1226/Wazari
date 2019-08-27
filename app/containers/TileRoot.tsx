@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
+import { NativeModules, NativeEventEmitter } from "react-native";
 import {
   View,
   List,
@@ -17,14 +18,23 @@ import { Col, Row, Grid } from "react-native-easy-grid";
 import TreeModel from "tree-model";
 import Browser from "./Browser";
 import { WebView } from "react-native-webview";
+import { addTile, removeTile } from "../actions/ui";
+
+const { DAVKeyManager } = NativeModules;
+const DAVKeyManagerEmitter = new NativeEventEmitter(DAVKeyManager);
 
 interface State {
   ids: Array<number>;
 }
 
-interface Props {}
+interface Props {
+  dispatch: (any) => void;
+  activeTileId: number;
+}
 
 class TileRoot extends Component<Props, State> {
+  subscriptions: Array<any> = [];
+
   constructor(props) {
     super(props);
     let tree = new TreeModel();
@@ -34,9 +44,9 @@ class TileRoot extends Component<Props, State> {
     console.log(root);
     this.root = root;
 
-    let newNodeId = this.addPane("Row", 1);
+    let newNodeId = this.addNode("Row", 1);
     console.log(this.root);
-    // let newNodeId2 = this.addPane("Col", newNodeId);
+    let newNodeId2 = this.addNode("Col", newNodeId);
     // console.log(this.root);
 
     this.state = {
@@ -44,8 +54,10 @@ class TileRoot extends Component<Props, State> {
       ids: [1, newNodeId]
     };
 
-    this.removePane(newNodeId);
+    //this.removeNode(newNodeId);
     console.log(this.root);
+
+    console.log(this.root.all());
 
     // console.log(root);
     // root.addChild(tree.parse({ id: "1.a", size: 50 }));
@@ -62,13 +74,35 @@ class TileRoot extends Component<Props, State> {
   }
 
   componentDidMount() {
+    this.subscriptions.push(
+      DAVKeyManagerEmitter.addListener("RNAppKeyEvent", this.handleAppActions)
+    );
     // setTimeout(() => {
     //   this.removePane(1);
     //   this.setState({ ids: this.state.ids.filter(i => i !== 1) });
     // }, 3000);
   }
 
-  addPane(type: "Row" | "Col", targetPaneId: string): number | null {
+  componentWillUnmount() {
+    this.subscriptions.forEach(subscription => {
+      subscription.remove();
+    });
+  }
+
+  handleAppActions(event) {
+    const { dispatch, activeTileId } = this.props;
+    console.log(event);
+    switch (event.action) {
+      case "addRow":
+        this.addNode("Row", adtiveTileId);
+        break;
+      case "addColumn":
+        this.addNode("Col", adtiveTileId);
+        break;
+    }
+  }
+
+  addNode(type: "Row" | "Col", targetPaneId: string): number | null {
     let targetNode = this._findNode(targetPaneId);
 
     if (!targetNode) {
@@ -87,7 +121,9 @@ class TileRoot extends Component<Props, State> {
     return id;
   }
 
-  removePane(targetPaneId) {
+  removeNode(targetPaneId) {
+    const { dispatch } = this.props;
+
     let targetNode = this._findNode(targetPaneId);
     let theOtherNode = targetNode.parent.children.filter(
       n => n.model.id !== targetPaneId
@@ -160,13 +196,13 @@ class TileRoot extends Component<Props, State> {
 
   render() {
     let v = this.renderRecursively(this.root);
-    console.log(v);
     return <Grid>{v}</Grid>;
   }
 }
 
 function mapStateToProps(state, ownProps) {
-  return {};
+  const activeTileId = state.ui.get("activeTileId");
+  return { activeTileId };
 }
 
 export default connect(mapStateToProps)(TileRoot);

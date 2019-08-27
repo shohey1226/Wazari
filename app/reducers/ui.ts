@@ -9,9 +9,12 @@ import {
   UPDATE_ORIENTATION,
   UPDATE_FOUCUSED_PANE,
   UPDATE_KEY_SWITCH,
-  TOGGLE_RELOAD
+  TOGGLE_RELOAD,
+  ADD_TILE,
+  REMOVE_TILE,
+  SELECT_TILE
 } from "../actions/ui";
-import { Map, fromJS } from "immutable";
+import { Map, fromJS, List } from "immutable";
 import { KeyMode } from "../types/index.d";
 
 type Site = {
@@ -31,6 +34,8 @@ export interface UiState extends Map<any, any> {
   orientation: string;
   focusedPane: string;
   keySwitchOn: boolean;
+  tileIds: Array<number>;
+  activeTileId: number;
 }
 
 const initialState: UiState = fromJS({
@@ -41,7 +46,9 @@ const initialState: UiState = fromJS({
   forwardToggled: false,
   reloadToggled: false,
   focusedPane: "browser",
-  keySwitchOn: true
+  keySwitchOn: true,
+  tileIds: List(),
+  activeTileId: 0
 });
 
 export default function ui(state = initialState, action) {
@@ -106,6 +113,24 @@ export default function ui(state = initialState, action) {
 
     case UPDATE_ORIENTATION:
       return state.set("orientation", action.orientation);
+
+    case ADD_TILE:
+      return state
+        .set("tileIds", state.get("tileIds").push(action.tileId))
+        .set("activeTileId", action.tileId);
+    case REMOVE_TILE:
+      return state
+        .set(
+          "activeTileId",
+          state.get("tileIds").indexOf(action.tileId) - 1 > 0
+            ? state
+                .get("tileIds")
+                .get(state.get("tileIds").indexOf(action.tileId) - 1)
+            : state.get("tileIds").get(0)
+        )
+        .set("tileIds", state.get("tileIds").filter(t => t !== action.tileId));
+    case SELECT_TILE:
+      return state.set("activeTileId", action.tileId);
 
     // case LOGOUT:
     //   // make it default state

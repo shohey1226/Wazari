@@ -12,6 +12,9 @@ export const UPDATE_MODE = "UPDATE_MODE";
 export const UPDATE_ORIENTATION = "UPDATE_ORIENTATION";
 export const UPDATE_FOUCUSED_PANE = "UPDATE_FOUCUSED_PANE";
 export const UPDATE_KEY_SWITCH = "UPDATE_KEY_SWITCH";
+export const ADD_TILE = "ADD_TILE";
+export const REMOVE_TILE = "REMOVE_TILE";
+export const SELECT_TILE = "SELECT_TILE";
 
 export function toggleForward() {
   return {
@@ -94,5 +97,26 @@ export function updateFocusedPane(pane: string) {
   return {
     type: UPDATE_FOUCUSED_PANE,
     pane: pane
+  };
+}
+
+export function addTile(tileId: number) {
+  return {
+    type: ADD_TILE,
+    tileId: tileId
+  };
+}
+
+export function removeTile(tileId: number) {
+  return {
+    type: REMOVE_TILE,
+    tileId: tileId
+  };
+}
+
+export function selectTile(tileId: number) {
+  return {
+    type: SELECT_TILE,
+    tileId: tileId
   };
 }
