@@ -110,8 +110,8 @@ class Browser extends Component<Props, State> {
   }
 
   componentWillUnmount() {
-    this.keyboardDidShowListener.remove();
-    this.keyboardDidHideListener.remove();
+    // this.keyboardDidShowListener.remove();
+    // this.keyboardDidHideListener.remove();
     this.subscriptions.forEach(subscription => {
       subscription.remove();
     });
@@ -290,6 +290,7 @@ class Browser extends Component<Props, State> {
 
   render() {
     const { activeTabIndex, orientation } = this.props;
+
     let style = { height: 35 };
     if (
       orientation === "LANDSCAPE" &&
@@ -305,7 +306,6 @@ class Browser extends Component<Props, State> {
           <ScrollableTab style={{ backgroundColor: "#222", ...style }} />
         )}
         onChangeTab={this.onChangeTab.bind(this)}
-        style={style}
       >
         {this.renderTabs()}
       </Tabs>

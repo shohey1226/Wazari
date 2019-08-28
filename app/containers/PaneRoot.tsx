@@ -37,7 +37,7 @@ interface Props {
   modifiers: any;
 }
 
-class TileRoot extends Component<Props, State> {
+class PaneRoot extends Component<Props, State> {
   subscriptions: Array<any> = [];
   root: any = {}; // TreeModel node object
 
@@ -139,12 +139,7 @@ class TileRoot extends Component<Props, State> {
   renderRecursively(node) {
     let childViews = [];
     if (node.children.length === 0) {
-      childViews.push(
-        <WebView
-          key={node.model.id}
-          source={{ uri: "https://duckduckgo.com" }}
-        />
-      );
+      childViews.push(<Browser key={node.model.id} />);
     } else {
       node.children.forEach(child => {
         if (node.model.type === "Col") {
@@ -179,4 +174,4 @@ function mapStateToProps(state, ownProps) {
   return { activePaneId, paneBlueprint, keymap, modifiers };
 }
 
-export default connect(mapStateToProps)(TileRoot);
+export default connect(mapStateToProps)(PaneRoot);

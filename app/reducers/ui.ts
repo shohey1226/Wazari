@@ -36,6 +36,9 @@ export interface UiState extends Map<any, any> {
   focusedPane: string;
   keySwitchOn: boolean;
   paneIds: Array<number>;
+  panes: {
+    [key: number]: { activeTabIndex: number | null; sites: Array<Site> };
+  };
   activePaneId: number;
   paneBlueprint: any;
 }

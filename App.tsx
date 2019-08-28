@@ -23,7 +23,7 @@ import getTheme from "./native-base-theme/components";
 import platform from "./native-base-theme/variables/platform";
 import { updateOrientation } from "./app/actions/ui";
 import Browser from "./app/containers/Browser";
-import TileRoot from "./app/containers/TileRoot";
+import PaneRoot from "./app/containers/PaneRoot";
 import Setting from "./app/components/Setting";
 import KeySetting from "./app/containers/KeySetting";
 import GeneralSetting from "./app/containers/GeneralSetting";
@@ -43,7 +43,7 @@ persistor.purge();
 
 let RootStack = createStackNavigator({
   Home: {
-    screen: TileRoot,
+    screen: PaneRoot,
     navigationOptions: ({ navigation }) => ({
       title: "",
       header: <NavBar {...navigation} />
