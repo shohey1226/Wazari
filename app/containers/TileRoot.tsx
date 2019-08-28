@@ -139,16 +139,25 @@ class TileRoot extends Component<Props, State> {
   renderRecursively(node) {
     let childViews = [];
     if (node.children.length === 0) {
-      childViews.push(<Text key={node.model.id}>{node.model.id}</Text>);
+      childViews.push(
+        <WebView
+          key={node.model.id}
+          source={{ uri: "https://duckduckgo.com" }}
+        />
+      );
     } else {
       node.children.forEach(child => {
         if (node.model.type === "Col") {
           childViews.push(
-            <Col key={child.model.id}>{this.renderRecursively(child)}</Col>
+            <Col key={`col-${child.model.id}`}>
+              <Grid>{this.renderRecursively(child)}</Grid>
+            </Col>
           );
         } else if (node.model.type === "Row") {
           childViews.push(
-            <Row key={child.model.id}>{this.renderRecursively(child)}</Row>
+            <Row key={`row-${child.model.id}`}>
+              <Grid>{this.renderRecursively(child)}</Grid>
+            </Row>
           );
         }
       });
