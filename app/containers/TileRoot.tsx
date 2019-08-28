@@ -18,7 +18,8 @@ import { Col, Row, Grid } from "react-native-easy-grid";
 import TreeModel from "tree-model";
 import Browser from "./Browser";
 import { WebView } from "react-native-webview";
-import { addTile, removeTile } from "../actions/ui";
+import { addTile, removeTile, updateTileBlueprint } from "../actions/ui";
+import TreeUtils from "../utils/tree";
 
 const { DAVKeyManager } = NativeModules;
 const DAVKeyManagerEmitter = new NativeEventEmitter(DAVKeyManager);
@@ -34,30 +35,37 @@ interface Props {
 
 class TileRoot extends Component<Props, State> {
   subscriptions: Array<any> = [];
+  root: any = {}; // TreeModel node object
 
   constructor(props) {
     super(props);
-    let tree = new TreeModel();
-    let root = tree.parse({
-      id: 1
-    });
-    console.log(root);
-    this.root = root;
 
-    let newNodeId = this.addNode("Row", 1);
-    console.log(this.root);
-    let newNodeId2 = this.addNode("Col", newNodeId);
-    // console.log(this.root);
+    // https://stackoverflow.com/questions/679915/how-do-i-test-for-an-empty-javascript-object
+    if (
+      Object.entries(props.tileBlueprint).length === 0 &&
+      props.tileBlueprint.constructor === Object
+    ) {
+      let tree = new TreeModel();
+      this.root = tree.parse({
+        id: 1
+      });
+      props.dispatch(addTile(1));
+    } else {
+      this.root = TreeUtils.deserialize(props.tileBlueprint);
+    }
 
-    this.state = {
-      //ids: [1, newNodeId, newNodeId2]
-      ids: [1, newNodeId]
-    };
+    //TreeUtils.removeNode(root, 1);
 
-    //this.removeNode(newNodeId);
-    console.log(this.root);
+    // this.state = {
+    //   //ids: [1, newNodeId, newNodeId2]
+    //   ids: [1, newNodeId]
+    // };
 
-    console.log(this.root.all());
+    //console.log(tree);
+
+    //console.log(r);
+
+    //this.root = r;
 
     // console.log(root);
     // root.addChild(tree.parse({ id: "1.a", size: 50 }));
@@ -74,9 +82,18 @@ class TileRoot extends Component<Props, State> {
   }
 
   componentDidMount() {
+    const { dispatch } = this.props;
     this.subscriptions.push(
       DAVKeyManagerEmitter.addListener("RNAppKeyEvent", this.handleAppActions)
     );
+
+    // let newNodeId = TreeUtils.addNode(this.root, "Row", 1);
+    // dispatch(addTile(newNodeId));
+    // let newNodeId2 = TreeUtils.addNode(this.root, "Col", newNodeId);
+    // dispatch(addTile(newNodeId2));
+    // let obj = TreeUtils.serialize(this.root);
+    // dispatch(updateTileBlueprint(obj));
+
     // setTimeout(() => {
     //   this.removePane(1);
     //   this.setState({ ids: this.state.ids.filter(i => i !== 1) });
@@ -94,90 +111,18 @@ class TileRoot extends Component<Props, State> {
     console.log(event);
     switch (event.action) {
       case "addRow":
-        this.addNode("Row", adtiveTileId);
+        TreeUtils.addNode(this.root, "Row", activeTileId);
         break;
       case "addColumn":
-        this.addNode("Col", adtiveTileId);
+        TreeUtils.addNode(this.root, "Col", activeTileId);
         break;
     }
-  }
-
-  addNode(type: "Row" | "Col", targetPaneId: string): number | null {
-    let targetNode = this._findNode(targetPaneId);
-
-    if (!targetNode) {
-      return null;
-    }
-
-    let tree = new TreeModel();
-    // make current node branch and create a new node with targetNode.id
-    targetNode.model.type = type;
-    targetNode.addChild(tree.parse({ id: targetNode.model.id }));
-    targetNode.model.id = "branch";
-    // add new Node
-    let id = Date.now();
-    targetNode.addChild(tree.parse({ id: id }));
-
-    return id;
-  }
-
-  removeNode(targetPaneId) {
-    const { dispatch } = this.props;
-
-    let targetNode = this._findNode(targetPaneId);
-    let theOtherNode = targetNode.parent.children.filter(
-      n => n.model.id !== targetPaneId
-    )[0];
-
-    // Assume this tree
-    // R + - + - 1
-    //   |   |
-    //   |   + - 2
-    //   + - 3
-
-    // When we delete 3, the counter part is branch, which we need to move them up.
-    if (theOtherNode.model.id === "branch") {
-      theOtherNode.children.forEach(n => {
-        targetNode.parent.addChild(n);
-      });
-      targetNode.parent.model.type = theOtherNode.model.type;
-      targetNode.parent.model.id = "branch";
-      targetNode.drop();
-      theOtherNode.drop();
-    } else {
-      // R + - 1
-      //   |
-      //   + - 2
-      // When the parent is Root, then only have one node
-      if (targetNode.parent.isRoot()) {
-        targetNode.parent.model.type = null;
-        targetNode.parent.model.id = theOtherNode.model.id;
-        targetNode.drop();
-        theOtherNode.drop();
-
-        // When we delete 1, remove the branch and move the counter part up.
-      } else {
-        let grandParent = targetNode.parent.parent;
-        grandParent.addChild(theOtherNode);
-        targetNode.parent.drop();
-        targetNode.drop();
-      }
-    }
-  }
-
-  _findNode(id) {
-    let targetNode = this.root.first(node => {
-      if (node.model.id === id) {
-        return true;
-      }
-    });
-    return targetNode ? targetNode : null;
   }
 
   renderRecursively(node) {
     let childViews = [];
     if (node.children.length === 0) {
-      childViews.push(<Text>{node.model.id}</Text>);
+      childViews.push(<Text key={node.model.id}>{node.model.id}</Text>);
     } else {
       node.children.forEach(child => {
         if (node.model.type === "Col") {
@@ -202,7 +147,8 @@ class TileRoot extends Component<Props, State> {
 
 function mapStateToProps(state, ownProps) {
   const activeTileId = state.ui.get("activeTileId");
-  return { activeTileId };
+  const tileBlueprint = state.ui.get("tileBlueprint").toJS();
+  return { activeTileId, tileBlueprint };
 }
 
 export default connect(mapStateToProps)(TileRoot);

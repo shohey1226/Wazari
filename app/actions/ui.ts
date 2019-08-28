@@ -15,6 +15,7 @@ export const UPDATE_KEY_SWITCH = "UPDATE_KEY_SWITCH";
 export const ADD_TILE = "ADD_TILE";
 export const REMOVE_TILE = "REMOVE_TILE";
 export const SELECT_TILE = "SELECT_TILE";
+export const UPDATE_TILE_BLUEPRINT = "UPDATE_TILE_BLUEPRINT";
 
 export function toggleForward() {
   return {
@@ -120,3 +121,11 @@ export function selectTile(tileId: number) {
     tileId: tileId
   };
 }
+
+export function updateTileBlueprint(blueprint: Object) {
+  return {
+    type: UPDATE_TILE_BLUEPRINT,
+    blueprint: blueprint
+  };
+}
+

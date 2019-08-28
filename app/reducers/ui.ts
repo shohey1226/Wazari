@@ -12,7 +12,8 @@ import {
   TOGGLE_RELOAD,
   ADD_TILE,
   REMOVE_TILE,
-  SELECT_TILE
+  SELECT_TILE,
+  UPDATE_TILE_BLUEPRINT
 } from "../actions/ui";
 import { Map, fromJS, List } from "immutable";
 import { KeyMode } from "../types/index.d";
@@ -36,6 +37,7 @@ export interface UiState extends Map<any, any> {
   keySwitchOn: boolean;
   tileIds: Array<number>;
   activeTileId: number;
+  tileBlueprint: any;
 }
 
 const initialState: UiState = fromJS({
@@ -48,7 +50,8 @@ const initialState: UiState = fromJS({
   focusedPane: "browser",
   keySwitchOn: true,
   tileIds: List(),
-  activeTileId: 0
+  activeTileId: 0,
+  tileBlueprint: {}
 });
 
 export default function ui(state = initialState, action) {
@@ -131,6 +134,8 @@ export default function ui(state = initialState, action) {
         .set("tileIds", state.get("tileIds").filter(t => t !== action.tileId));
     case SELECT_TILE:
       return state.set("activeTileId", action.tileId);
+    case UPDATE_TILE_BLUEPRINT:
+      return state.set("tileBlueprint", Map(action.blueprint));
 
     // case LOGOUT:
     //   // make it default state
