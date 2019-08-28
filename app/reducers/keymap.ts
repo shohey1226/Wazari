@@ -38,6 +38,36 @@ const defaultKeymap = {
         ctrlKey: false,
         metaKey: false
       }
+    },
+    addRowPane: {
+      key: "5",
+      modifiers: {
+        capslockKey: false,
+        shiftKey: true,
+        altKey: true,
+        ctrlKey: false,
+        metaKey: false
+      }
+    },
+    addColumnPane: {
+      key: "'",
+      modifiers: {
+        capslockKey: false,
+        shiftKey: true,
+        altKey: true,
+        ctrlKey: false,
+        metaKey: false
+      }
+    },
+    removePane: {
+      key: "x",
+      modifiers: {
+        capslockKey: false,
+        shiftKey: false,
+        altKey: true,
+        ctrlKey: false,
+        metaKey: false
+      }
     }
   },
   browser: {

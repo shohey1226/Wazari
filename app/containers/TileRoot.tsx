@@ -20,6 +20,8 @@ import Browser from "./Browser";
 import { WebView } from "react-native-webview";
 import { addPane, removePane, updatePaneBlueprint } from "../actions/ui";
 import TreeUtils from "../utils/tree";
+import { selectAppKeymap, selectModifiers } from "../selectors/keymap";
+import keymapper from "../utils/Keymapper";
 
 const { DAVKeyManager } = NativeModules;
 const DAVKeyManagerEmitter = new NativeEventEmitter(DAVKeyManager);
@@ -31,6 +33,8 @@ interface State {
 interface Props {
   dispatch: (any) => void;
   activePaneId: number;
+  keymap: any;
+  modifiers: any;
 }
 
 class TileRoot extends Component<Props, State> {
@@ -53,6 +57,8 @@ class TileRoot extends Component<Props, State> {
     } else {
       this.root = TreeUtils.deserialize(props.paneBlueprint);
     }
+
+    this.handleAppActions = this.handleAppActions.bind(this);
 
     //TreeUtils.removeNode(root, 1);
 
@@ -82,10 +88,17 @@ class TileRoot extends Component<Props, State> {
   }
 
   componentDidMount() {
-    const { dispatch } = this.props;
+    const { dispatch, keymap, modifiers } = this.props;
+
+    DAVKeyManager.setAppKeymap(
+      keymapper.convertToNativeFormat(keymap, modifiers)
+    );
     this.subscriptions.push(
       DAVKeyManagerEmitter.addListener("RNAppKeyEvent", this.handleAppActions)
     );
+
+    DAVKeyManager.turnOnKeymap();
+    DAVKeyManager.setMode("text");
 
     // let newNodeId = TreeUtils.addNode(this.root, "Row", 1);
     // dispatch(addPane(newNodeId));
@@ -111,10 +124,14 @@ class TileRoot extends Component<Props, State> {
     console.log(event);
     switch (event.action) {
       case "addRowPane":
-        TreeUtils.addNode(this.root, "Row", activePaneId);
+        dispatch(addPane(TreeUtils.addNode(this.root, "Row", activePaneId)));
         break;
       case "addColumnPane":
-        TreeUtils.addNode(this.root, "Col", activePaneId);
+        dispatch(addPane(TreeUtils.addNode(this.root, "Col", activePaneId)));
+        break;
+      case "removePane":
+        TreeUtils.removeNode(this.root, activePaneId);
+        dispatch(removePane(activePaneId));
         break;
     }
   }
@@ -148,7 +165,9 @@ class TileRoot extends Component<Props, State> {
 function mapStateToProps(state, ownProps) {
   const activePaneId = state.ui.get("activePaneId");
   const paneBlueprint = state.ui.get("paneBlueprint").toJS();
-  return { activePaneId, paneBlueprint };
+  const keymap = selectAppKeymap(state);
+  const modifiers = selectModifiers(state);
+  return { activePaneId, paneBlueprint, keymap, modifiers };
 }
 
 export default connect(mapStateToProps)(TileRoot);
