@@ -10,10 +10,10 @@ import {
   UPDATE_FOUCUSED_PANE,
   UPDATE_KEY_SWITCH,
   TOGGLE_RELOAD,
-  ADD_TILE,
-  REMOVE_TILE,
-  SELECT_TILE,
-  UPDATE_TILE_BLUEPRINT
+  ADD_PANE,
+  REMOVE_PANE,
+  SELECT_PANE,
+  UPDATE_PANE_BLUEPRINT
 } from "../actions/ui";
 import { Map, fromJS, List } from "immutable";
 import { KeyMode } from "../types/index.d";
@@ -117,11 +117,11 @@ export default function ui(state = initialState, action) {
     case UPDATE_ORIENTATION:
       return state.set("orientation", action.orientation);
 
-    case ADD_TILE:
+    case ADD_PANE:
       return state
         .set("paneIds", state.get("paneIds").push(action.paneId))
         .set("activePaneId", action.paneId);
-    case REMOVE_TILE:
+    case REMOVE_PANE:
       return state
         .set(
           "activePaneId",
@@ -132,9 +132,9 @@ export default function ui(state = initialState, action) {
             : state.get("paneIds").get(0)
         )
         .set("paneIds", state.get("paneIds").filter(t => t !== action.paneId));
-    case SELECT_TILE:
+    case SELECT_PANE:
       return state.set("activePaneId", action.paneId);
-    case UPDATE_TILE_BLUEPRINT:
+    case UPDATE_PANE_BLUEPRINT:
       return state.set("paneBlueprint", Map(action.blueprint));
 
     // case LOGOUT:

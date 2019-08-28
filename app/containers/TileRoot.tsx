@@ -18,7 +18,7 @@ import { Col, Row, Grid } from "react-native-easy-grid";
 import TreeModel from "tree-model";
 import Browser from "./Browser";
 import { WebView } from "react-native-webview";
-import { addTile, removeTile, updateTileBlueprint } from "../actions/ui";
+import { addPane, removePane, updatePaneBlueprint } from "../actions/ui";
 import TreeUtils from "../utils/tree";
 
 const { DAVKeyManager } = NativeModules;
@@ -49,7 +49,7 @@ class TileRoot extends Component<Props, State> {
       this.root = tree.parse({
         id: 1
       });
-      props.dispatch(addTile(1));
+      props.dispatch(addPane(1));
     } else {
       this.root = TreeUtils.deserialize(props.paneBlueprint);
     }
@@ -88,11 +88,11 @@ class TileRoot extends Component<Props, State> {
     );
 
     // let newNodeId = TreeUtils.addNode(this.root, "Row", 1);
-    // dispatch(addTile(newNodeId));
+    // dispatch(addPane(newNodeId));
     // let newNodeId2 = TreeUtils.addNode(this.root, "Col", newNodeId);
-    // dispatch(addTile(newNodeId2));
+    // dispatch(addPane(newNodeId2));
     // let obj = TreeUtils.serialize(this.root);
-    // dispatch(updateTileBlueprint(obj));
+    // dispatch(updatePaneBlueprint(obj));
 
     // setTimeout(() => {
     //   this.removePane(1);

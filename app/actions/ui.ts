@@ -12,10 +12,10 @@ export const UPDATE_MODE = "UPDATE_MODE";
 export const UPDATE_ORIENTATION = "UPDATE_ORIENTATION";
 export const UPDATE_FOUCUSED_PANE = "UPDATE_FOUCUSED_PANE";
 export const UPDATE_KEY_SWITCH = "UPDATE_KEY_SWITCH";
-export const ADD_TILE = "ADD_TILE";
-export const REMOVE_TILE = "REMOVE_TILE";
-export const SELECT_TILE = "SELECT_TILE";
-export const UPDATE_TILE_BLUEPRINT = "UPDATE_TILE_BLUEPRINT";
+export const ADD_PANE = "ADD_PANE";
+export const REMOVE_PANE = "REMOVE_PANE";
+export const SELECT_PANE = "SELECT_PANE";
+export const UPDATE_PANE_BLUEPRINT = "UPDATE_PANE_BLUEPRINT";
 
 export function toggleForward() {
   return {
@@ -101,30 +101,30 @@ export function updateFocusedPane(pane: string) {
   };
 }
 
-export function addTile(paneId: number) {
+export function addPane(paneId: number) {
   return {
-    type: ADD_TILE,
+    type: ADD_PANE,
     paneId: paneId
   };
 }
 
-export function removeTile(paneId: number) {
+export function removePane(paneId: number) {
   return {
-    type: REMOVE_TILE,
+    type: REMOVE_PANE,
     paneId: paneId
   };
 }
 
 export function selectTile(paneId: number) {
   return {
-    type: SELECT_TILE,
+    type: SELECT_PANE,
     paneId: paneId
   };
 }
 
-export function updateTileBlueprint(blueprint: Object) {
+export function updatePaneBlueprint(blueprint: Object) {
   return {
-    type: UPDATE_TILE_BLUEPRINT,
+    type: UPDATE_PANE_BLUEPRINT,
     blueprint: blueprint
   };
 }
