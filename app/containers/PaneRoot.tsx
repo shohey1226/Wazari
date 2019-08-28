@@ -40,6 +40,7 @@ interface Props {
 class PaneRoot extends Component<Props, State> {
   subscriptions: Array<any> = [];
   root: any = {}; // TreeModel node object
+  browserViews: any = {};
 
   constructor(props) {
     super(props);
@@ -139,7 +140,11 @@ class PaneRoot extends Component<Props, State> {
   renderRecursively(node) {
     let childViews = [];
     if (node.children.length === 0) {
-      childViews.push(<Browser key={node.model.id} />);
+      // chaching so that it doesn't mount/unmount
+      if (!this.browserViews[node.model.id]) {
+        this.browserViews[node.model.id] = <Browser key={node.model.id} />;
+      }
+      childViews.push(this.browserViews[node.model.id]);
     } else {
       node.children.forEach(child => {
         if (node.model.type === "Col") {
