@@ -30,7 +30,7 @@ interface State {
 
 interface Props {
   dispatch: (any) => void;
-  activeTileId: number;
+  activePaneId: number;
 }
 
 class TileRoot extends Component<Props, State> {
@@ -42,8 +42,8 @@ class TileRoot extends Component<Props, State> {
 
     // https://stackoverflow.com/questions/679915/how-do-i-test-for-an-empty-javascript-object
     if (
-      Object.entries(props.tileBlueprint).length === 0 &&
-      props.tileBlueprint.constructor === Object
+      Object.entries(props.paneBlueprint).length === 0 &&
+      props.paneBlueprint.constructor === Object
     ) {
       let tree = new TreeModel();
       this.root = tree.parse({
@@ -51,7 +51,7 @@ class TileRoot extends Component<Props, State> {
       });
       props.dispatch(addTile(1));
     } else {
-      this.root = TreeUtils.deserialize(props.tileBlueprint);
+      this.root = TreeUtils.deserialize(props.paneBlueprint);
     }
 
     //TreeUtils.removeNode(root, 1);
@@ -107,14 +107,14 @@ class TileRoot extends Component<Props, State> {
   }
 
   handleAppActions(event) {
-    const { dispatch, activeTileId } = this.props;
+    const { dispatch, activePaneId } = this.props;
     console.log(event);
     switch (event.action) {
-      case "addRow":
-        TreeUtils.addNode(this.root, "Row", activeTileId);
+      case "addRowPane":
+        TreeUtils.addNode(this.root, "Row", activePaneId);
         break;
-      case "addColumn":
-        TreeUtils.addNode(this.root, "Col", activeTileId);
+      case "addColumnPane":
+        TreeUtils.addNode(this.root, "Col", activePaneId);
         break;
     }
   }
@@ -146,9 +146,9 @@ class TileRoot extends Component<Props, State> {
 }
 
 function mapStateToProps(state, ownProps) {
-  const activeTileId = state.ui.get("activeTileId");
-  const tileBlueprint = state.ui.get("tileBlueprint").toJS();
-  return { activeTileId, tileBlueprint };
+  const activePaneId = state.ui.get("activePaneId");
+  const paneBlueprint = state.ui.get("paneBlueprint").toJS();
+  return { activePaneId, paneBlueprint };
 }
 
 export default connect(mapStateToProps)(TileRoot);

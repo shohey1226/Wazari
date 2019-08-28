@@ -35,9 +35,9 @@ export interface UiState extends Map<any, any> {
   orientation: string;
   focusedPane: string;
   keySwitchOn: boolean;
-  tileIds: Array<number>;
-  activeTileId: number;
-  tileBlueprint: any;
+  paneIds: Array<number>;
+  activePaneId: number;
+  paneBlueprint: any;
 }
 
 const initialState: UiState = fromJS({
@@ -49,9 +49,9 @@ const initialState: UiState = fromJS({
   reloadToggled: false,
   focusedPane: "browser",
   keySwitchOn: true,
-  tileIds: List(),
-  activeTileId: 0,
-  tileBlueprint: {}
+  paneIds: List(),
+  activePaneId: 0,
+  paneBlueprint: {}
 });
 
 export default function ui(state = initialState, action) {
@@ -119,23 +119,23 @@ export default function ui(state = initialState, action) {
 
     case ADD_TILE:
       return state
-        .set("tileIds", state.get("tileIds").push(action.tileId))
-        .set("activeTileId", action.tileId);
+        .set("paneIds", state.get("paneIds").push(action.paneId))
+        .set("activePaneId", action.paneId);
     case REMOVE_TILE:
       return state
         .set(
-          "activeTileId",
-          state.get("tileIds").indexOf(action.tileId) - 1 > 0
+          "activePaneId",
+          state.get("paneIds").indexOf(action.paneId) - 1 > 0
             ? state
-                .get("tileIds")
-                .get(state.get("tileIds").indexOf(action.tileId) - 1)
-            : state.get("tileIds").get(0)
+                .get("paneIds")
+                .get(state.get("paneIds").indexOf(action.paneId) - 1)
+            : state.get("paneIds").get(0)
         )
-        .set("tileIds", state.get("tileIds").filter(t => t !== action.tileId));
+        .set("paneIds", state.get("paneIds").filter(t => t !== action.paneId));
     case SELECT_TILE:
-      return state.set("activeTileId", action.tileId);
+      return state.set("activePaneId", action.paneId);
     case UPDATE_TILE_BLUEPRINT:
-      return state.set("tileBlueprint", Map(action.blueprint));
+      return state.set("paneBlueprint", Map(action.blueprint));
 
     // case LOGOUT:
     //   // make it default state

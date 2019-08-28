@@ -101,24 +101,24 @@ export function updateFocusedPane(pane: string) {
   };
 }
 
-export function addTile(tileId: number) {
+export function addTile(paneId: number) {
   return {
     type: ADD_TILE,
-    tileId: tileId
+    paneId: paneId
   };
 }
 
-export function removeTile(tileId: number) {
+export function removeTile(paneId: number) {
   return {
     type: REMOVE_TILE,
-    tileId: tileId
+    paneId: paneId
   };
 }
 
-export function selectTile(tileId: number) {
+export function selectTile(paneId: number) {
   return {
     type: SELECT_TILE,
-    tileId: tileId
+    paneId: paneId
   };
 }
 
