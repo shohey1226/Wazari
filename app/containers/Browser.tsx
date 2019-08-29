@@ -307,12 +307,12 @@ class Browser extends Component<Props, State> {
   }
 
   render() {
-    const { activeTabIndex, orientation } = this.props;
+    const { activeTabIndex, orientation, sites } = this.props;
 
     let style = { height: 35 };
     if (
-      orientation === "LANDSCAPE" &&
-      DeviceInfo.getDeviceType() === "Handset"
+      sites.length < 2 ||
+      (orientation === "LANDSCAPE" && DeviceInfo.getDeviceType() === "Handset")
     ) {
       style = { height: 0 };
     }
