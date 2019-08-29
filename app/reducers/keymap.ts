@@ -68,6 +68,26 @@ const defaultKeymap = {
         ctrlKey: false,
         metaKey: false
       }
+    },
+    nextPane: {
+      key: "o",
+      modifiers: {
+        capslockKey: false,
+        shiftKey: false,
+        altKey: true,
+        ctrlKey: false,
+        metaKey: false
+      }
+    },
+    previousPane: {
+      key: ";",
+      modifiers: {
+        capslockKey: false,
+        shiftKey: false,
+        altKey: true,
+        ctrlKey: false,
+        metaKey: false
+      }
     }
   },
   browser: {
@@ -206,8 +226,8 @@ const defaultKeymap = {
       modifiers: {
         capslockKey: false,
         shiftKey: false,
-        altKey: false,
-        ctrlKey: true,
+        altKey: true,
+        ctrlKey: false,
         metaKey: false
       }
     },
@@ -216,8 +236,8 @@ const defaultKeymap = {
       modifiers: {
         capslockKey: false,
         shiftKey: true,
-        altKey: false,
-        ctrlKey: true,
+        altKey: true,
+        ctrlKey: false,
         metaKey: false
       }
     },

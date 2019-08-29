@@ -134,7 +134,7 @@ export function removePane(paneId: number) {
   };
 }
 
-export function selectTile(paneId: number) {
+export function selectPane(paneId: number) {
   return {
     type: SELECT_PANE,
     paneId: paneId

@@ -18,7 +18,12 @@ import { Col, Row, Grid } from "react-native-easy-grid";
 import TreeModel from "tree-model";
 import Browser from "./Browser";
 import { WebView } from "react-native-webview";
-import { addPane, removePane, updatePaneBlueprint } from "../actions/ui";
+import {
+  addPane,
+  removePane,
+  updatePaneBlueprint,
+  selectPane
+} from "../actions/ui";
 import TreeUtils from "../utils/tree";
 import { selectAppKeymap, selectModifiers } from "../selectors/keymap";
 import keymapper from "../utils/Keymapper";
@@ -121,7 +126,7 @@ class PaneRoot extends Component<Props, State> {
   }
 
   handleAppActions(event) {
-    const { dispatch, activePaneId } = this.props;
+    const { dispatch, activePaneId, paneIds } = this.props;
     console.log(event);
     switch (event.action) {
       case "addRowPane":
@@ -133,6 +138,20 @@ class PaneRoot extends Component<Props, State> {
       case "removePane":
         TreeUtils.removeNode(this.root, activePaneId);
         dispatch(removePane(activePaneId));
+        break;
+      case "nextPane":
+        let nextIndex =
+          paneIds.indexOf(activePaneId) + 1 < paneIds.length
+            ? paneIds.indexOf(activePaneId) + 1
+            : 0;
+        dispatch(selectPane(paneIds[nextIndex]));
+        break;
+      case "previousPane":
+        let prevIndex =
+          0 <= paneIds.indexOf(activePaneId) - 1
+            ? paneIds.indexOf(activePaneId) - 1
+            : paneIds.length - 1;
+        dispatch(selectPane(paneIds[prevIndex]));
         break;
     }
   }
@@ -175,10 +194,11 @@ class PaneRoot extends Component<Props, State> {
 
 function mapStateToProps(state, ownProps) {
   const activePaneId = state.ui.get("activePaneId");
+  const paneIds = state.ui.get("paneIds").toArray();
   const paneBlueprint = state.ui.get("paneBlueprint").toJS();
   const keymap = selectAppKeymap(state);
   const modifiers = selectModifiers(state);
-  return { activePaneId, paneBlueprint, keymap, modifiers };
+  return { activePaneId, paneBlueprint, keymap, modifiers, paneIds };
 }
 
 export default connect(mapStateToProps)(PaneRoot);
