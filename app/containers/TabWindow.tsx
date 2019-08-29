@@ -36,7 +36,6 @@ interface Props {
   dispatch: (any) => void;
   activeTabIndex: number;
   tabNumber: number;
-  homeUrl: string;
   keyMode: KeyMode;
   backToggled: boolean;
   forwardToggled: boolean;
@@ -165,7 +164,7 @@ class TabWindow extends Component<Props, State, any> {
   }
 
   handleBrowserActions = async event => {
-    const { dispatch, activeTabIndex, keyMode, homeUrl, sites } = this.props;
+    const { dispatch, activeTabIndex, keyMode } = this.props;
     if (
       (keyMode === KeyMode.Terminal || keyMode === KeyMode.Text) &&
       this.webref &&
@@ -404,15 +403,11 @@ class TabWindow extends Component<Props, State, any> {
 function mapStateToProps(state, ownProps) {
   const keymap = selectBrowserKeymap(state);
   const modifiers = selectModifiers(state);
-  const activeTabIndex = state.ui.get("activeTabIndex");
   const activeUrl = selectActiveUrl(state);
-  const sites = selectSites(state);
-  const keyMode = state.ui.get("keyMode");
   const focusedPane = state.ui.get("focusedPane");
   const backToggled = state.ui.get("backToggled");
   const forwardToggled = state.ui.get("forwardToggled");
   const reloadToggled = state.ui.get("reloadToggled");
-  const homeUrl = state.user.get("homeUrl");
   const keySwitchOn = state.ui.get("keySwitchOn");
   const excludedPatterns = state.user.get("excludedPatterns").toArray();
   return {
@@ -421,10 +416,6 @@ function mapStateToProps(state, ownProps) {
     reloadToggled,
     keymap,
     modifiers,
-    sites,
-    activeTabIndex,
-    keyMode,
-    homeUrl,
     focusedPane,
     excludedPatterns,
     activeUrl,

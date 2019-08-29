@@ -36,9 +36,17 @@ export function toggleReload() {
 }
 
 export function addNewTab(url) {
+  return (dispatch, getState) => {
+    const activePaneId = getState().ui.get("activePaneId");
+    dispatch(_addNewTab(url, activePaneId));
+  };
+}
+
+export function _addNewTab(url: string, paneId: number) {
   return {
     type: ADD_NEW_TAB,
-    url: url
+    url: url,
+    paneId: paneId
   };
 }
 
@@ -128,4 +136,3 @@ export function updatePaneBlueprint(blueprint: Object) {
     blueprint: blueprint
   };
 }
-

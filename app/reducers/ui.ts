@@ -54,7 +54,8 @@ const initialState: UiState = fromJS({
   keySwitchOn: true,
   paneIds: List(),
   activePaneId: 0,
-  paneBlueprint: {}
+  paneBlueprint: {},
+  panes: {}
 });
 
 export default function ui(state = initialState, action) {
@@ -69,9 +70,11 @@ export default function ui(state = initialState, action) {
       return state.set("reloadToggled", !state.get("reloadToggled"));
 
     case ADD_NEW_TAB:
-      return state.set(
-        "sites",
-        state.get("sites").push(Map({ url: action.url }))
+      return state.setIn(
+        ["panes", action.paneId, "sites"],
+        state
+          .getIn(["panes", action.paneId, "sites"])
+          .push(Map({ url: action.url }))
       );
 
     case SELECT_TAB:
@@ -123,7 +126,11 @@ export default function ui(state = initialState, action) {
     case ADD_PANE:
       return state
         .set("paneIds", state.get("paneIds").push(action.paneId))
-        .set("activePaneId", action.paneId);
+        .set("activePaneId", action.paneId)
+        .setIn(["panes", action.paneId], {
+          sites: List(),
+          activeTabIndex: null
+        });
     case REMOVE_PANE:
       return state
         .set(

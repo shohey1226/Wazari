@@ -246,7 +246,7 @@ class Browser extends Component<Props, State> {
   }
 
   renderTabs() {
-    const { sites, keyMode } = this.props;
+    const { sites, keyMode, activeTabIndex } = this.props;
     let tabs = [];
     for (let i = 0; i < sites.length; i++) {
       const tabTitle = sites[i].title
@@ -281,7 +281,12 @@ class Browser extends Component<Props, State> {
             </TabHeading>
           }
         >
-          <TabWindow url={sites[i].url} tabNumber={i} keyMode={keyMode} />
+          <TabWindow
+            url={sites[i].url}
+            tabNumber={i}
+            keyMode={keyMode}
+            activeTabIndex={activeTabIndex}
+          />
         </Tab>
       );
     }
@@ -316,8 +321,14 @@ class Browser extends Component<Props, State> {
 function mapStateToProps(state, ownProps) {
   const keymap = selectBrowserKeymap(state);
   const modifiers = selectModifiers(state);
-  const activeTabIndex = state.ui.get("activeTabIndex");
-  const sites = selectSites(state);
+  const activePaneId = state.ui.get("activePaneId");
+  const activeTabIndex = state.ui.getIn([
+    "panes",
+    ownProps.paneId,
+    "activeTabIndex"
+  ]);
+  const sites = selectSites(state, ownProps.paneId);
+  console.log(sites);
   const keyMode = state.ui.get("keyMode");
   const orientation = state.ui.get("orientation");
   const homeUrl = state.user.get("homeUrl");
@@ -331,7 +342,8 @@ function mapStateToProps(state, ownProps) {
     keyMode,
     orientation,
     homeUrl,
-    keySwitchOn
+    keySwitchOn,
+    activePaneId
   };
 }
 

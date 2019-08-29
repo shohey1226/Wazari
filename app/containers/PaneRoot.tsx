@@ -142,7 +142,9 @@ class PaneRoot extends Component<Props, State> {
     if (node.children.length === 0) {
       // chaching so that it doesn't mount/unmount
       if (!this.browserViews[node.model.id]) {
-        this.browserViews[node.model.id] = <Browser key={node.model.id} />;
+        this.browserViews[node.model.id] = (
+          <Browser key={node.model.id} paneId={node.model.id} />
+        );
       }
       childViews.push(this.browserViews[node.model.id]);
     } else {
