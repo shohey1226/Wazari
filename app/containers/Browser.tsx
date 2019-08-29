@@ -57,6 +57,7 @@ class Browser extends Component<Props, State> {
   keyboardDidShowListener: any;
   keyboardDidHideListener: any;
   subscriptions: Array<any> = [];
+  tabViews: Array<any> = {};
 
   constructor(props) {
     super(props);
@@ -259,44 +260,48 @@ class Browser extends Component<Props, State> {
       const tabTitle = sites[i].title
         ? this._truncate(sites[i].title, 10)
         : this._truncate(sites[i].url, 10);
-      tabs.push(
-        <Tab
-          key={`tab-${i}`}
-          heading={
-            <TabHeading style={{ paddingLeft: 10, paddingRight: 10 }}>
-              <Text
-                style={{
-                  fontSize: 10.5,
-                  marginLeft: 1,
-                  width: 105,
-                  textAlign: "center"
-                }}
-              >
-                {tabTitle}
-              </Text>
-              <Button
-                transparent
-                light
-                onPress={() => this.pressCloseTab(i)}
-                style={{ alignSelf: "center" }}
-              >
-                <Icon
-                  name="md-close"
-                  style={{ marginLeft: 5, marginRight: 1, fontSize: 13 }}
-                />
-              </Button>
-            </TabHeading>
-          }
-        >
-          <TabWindow
-            url={sites[i].url}
-            tabNumber={i}
-            keyMode={keyMode}
-            activeTabIndex={activeTabIndex}
-            {...this.props}
-          />
-        </Tab>
-      );
+
+      if (!this.tabViews[sites[i].url]) {
+        this.tabViews[sites[i].url] = (
+          <Tab
+            key={`tab-${i}`}
+            heading={
+              <TabHeading style={{ paddingLeft: 10, paddingRight: 10 }}>
+                <Text
+                  style={{
+                    fontSize: 10.5,
+                    marginLeft: 1,
+                    width: 105,
+                    textAlign: "center"
+                  }}
+                >
+                  {tabTitle}
+                </Text>
+                <Button
+                  transparent
+                  light
+                  onPress={() => this.pressCloseTab(i)}
+                  style={{ alignSelf: "center" }}
+                >
+                  <Icon
+                    name="md-close"
+                    style={{ marginLeft: 5, marginRight: 1, fontSize: 13 }}
+                  />
+                </Button>
+              </TabHeading>
+            }
+          >
+            <TabWindow
+              url={sites[i].url}
+              tabNumber={i}
+              keyMode={keyMode}
+              activeTabIndex={activeTabIndex}
+              {...this.props}
+            />
+          </Tab>
+        );
+      }
+      tabs.push(this.tabViews[sites[i].url]);
     }
     return tabs;
   }
