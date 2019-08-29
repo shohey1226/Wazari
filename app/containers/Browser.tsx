@@ -32,6 +32,7 @@ const DAVKeyManagerEmitter = new NativeEventEmitter(DAVKeyManager);
 
 interface State {
   activeIndex: number;
+  isActivePane: boolean;
 }
 
 type Site = {
@@ -61,7 +62,11 @@ class Browser extends Component<Props, State> {
 
   constructor(props) {
     super(props);
-    this.state = { activeIndex: props.activeTabIndex };
+    this.state = {
+      activeIndex: props.activeTabIndex,
+      isActivePane:
+        props.paneId === props.activePaneId && props.paneIds.length > 1
+    };
     //this.onPressTab = this.onPressTab.bind(this);
   }
 
@@ -160,7 +165,10 @@ class Browser extends Component<Props, State> {
       sites,
       keyMode,
       keySwitchOn,
-      dispatch
+      dispatch,
+      activePaneId,
+      paneId,
+      paneIds
     } = this.props;
 
     if (prevProp.activeTabIndex !== activeTabIndex) {
@@ -179,6 +187,13 @@ class Browser extends Component<Props, State> {
         dispatch(updateMode(KeyMode.Text));
       } else {
         dispatch(updateMode(KeyMode.Browser));
+      }
+    }
+    if (prevProp.activePaneId !== activePaneId) {
+      if (paneId === activePaneId && paneIds.length > 1) {
+        this.setState({ isActivePane: true });
+      } else {
+        this.setState({ isActivePane: false });
       }
     }
   }
@@ -307,14 +322,7 @@ class Browser extends Component<Props, State> {
   }
 
   render() {
-    const {
-      activeTabIndex,
-      orientation,
-      sites,
-      activePaneId,
-      paneIds,
-      paneId
-    } = this.props;
+    const { activeTabIndex, orientation, sites, paneIds, paneId } = this.props;
 
     let style = { height: 35 };
     if (
@@ -332,8 +340,8 @@ class Browser extends Component<Props, State> {
         )}
         onChangeTab={this.onChangeTab.bind(this)}
         style={{
-          borderWidth: paneId === activePaneId ? 1 : 0,
-          borderColor: "lightgreen"
+          borderWidth: this.state.isActivePane ? 1 : 0,
+          borderColor: "#30d158"
         }}
       >
         {this.renderTabs()}
@@ -346,7 +354,7 @@ function mapStateToProps(state, ownProps) {
   const keymap = selectBrowserKeymap(state);
   const modifiers = selectModifiers(state);
   const activePaneId = state.ui.get("activePaneId");
-  const paneIds = state.ui.get("paneIds");
+  const paneIds = state.ui.get("paneIds").toArray();
   const activeTabIndex = state.ui.getIn([
     "panes",
     ownProps.paneId,
