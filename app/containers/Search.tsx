@@ -32,13 +32,7 @@ import { SearchEngine } from "../components/SearchEnginePicker";
 import { KeyMode } from "../types/index.d";
 import Modal from "react-native-modal";
 
-import {
-  addNewTab,
-  selectTab,
-  updateSite,
-  toggleBack,
-  toggleForward
-} from "../actions/ui";
+import { addNewTab, selectTab, toggleBack, toggleForward } from "../actions/ui";
 
 import Fuse from "fuse.js";
 

@@ -37,7 +37,6 @@ import Modal from "react-native-modal";
 import {
   addNewTab,
   selectTab,
-  updateSite,
   toggleBack,
   toggleForward,
   toggleReload

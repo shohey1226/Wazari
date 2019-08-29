@@ -183,7 +183,14 @@ class Browser extends Component<Props, State> {
   }
 
   handleBrowserActions = async event => {
-    const { dispatch, activeTabIndex, keyMode, homeUrl, sites } = this.props;
+    const {
+      dispatch,
+      activeTabIndex,
+      keyMode,
+      homeUrl,
+      sites,
+      activePaneId
+    } = this.props;
     if (
       keyMode === KeyMode.Terminal ||
       keyMode === KeyMode.Text ||
@@ -208,7 +215,7 @@ class Browser extends Component<Props, State> {
           dispatch(selectTab(prevIndex));
           break;
         case "closeTab":
-          this.pressCloseTab(activeTabIndex);
+          this.pressCloseTab(activeTabIndex, activePaneId);
           break;
       }
     }
@@ -220,8 +227,8 @@ class Browser extends Component<Props, State> {
   }
 
   pressCloseTab(i) {
-    const { dispatch, sites, activeTabIndex } = this.props;
-    dispatch(closeTab(i));
+    const { dispatch, sites, activeTabIndex, paneId } = this.props;
+    dispatch(closeTab(i, paneId));
     if (i === activeTabIndex) {
       if (sites.length > i + 1) {
         dispatch(selectTab(i));
@@ -246,7 +253,7 @@ class Browser extends Component<Props, State> {
   }
 
   renderTabs() {
-    const { sites, keyMode, activeTabIndex } = this.props;
+    const { sites, keyMode, activeTabIndex, paneId } = this.props;
     let tabs = [];
     for (let i = 0; i < sites.length; i++) {
       const tabTitle = sites[i].title
@@ -286,6 +293,7 @@ class Browser extends Component<Props, State> {
             tabNumber={i}
             keyMode={keyMode}
             activeTabIndex={activeTabIndex}
+            {...this.props}
           />
         </Tab>
       );
@@ -328,7 +336,6 @@ function mapStateToProps(state, ownProps) {
     "activeTabIndex"
   ]);
   const sites = selectSites(state, ownProps.paneId);
-  console.log(sites);
   const keyMode = state.ui.get("keyMode");
   const orientation = state.ui.get("orientation");
   const homeUrl = state.user.get("homeUrl");

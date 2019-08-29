@@ -321,7 +321,7 @@ class TabWindow extends Component<Props, State, any> {
 
   onLoadEnd(syntheticEvent) {
     const { nativeEvent } = syntheticEvent;
-    const { dispatch, tabNumber, activeTabIndex } = this.props;
+    const { dispatch, tabNumber, activeTabIndex, paneId } = this.props;
     if (tabNumber === activeTabIndex) {
       dispatch(
         updateSite(
@@ -329,7 +329,8 @@ class TabWindow extends Component<Props, State, any> {
           nativeEvent.title,
           nativeEvent.url,
           nativeEvent.canGoBack,
-          nativeEvent.canGoForward
+          nativeEvent.canGoForward,
+          paneId
         )
       );
       this.focusWindow();

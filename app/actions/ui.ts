@@ -42,7 +42,7 @@ export function addNewTab(url) {
   };
 }
 
-export function _addNewTab(url: string, paneId: number) {
+function _addNewTab(url: string, paneId: number) {
   return {
     type: ADD_NEW_TAB,
     url: url,
@@ -50,17 +50,26 @@ export function _addNewTab(url: string, paneId: number) {
   };
 }
 
-export function closeTab(index: number) {
+export function closeTab(index: number, paneId: number) {
   return {
     type: CLOSE_TAB,
-    index: index
+    index: index,
+    paneId: paneId
   };
 }
 
 export function selectTab(index) {
+  return (dispatch, getState) => {
+    const activePaneId = getState().ui.get("activePaneId");
+    dispatch(_selectTab(index, activePaneId));
+  };
+}
+
+function _selectTab(index, paneId: number) {
   return {
     type: SELECT_TAB,
-    index: index
+    index: index,
+    paneId: paneId
   };
 }
 
@@ -69,7 +78,8 @@ export function updateSite(
   title: string,
   url: string,
   canGoBack: boolean,
-  canGoForward: boolean
+  canGoForward: boolean,
+  paneId: number
 ) {
   return {
     type: UPDATE_SITE,
@@ -77,7 +87,8 @@ export function updateSite(
     title: title,
     url: url,
     canGoBack: canGoBack,
-    canGoForward: canGoForward
+    canGoForward: canGoForward,
+    paneId: paneId
   };
 }
 

@@ -26,7 +26,6 @@ type Site = {
 };
 
 export interface UiState extends Map<any, any> {
-  sites: Array<Site>;
   activeTabIndex: number | null;
   keyMode: KeyMode;
   backToggled: boolean;
@@ -44,7 +43,6 @@ export interface UiState extends Map<any, any> {
 }
 
 const initialState: UiState = fromJS({
-  sites: [],
   activeTabIndex: 0,
   keyMode: KeyMode.Text,
   backToggled: false,
@@ -81,33 +79,41 @@ export default function ui(state = initialState, action) {
       mode = KeyMode.Text;
       if (
         /^https:\/\/www\.wazaterm\.com\/terminals\/\S+/.test(
-          state.get("sites").getIn([action.index, "url"])
+          state
+            .getIn(["panes", action.paneId, "sites"])
+            .getIn([action.index, "url"])
         )
       ) {
         mode = KeyMode.Terminal;
       }
-      return state.set("activeTabIndex", action.index).set("keyMode", mode);
+
+      return state
+        .setIn(["panes", action.paneId, "activeTabIndex"], action.index)
+        .set("keyMode", mode);
 
     case CLOSE_TAB:
-      return state.set("sites", state.get("sites").delete(action.index));
+      return state.setIn(
+        ["panes", action.paneId, "sites"],
+        state.getIn(["panes", action.paneId, "sites"]).delete(action.index)
+      );
 
-    case SELECT_TAB:
-      return state.set("activeTabIndex", action.index);
     case UPDATE_SITE:
       mode = KeyMode.Text;
       if (/^https:\/\/www\.wazaterm\.com\/terminals\/\S+/.test(action.url)) {
         mode = KeyMode.Terminal;
       }
       return state
-        .set(
-          "sites",
-          state.get("sites").update(action.index, site => {
-            return site
-              .set("url", action.url)
-              .set("title", action.title)
-              .set("canGoBack", action.canGoBack)
-              .set("canGoForward", action.canGoForward);
-          })
+        .setIn(
+          ["panes", action.paneId, "sites"],
+          state
+            .getIn(["panes", action.paneId, "sites"])
+            .update(action.index, site => {
+              return site
+                .set("url", action.url)
+                .set("title", action.title)
+                .set("canGoBack", action.canGoBack)
+                .set("canGoForward", action.canGoForward);
+            })
         )
         .set("keyMode", mode);
 
@@ -129,7 +135,7 @@ export default function ui(state = initialState, action) {
         .set("activePaneId", action.paneId)
         .setIn(["panes", action.paneId], {
           sites: List(),
-          activeTabIndex: null
+          activeTabIndex: 0
         });
     case REMOVE_PANE:
       return state
