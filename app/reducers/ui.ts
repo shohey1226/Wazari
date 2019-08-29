@@ -26,7 +26,6 @@ type Site = {
 };
 
 export interface UiState extends Map<any, any> {
-  activeTabIndex: number | null;
   keyMode: KeyMode;
   backToggled: boolean;
   forwardToggled: boolean;
@@ -43,7 +42,6 @@ export interface UiState extends Map<any, any> {
 }
 
 const initialState: UiState = fromJS({
-  activeTabIndex: 0,
   keyMode: KeyMode.Text,
   backToggled: false,
   forwardToggled: false,

@@ -376,9 +376,14 @@ class NavBar extends Component<Props, IState, any> {
 function mapStateToProps(state, ownProps) {
   const keymap = selectBrowserKeymap(state);
   const modifiers = selectModifiers(state);
-  const activeTabIndex = state.ui.get("activeTabIndex");
+  const activeTabIndex = state.ui.getIn([
+    "panes",
+    ownProps.paneId,
+    "activeTabIndex"
+  ]);
+  const activePaneId = state.ui.get("activePaneId");
+  const sites = selectSites(state, activePaneId);
   const activeUrl = selectActiveUrl(state);
-  const sites = selectSites(state);
   const activeSite = selectActiveSite(state);
   const searchEngine = state.user.get("searchEngine");
   const homeUrl = state.user.get("homeUrl");
