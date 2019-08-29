@@ -307,7 +307,14 @@ class Browser extends Component<Props, State> {
   }
 
   render() {
-    const { activeTabIndex, orientation, sites } = this.props;
+    const {
+      activeTabIndex,
+      orientation,
+      sites,
+      activePaneId,
+      paneIds,
+      paneId
+    } = this.props;
 
     let style = { height: 35 };
     if (
@@ -324,6 +331,10 @@ class Browser extends Component<Props, State> {
           <ScrollableTab style={{ backgroundColor: "#222", ...style }} />
         )}
         onChangeTab={this.onChangeTab.bind(this)}
+        style={{
+          borderWidth: paneId === activePaneId ? 1 : 0,
+          borderColor: "lightgreen"
+        }}
       >
         {this.renderTabs()}
       </Tabs>
@@ -335,6 +346,7 @@ function mapStateToProps(state, ownProps) {
   const keymap = selectBrowserKeymap(state);
   const modifiers = selectModifiers(state);
   const activePaneId = state.ui.get("activePaneId");
+  const paneIds = state.ui.get("paneIds");
   const activeTabIndex = state.ui.getIn([
     "panes",
     ownProps.paneId,
@@ -355,7 +367,8 @@ function mapStateToProps(state, ownProps) {
     orientation,
     homeUrl,
     keySwitchOn,
-    activePaneId
+    activePaneId,
+    paneIds
   };
 }
 
