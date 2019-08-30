@@ -147,7 +147,23 @@ export default function ui(state = initialState, action) {
         )
         .set("paneIds", state.get("paneIds").filter(t => t !== action.paneId));
     case SELECT_PANE:
-      return state.set("activePaneId", action.paneId);
+      mode = KeyMode.Text;
+      if (
+        /^https:\/\/www\.wazaterm\.com\/terminals\/\S+/.test(
+          state.getIn([
+            "panes",
+            action.paneId,
+            "sites",
+            state.getIn(["panes", action.paneId, "activeTabIndex"]),
+            "url"
+          ])
+        )
+      ) {
+        mode = KeyMode.Terminal;
+      }
+
+      return state.set("activePaneId", action.paneId).set("keyMode", mode);
+
     case UPDATE_PANE_BLUEPRINT:
       return state.set("paneBlueprint", Map(action.blueprint));
 
