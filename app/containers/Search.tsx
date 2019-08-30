@@ -543,29 +543,8 @@ class Search extends Component<Props, IState, any> {
 }
 
 function mapStateToProps(state, ownProps) {
-  const keymap = selectBrowserKeymap(state);
-  const modifiers = selectModifiers(state);
-  const activeUrl = selectActiveUrl(state);
-  const sites = selectSites(state);
-  const activeSite = selectActiveSite(state);
-  const searchEngine = state.user.get("searchEngine");
   const history = state.user.get("history").toJS();
-  const homeUrl = state.user.get("homeUrl");
-  const keyMode = state.ui.get("keyMode");
-  const orientation = state.ui.get("orientation");
-  const focusedPane = state.ui.get("focusedPane");
-
   return {
-    keymap,
-    modifiers,
-    searchEngine,
-    homeUrl,
-    keyMode,
-    orientation,
-    activeUrl,
-    activeSite,
-    sites,
-    focusedPane,
     history
   };
 }

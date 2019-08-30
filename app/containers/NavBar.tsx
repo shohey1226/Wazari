@@ -366,6 +366,7 @@ class NavBar extends Component<Props, IState, any> {
             searchIsFocused={this.state.searchModalIsVisiable}
             closeSearch={this.closeSearch.bind(this)}
             openSearch={this.openSearch.bind(this)}
+            {...this.props}
           />
         </Modal>
       </Header>
@@ -383,8 +384,8 @@ function mapStateToProps(state, ownProps) {
   ]);
   const activePaneId = state.ui.get("activePaneId");
   const sites = selectSites(state, activePaneId);
-  const activeUrl = selectActiveUrl(state);
-  const activeSite = selectActiveSite(state);
+  const activeSite = selectActiveSite(state, activePaneId);
+  const activeUrl = selectActiveUrl(state, activePaneId);
   const searchEngine = state.user.get("searchEngine");
   const homeUrl = state.user.get("homeUrl");
   const keyMode = state.ui.get("keyMode");

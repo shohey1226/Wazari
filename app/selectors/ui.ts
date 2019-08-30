@@ -16,7 +16,10 @@ export const selectSites = createDeepEqualSelector([sitesSelector], sites => {
   return sites;
 });
 
-const activeTabIndexSelector = state => state.ui.get("activeTabIndex");
+const activeTabIndexSelector = (state, paneId: number) => {
+  return state.ui.getIn(["panes", paneId, "activeTabIndex"]);
+};
+
 export const selectActiveUrl = createSelector(
   [sitesSelector, activeTabIndexSelector],
   (sites, activeTabIndex) => {
