@@ -139,13 +139,15 @@ export default function ui(state = initialState, action) {
       return state
         .set(
           "activePaneId",
-          state.get("paneIds").indexOf(action.paneId) - 1 > 0
+          state.get("paneIds").indexOf(action.paneId) !== 0
             ? state
                 .get("paneIds")
                 .get(state.get("paneIds").indexOf(action.paneId) - 1)
-            : state.get("paneIds").get(0)
+            : state.get("paneIds").get(1)
         )
-        .set("paneIds", state.get("paneIds").filter(t => t !== action.paneId));
+        .set("paneIds", state.get("paneIds").filter(t => t !== action.paneId))
+        .set("panes", state.get("panes").delete(action.paneId));
+
     case SELECT_PANE:
       mode = KeyMode.Text;
       if (
