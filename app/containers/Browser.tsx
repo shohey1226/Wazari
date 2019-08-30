@@ -64,8 +64,7 @@ class Browser extends Component<Props, State> {
     super(props);
     this.state = {
       activeIndex: props.activeTabIndex,
-      isActivePane:
-        props.paneId === props.activePaneId && props.paneIds.length > 1
+      isActivePane: props.paneId === props.activePaneId
     };
     //this.onPressTab = this.onPressTab.bind(this);
   }
@@ -190,7 +189,7 @@ class Browser extends Component<Props, State> {
       }
     }
     if (prevProp.activePaneId !== activePaneId) {
-      if (paneId === activePaneId && paneIds.length > 1) {
+      if (paneId === activePaneId) {
         this.setState({ isActivePane: true });
       } else {
         this.setState({ isActivePane: false });
@@ -208,9 +207,10 @@ class Browser extends Component<Props, State> {
       activePaneId
     } = this.props;
     if (
-      keyMode === KeyMode.Terminal ||
-      keyMode === KeyMode.Text ||
-      keyMode === KeyMode.Browser
+      this.state.isActivePane &&
+      (keyMode === KeyMode.Terminal ||
+        keyMode === KeyMode.Text ||
+        keyMode === KeyMode.Browser)
     ) {
       console.log("action at browser", event);
       switch (event.action) {
@@ -276,47 +276,45 @@ class Browser extends Component<Props, State> {
         ? this._truncate(sites[i].title, 10)
         : this._truncate(sites[i].url, 10);
 
-      if (!this.tabViews[sites[i].url]) {
-        this.tabViews[sites[i].url] = (
-          <Tab
-            key={`tab-${i}`}
-            heading={
-              <TabHeading style={{ paddingLeft: 10, paddingRight: 10 }}>
-                <Text
-                  style={{
-                    fontSize: 10.5,
-                    marginLeft: 1,
-                    width: 105,
-                    textAlign: "center"
-                  }}
-                >
-                  {tabTitle}
-                </Text>
-                <Button
-                  transparent
-                  light
-                  onPress={() => this.pressCloseTab(i)}
-                  style={{ alignSelf: "center" }}
-                >
-                  <Icon
-                    name="md-close"
-                    style={{ marginLeft: 5, marginRight: 1, fontSize: 13 }}
-                  />
-                </Button>
-              </TabHeading>
-            }
-          >
-            <TabWindow
-              url={sites[i].url}
-              tabNumber={i}
-              keyMode={keyMode}
-              activeTabIndex={activeTabIndex}
-              {...this.props}
-            />
-          </Tab>
-        );
-      }
-      tabs.push(this.tabViews[sites[i].url]);
+      tabs.push(
+        <Tab
+          key={`tab-${i}`}
+          heading={
+            <TabHeading style={{ paddingLeft: 10, paddingRight: 10 }}>
+              <Text
+                style={{
+                  fontSize: 10.5,
+                  marginLeft: 1,
+                  width: 105,
+                  textAlign: "center"
+                }}
+              >
+                {tabTitle}
+              </Text>
+              <Button
+                transparent
+                light
+                onPress={() => this.pressCloseTab(i)}
+                style={{ alignSelf: "center" }}
+              >
+                <Icon
+                  name="md-close"
+                  style={{ marginLeft: 5, marginRight: 1, fontSize: 13 }}
+                />
+              </Button>
+            </TabHeading>
+          }
+        >
+          <TabWindow
+            url={sites[i].url}
+            tabNumber={i}
+            keyMode={keyMode}
+            isActive={activeTabIndex === i && this.state.isActivePane}
+            activeTabIndex={activeTabIndex}
+            {...this.props}
+          />
+        </Tab>
+      );
     }
     return tabs;
   }
@@ -340,7 +338,7 @@ class Browser extends Component<Props, State> {
         )}
         onChangeTab={this.onChangeTab.bind(this)}
         style={{
-          borderWidth: this.state.isActivePane ? 1 : 0,
+          borderWidth: this.state.isActivePane && paneIds.length > 1 ? 1 : 0,
           borderColor: "#30d158"
         }}
       >
