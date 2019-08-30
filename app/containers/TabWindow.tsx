@@ -588,15 +588,19 @@ true
 // specify 16px fontSize not to zoom in.
 const focusJS = `
 setTimeout(function(){
-  var input = document.createElement("input");
-  input.type = "text";  
-  input.style.position = "absolute";
-  input.style.fontSize = "16px";
-  input.style.top = window.pageYOffset + 'px';
-  document.body.appendChild(input);
-  input.focus();
-  input.blur();
-  input.setAttribute("style", "display:none");
-  delete input;
+  if (/^https:\\/\\/www\\.wazaterm\\.com\\/terminals\\/\\S+/.test(window.location.href)){
+    window.term.focus()
+  }else{
+    var input = document.createElement("input");
+    input.type = "text";  
+    input.style.position = "absolute";
+    input.style.fontSize = "16px";
+    input.style.top = window.pageYOffset + 'px';
+    document.body.appendChild(input);
+    input.focus();
+    input.blur();
+    input.setAttribute("style", "display:none");
+    delete input;
+  }
 }, 500);
 `;
