@@ -188,12 +188,9 @@ class Browser extends Component<Props, State> {
         dispatch(updateMode(KeyMode.Browser));
       }
     }
+
     if (prevProp.activePaneId !== activePaneId) {
-      if (paneId === activePaneId) {
-        this.setState({ isActivePane: true });
-      } else {
-        this.setState({ isActivePane: false });
-      }
+      this.setState({ isActivePane: paneId === activePaneId });
     }
   }
 

@@ -98,7 +98,6 @@ class TabWindow extends Component<Props, State, any> {
       focusedPane,
       activeUrl,
       keySwitchOn,
-      activeTabIndex,
       isActive
     } = this.props;
 
@@ -127,7 +126,7 @@ class TabWindow extends Component<Props, State, any> {
 
     // focused pane is changed to browser
     if (
-      this.props.tabNumber === activeTabIndex &&
+      isActive &&
       prevProp.focusedPane !== focusedPane &&
       focusedPane === "browser"
     ) {
@@ -160,7 +159,7 @@ class TabWindow extends Component<Props, State, any> {
   }
 
   handleBrowserActions = async event => {
-    const { dispatch, activeTabIndex, keyMode, isActive } = this.props;
+    const { dispatch, keyMode, isActive } = this.props;
     if (
       (keyMode === KeyMode.Terminal || keyMode === KeyMode.Text) &&
       this.webref &&
@@ -350,10 +349,6 @@ class TabWindow extends Component<Props, State, any> {
   onLoadStart(syntheticEvent) {
     this.setState({ isLoadingJSInjection: true });
     const { nativeEvent } = syntheticEvent;
-    const { dispatch, tabNumber, activeTabIndex } = this.props;
-    if (tabNumber === activeTabIndex) {
-      //console.log(this.webref.props.injectedJavaScript);
-    }
   }
 
   onMessage(event) {
