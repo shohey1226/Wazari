@@ -18,7 +18,7 @@ module.exports = {
     targetNode.addChild(tree.parse({ id: targetNode.model.id }));
     targetNode.model.id = "branch";
     // add new Node
-    let id = Date.now();
+    let id = Date.now().toString();
     targetNode.addChild(tree.parse({ id: id }));
 
     return id;

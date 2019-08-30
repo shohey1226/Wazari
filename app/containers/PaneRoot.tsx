@@ -37,7 +37,7 @@ interface State {
 
 interface Props {
   dispatch: (any) => void;
-  activePaneId: number;
+  activePaneId: string;
   keymap: any;
   modifiers: any;
 }
@@ -57,9 +57,9 @@ class PaneRoot extends Component<Props, State> {
     ) {
       let tree = new TreeModel();
       this.root = tree.parse({
-        id: 1
+        id: "1"
       });
-      props.dispatch(addPane(1));
+      props.dispatch(addPane("1"));
     } else {
       this.root = TreeUtils.deserialize(props.paneBlueprint);
     }
@@ -117,6 +117,13 @@ class PaneRoot extends Component<Props, State> {
     //   this.removePane(1);
     //   this.setState({ ids: this.state.ids.filter(i => i !== 1) });
     // }, 3000);
+  }
+
+  componentDidUpdate(prevProp: Props) {
+    const { paneIds, dispatch } = this.props;
+    if (prevProp.paneIds.length !== paneIds.length) {
+      dispatch(updatePaneBlueprint(TreeUtils.serialize(this.root)));
+    }
   }
 
   componentWillUnmount() {

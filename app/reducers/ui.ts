@@ -33,11 +33,11 @@ export interface UiState extends Map<any, any> {
   orientation: string;
   focusedPane: string;
   keySwitchOn: boolean;
-  paneIds: Array<number>;
+  paneIds: Array<string>;
   panes: {
-    [key: number]: { activeTabIndex: number | null; sites: Array<Site> };
+    [key: string]: { activeTabIndex: number | null; sites: Array<Site> };
   };
-  activePaneId: number;
+  activePaneId: string;
   paneBlueprint: any;
 }
 
@@ -167,7 +167,7 @@ export default function ui(state = initialState, action) {
       return state.set("activePaneId", action.paneId).set("keyMode", mode);
 
     case UPDATE_PANE_BLUEPRINT:
-      return state.set("paneBlueprint", Map(action.blueprint));
+      return state.set("paneBlueprint", fromJS(action.blueprint));
 
     // case LOGOUT:
     //   // make it default state
