@@ -88,6 +88,26 @@ const defaultKeymap = {
         ctrlKey: false,
         metaKey: false
       }
+    },
+    increasePaneSize: {
+      key: "]",
+      modifiers: {
+        capslockKey: false,
+        shiftKey: true,
+        altKey: true,
+        ctrlKey: false,
+        metaKey: false
+      }
+    },
+    decreasePaneSize: {
+      key: "[",
+      modifiers: {
+        capslockKey: false,
+        shiftKey: true,
+        altKey: true,
+        ctrlKey: false,
+        metaKey: false
+      }
     }
   },
   browser: {

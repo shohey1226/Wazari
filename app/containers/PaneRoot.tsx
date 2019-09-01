@@ -160,6 +160,16 @@ class PaneRoot extends Component<Props, State> {
             : paneIds.length - 1;
         dispatch(selectPane(paneIds[prevIndex]));
         break;
+      case "increasePaneSize":
+        TreeUtils.increaseSize(this.root, activePaneId);
+        this.forceUpdate(); // might be not good idea but works nicely
+        dispatch(updatePaneBlueprint(TreeUtils.serialize(this.root)));
+        break;
+      case "decreasePaneSize":
+        TreeUtils.decreaseSize(this.root, activePaneId);
+        this.forceUpdate(); // might be not good idea but works nicely
+        dispatch(updatePaneBlueprint(TreeUtils.serialize(this.root)));
+        break;
     }
   }
 
@@ -177,13 +187,13 @@ class PaneRoot extends Component<Props, State> {
       node.children.forEach(child => {
         if (node.model.type === "Col") {
           childViews.push(
-            <Col key={`col-${child.model.id}`}>
+            <Col key={`col-${child.model.id}`} size={child.model.size}>
               <Grid>{this.renderRecursively(child)}</Grid>
             </Col>
           );
         } else if (node.model.type === "Row") {
           childViews.push(
-            <Row key={`row-${child.model.id}`}>
+            <Row key={`row-${child.model.id}`} size={child.model.size}>
               <Grid>{this.renderRecursively(child)}</Grid>
             </Row>
           );

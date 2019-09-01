@@ -15,13 +15,39 @@ module.exports = {
     let tree = new TreeModel();
     // make current node branch and create a new node with targetNode.id
     targetNode.model.type = type;
-    targetNode.addChild(tree.parse({ id: targetNode.model.id }));
+    targetNode.addChild(tree.parse({ id: targetNode.model.id, size: 50 }));
     targetNode.model.id = "branch";
     // add new Node
     let id = Date.now().toString();
-    targetNode.addChild(tree.parse({ id: id }));
+    targetNode.addChild(tree.parse({ id: id, size: 50 }));
 
     return id;
+  },
+
+  increaseSize(rootNode: any, targetNodeId: string) {
+    let targetNode = _findNode(rootNode, targetNodeId);
+    let theOtherNode = targetNode.parent.children.filter(
+      n => n.model.id !== targetNodeId
+    )[0];
+    let size = targetNode.model.size;
+    if (size <= 100) {
+      size++;
+      targetNode.model.size = size;
+      theOtherNode.model.size = 100 - size;
+    }
+  },
+
+  decreaseSize(rootNode: any, targetNodeId: string) {
+    let targetNode = _findNode(rootNode, targetNodeId);
+    let theOtherNode = targetNode.parent.children.filter(
+      n => n.model.id !== targetNodeId
+    )[0];
+    let size = targetNode.model.size;
+    if (size > 0) {
+      size--;
+      targetNode.model.size = size;
+      theOtherNode.model.size = 100 - size;
+    }
   },
 
   removeNode(rootNode, targetNodeId: number): void {
@@ -91,7 +117,9 @@ function _findNode(rootNode, id) {
 
 function _deserialize(node, obj) {
   let tree = new TreeModel();
-  let childNode = node.addChild(tree.parse({ id: obj.id, type: obj.type }));
+  let childNode = node.addChild(
+    tree.parse({ id: obj.id, type: obj.type, size: obj.size })
+  );
   obj.children.forEach(o => {
     _deserialize(childNode, o);
   });
@@ -103,6 +131,7 @@ function _serializeNode(node) {
   let treeObj = {
     id: node.model.id,
     type: node.model.type,
+    size: node.model.size,
     children: []
   };
   node.children.forEach(n => {
