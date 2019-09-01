@@ -308,6 +308,14 @@ class TabWindow extends Component<Props, State, any> {
         }
       }
 
+      // dealing with some exception
+      if (data.key === "\\") {
+        data.key = "\\\\";
+      } else if (data.key === String.fromCharCode(39)) {
+        this.webref.injectJavaScript(`typingFromRN("'")`);
+        return;
+      }
+
       switch (data.key) {
         case "Esc":
           this.webref.injectJavaScript(`document.activeElement.blur();`);

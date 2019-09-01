@@ -143,8 +143,10 @@ class PaneRoot extends Component<Props, State> {
         dispatch(addPane(TreeUtils.addNode(this.root, "Col", activePaneId)));
         break;
       case "removePane":
-        TreeUtils.removeNode(this.root, activePaneId);
-        dispatch(removePane(activePaneId));
+        if (paneIds.length > 1) {
+          TreeUtils.removeNode(this.root, activePaneId);
+          dispatch(removePane(activePaneId));
+        }
         break;
       case "nextPane":
         let nextIndex =
