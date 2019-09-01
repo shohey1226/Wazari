@@ -121,6 +121,16 @@ export function updateFocusedPane(pane: string) {
 }
 
 export function addPane(paneId: number) {
+  return (dispatch, getState) => {
+    if (isValidPanes(getState().ui)) {
+      dispatch(_addPane(paneId));
+    } else {
+      console.log("pane state is not valid");
+    }
+  };
+}
+
+function _addPane(paneId: number) {
   return {
     type: ADD_PANE,
     paneId: paneId
@@ -128,6 +138,16 @@ export function addPane(paneId: number) {
 }
 
 export function removePane(paneId: number) {
+  return (dispatch, getState) => {
+    if (isValidPanes(getState().ui)) {
+      dispatch(_removePane(paneId));
+    } else {
+      console.log("pane state is not valid");
+    }
+  };
+}
+
+function _removePane(paneId: number) {
   return {
     type: REMOVE_PANE,
     paneId: paneId
@@ -135,6 +155,16 @@ export function removePane(paneId: number) {
 }
 
 export function selectPane(paneId: number) {
+  return (dispatch, getState) => {
+    if (isValidPanes(getState().ui)) {
+      dispatch(_selectPane(paneId));
+    } else {
+      console.log("pane state is not valid");
+    }
+  };
+}
+
+function _selectPane(paneId: number) {
   return {
     type: SELECT_PANE,
     paneId: paneId
@@ -146,4 +176,26 @@ export function updatePaneBlueprint(blueprint: Object) {
     type: UPDATE_PANE_BLUEPRINT,
     blueprint: blueprint
   };
+}
+
+function isValidPanes(uiState): boolean {
+  const paneIds = uiState.get("paneIds").toArray();
+  const panes = uiState.get("panes").toJS();
+  const activePaneId = uiState.get("activePaneId");
+
+  if (activePaneId === null) {
+    return true;
+  }
+
+  if (paneIds.indexOf(activePaneId) === -1) {
+    return false;
+  }
+
+  paneIds.forEach(paneId => {
+    if (!(paneId in panes)) {
+      return false;
+    }
+  });
+
+  return true;
 }

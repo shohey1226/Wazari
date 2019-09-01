@@ -49,7 +49,7 @@ const initialState: UiState = fromJS({
   focusedPane: "browser",
   keySwitchOn: true,
   paneIds: List(),
-  activePaneId: 0,
+  activePaneId: null,
   paneBlueprint: {},
   panes: {}
 });
