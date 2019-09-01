@@ -40,6 +40,8 @@ interface Props {
   activePaneId: string;
   keymap: any;
   modifiers: any;
+  paneIds: Array<string>;
+  panes: any;
 }
 
 class PaneRoot extends Component<Props, State> {
@@ -122,7 +124,9 @@ class PaneRoot extends Component<Props, State> {
   componentDidUpdate(prevProp: Props) {
     const { paneIds, dispatch } = this.props;
     if (prevProp.paneIds.length !== paneIds.length) {
-      dispatch(updatePaneBlueprint(TreeUtils.serialize(this.root)));
+      if (TreeUtils.isValidTree(this.root, paneIds)) {
+        dispatch(updatePaneBlueprint(TreeUtils.serialize(this.root)));
+      }
     }
   }
 

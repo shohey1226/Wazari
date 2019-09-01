@@ -103,6 +103,18 @@ module.exports = {
     // looks there is no way to create empty tree
     delete root.children[0].parent;
     return root.children[0];
+  },
+
+  isValidTree(root, paneIds): boolean {
+    let nodeIds = root
+      .all(node => node.model.id !== "branch")
+      .map(n => n.model.id);
+    paneIds.forEach(paneId => {
+      if (nodeIds.indexOf(paneId) === -1) {
+        return false;
+      }
+    });
+    return true;
   }
 };
 
