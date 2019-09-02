@@ -1,10 +1,9 @@
 //
 //  DVAApplication.h
-//  devAny
 //
-//  Created by 亀田祥平 on 2017/09/19.
-//  Copyright © 2017年 Facebook. All rights reserved.
-//
+//  Created by Shohei Kameda on 2017/09/18.
+//  Copyright © 2019 Wazalab. All rights reserved.
+//s
 #import <UIKit/UIKit.h>
 
 @interface DVAApplication : UIApplication {

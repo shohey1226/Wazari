@@ -1,9 +1,8 @@
 //
 //  KeyViewController.m
-//  devAny
 //
-//  Created by 亀田祥平 on 2017/09/18.
-//  Copyright © 2017年 Facebook. All rights reserved.
+//  Created by Shohei Kameda on 2017/09/18.
+//  Copyright © 2019 Wazalab. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
