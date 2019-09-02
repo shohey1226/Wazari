@@ -32,6 +32,7 @@ const DAVKeyManagerEmitter = new NativeEventEmitter(DAVKeyManager);
 
 interface State {
   activeIndex: number;
+  isActivePane: boolean;
 }
 
 type Site = {
@@ -57,10 +58,14 @@ class Browser extends Component<Props, State> {
   keyboardDidShowListener: any;
   keyboardDidHideListener: any;
   subscriptions: Array<any> = [];
+  tabViews: Array<any> = {};
 
   constructor(props) {
     super(props);
-    this.state = { activeIndex: props.activeTabIndex };
+    this.state = {
+      activeIndex: props.activeTabIndex,
+      isActivePane: props.paneId === props.activePaneId
+    };
     //this.onPressTab = this.onPressTab.bind(this);
   }
 
@@ -110,8 +115,8 @@ class Browser extends Component<Props, State> {
   }
 
   componentWillUnmount() {
-    this.keyboardDidShowListener.remove();
-    this.keyboardDidHideListener.remove();
+    // this.keyboardDidShowListener.remove();
+    // this.keyboardDidHideListener.remove();
     this.subscriptions.forEach(subscription => {
       subscription.remove();
     });
@@ -159,7 +164,10 @@ class Browser extends Component<Props, State> {
       sites,
       keyMode,
       keySwitchOn,
-      dispatch
+      dispatch,
+      activePaneId,
+      paneId,
+      paneIds
     } = this.props;
 
     if (prevProp.activeTabIndex !== activeTabIndex) {
@@ -180,14 +188,26 @@ class Browser extends Component<Props, State> {
         dispatch(updateMode(KeyMode.Browser));
       }
     }
+
+    if (prevProp.activePaneId !== activePaneId) {
+      this.setState({ isActivePane: paneId === activePaneId });
+    }
   }
 
   handleBrowserActions = async event => {
-    const { dispatch, activeTabIndex, keyMode, homeUrl, sites } = this.props;
+    const {
+      dispatch,
+      activeTabIndex,
+      keyMode,
+      homeUrl,
+      sites,
+      activePaneId
+    } = this.props;
     if (
-      keyMode === KeyMode.Terminal ||
-      keyMode === KeyMode.Text ||
-      keyMode === KeyMode.Browser
+      this.state.isActivePane &&
+      (keyMode === KeyMode.Terminal ||
+        keyMode === KeyMode.Text ||
+        keyMode === KeyMode.Browser)
     ) {
       console.log("action at browser", event);
       switch (event.action) {
@@ -208,7 +228,7 @@ class Browser extends Component<Props, State> {
           dispatch(selectTab(prevIndex));
           break;
         case "closeTab":
-          this.pressCloseTab(activeTabIndex);
+          this.pressCloseTab(activeTabIndex, activePaneId);
           break;
       }
     }
@@ -220,8 +240,8 @@ class Browser extends Component<Props, State> {
   }
 
   pressCloseTab(i) {
-    const { dispatch, sites, activeTabIndex } = this.props;
-    dispatch(closeTab(i));
+    const { dispatch, sites, activeTabIndex, paneId } = this.props;
+    dispatch(closeTab(i, paneId));
     if (i === activeTabIndex) {
       if (sites.length > i + 1) {
         dispatch(selectTab(i));
@@ -246,12 +266,13 @@ class Browser extends Component<Props, State> {
   }
 
   renderTabs() {
-    const { sites, keyMode } = this.props;
+    const { sites, keyMode, activeTabIndex, paneId } = this.props;
     let tabs = [];
     for (let i = 0; i < sites.length; i++) {
       const tabTitle = sites[i].title
         ? this._truncate(sites[i].title, 10)
         : this._truncate(sites[i].url, 10);
+
       tabs.push(
         <Tab
           key={`tab-${i}`}
@@ -281,7 +302,14 @@ class Browser extends Component<Props, State> {
             </TabHeading>
           }
         >
-          <TabWindow url={sites[i].url} tabNumber={i} keyMode={keyMode} />
+          <TabWindow
+            url={sites[i].url}
+            tabNumber={i}
+            keyMode={keyMode}
+            isActive={activeTabIndex === i && this.state.isActivePane}
+            activeTabIndex={activeTabIndex}
+            {...this.props}
+          />
         </Tab>
       );
     }
@@ -289,11 +317,12 @@ class Browser extends Component<Props, State> {
   }
 
   render() {
-    const { activeTabIndex, orientation } = this.props;
+    const { activeTabIndex, orientation, sites, paneIds, paneId } = this.props;
+
     let style = { height: 35 };
     if (
-      orientation === "LANDSCAPE" &&
-      DeviceInfo.getDeviceType() === "Handset"
+      sites.length < 2 ||
+      (orientation === "LANDSCAPE" && DeviceInfo.getDeviceType() === "Handset")
     ) {
       style = { height: 0 };
     }
@@ -305,7 +334,10 @@ class Browser extends Component<Props, State> {
           <ScrollableTab style={{ backgroundColor: "#222", ...style }} />
         )}
         onChangeTab={this.onChangeTab.bind(this)}
-        style={style}
+        style={{
+          borderWidth: this.state.isActivePane && paneIds.length > 1 ? 1 : 0,
+          borderColor: "#30d158"
+        }}
       >
         {this.renderTabs()}
       </Tabs>
@@ -316,8 +348,14 @@ class Browser extends Component<Props, State> {
 function mapStateToProps(state, ownProps) {
   const keymap = selectBrowserKeymap(state);
   const modifiers = selectModifiers(state);
-  const activeTabIndex = state.ui.get("activeTabIndex");
-  const sites = selectSites(state);
+  const activePaneId = state.ui.get("activePaneId");
+  const paneIds = state.ui.get("paneIds").toArray();
+  const activeTabIndex = state.ui.getIn([
+    "panes",
+    ownProps.paneId,
+    "activeTabIndex"
+  ]);
+  const sites = selectSites(state, ownProps.paneId);
   const keyMode = state.ui.get("keyMode");
   const orientation = state.ui.get("orientation");
   const homeUrl = state.user.get("homeUrl");
@@ -331,7 +369,9 @@ function mapStateToProps(state, ownProps) {
     keyMode,
     orientation,
     homeUrl,
-    keySwitchOn
+    keySwitchOn,
+    activePaneId,
+    paneIds
   };
 }
 

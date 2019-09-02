@@ -7,12 +7,19 @@ import { isEqual } from "lodash";
 
 const createDeepEqualSelector = createSelectorCreator(defaultMemoize, isEqual);
 
-const sitesSelector = state => state.ui.get("sites").toJS();
+const sitesSelector = (state, paneId: number) => {
+  const sites = state.ui.getIn(["panes", paneId, "sites"]);
+  return sites ? sites.toJS() : [];
+};
+
 export const selectSites = createDeepEqualSelector([sitesSelector], sites => {
   return sites;
 });
 
-const activeTabIndexSelector = state => state.ui.get("activeTabIndex");
+const activeTabIndexSelector = (state, paneId: number) => {
+  return state.ui.getIn(["panes", paneId, "activeTabIndex"]);
+};
+
 export const selectActiveUrl = createSelector(
   [sitesSelector, activeTabIndexSelector],
   (sites, activeTabIndex) => {
@@ -26,4 +33,3 @@ export const selectActiveSite = createSelector(
     return sites[activeTabIndex] ? sites[activeTabIndex] : null;
   }
 );
-

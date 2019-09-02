@@ -29,14 +29,12 @@ const DAVKeyManagerEmitter = new NativeEventEmitter(DAVKeyManager);
 interface State {
   isLoadingSVim: boolean; // state to load local sVim files
   isLoadingJSInjection: boolean; // state to load injectedJS so commands can be used
-  isActive: boolean; // active Tab and focused
 }
 
 interface Props {
   dispatch: (any) => void;
   activeTabIndex: number;
   tabNumber: number;
-  homeUrl: string;
   keyMode: KeyMode;
   backToggled: boolean;
   forwardToggled: boolean;
@@ -44,6 +42,7 @@ interface Props {
   excludedPatterns: Array<string>;
   keySwitchOn: boolean;
   activeUrl: string;
+  isActive: boolean;
 }
 
 class TabWindow extends Component<Props, State, any> {
@@ -55,7 +54,6 @@ class TabWindow extends Component<Props, State, any> {
     super(props);
     this.state = {
       isLoadingSVim: true,
-      isActive: false,
       isLoadingJSInjection: true
     };
     this.subscriptions = [];
@@ -66,6 +64,7 @@ class TabWindow extends Component<Props, State, any> {
   }
 
   componentDidMount() {
+    const { isActive } = this.props;
     sVim.init(() => {
       this.setState({ isLoadingSVim: false });
     });
@@ -75,12 +74,10 @@ class TabWindow extends Component<Props, State, any> {
         this.handleBrowserActions
       ),
       DAVKeyManagerEmitter.addListener("RNKeyEvent", data => {
-        if (this.state.isActive) {
-          if (this.props.keyMode === KeyMode.Terminal) {
-            this.typing(data);
-          } else if (this.props.keyMode === KeyMode.Text) {
-            this.textTyping(data);
-          }
+        if (this.props.keyMode === KeyMode.Terminal) {
+          this.typing(data);
+        } else if (this.props.keyMode === KeyMode.Text) {
+          this.textTyping(data);
         }
       })
     );
@@ -101,15 +98,13 @@ class TabWindow extends Component<Props, State, any> {
       focusedPane,
       activeUrl,
       keySwitchOn,
-      activeTabIndex
+      isActive
     } = this.props;
 
     // tab is chagned
-    if (prevProp.activeTabIndex !== activeTabIndex) {
-      if (this.props.tabNumber === activeTabIndex) {
-        this.setState({ isActive: true });
+    if (prevProp.isActive !== isActive) {
+      if (isActive) {
         this.focusWindow();
-
         if (activeUrl !== prevProp.activeUrl) {
           this.setSwitch(activeUrl);
         }
@@ -119,19 +114,19 @@ class TabWindow extends Component<Props, State, any> {
     }
 
     // toggle back and forward buttons
-    if (prevProp.backToggled !== backToggled && this.state.isActive) {
+    if (prevProp.backToggled !== backToggled && isActive) {
       this.webref && this.webref.goBack();
     }
-    if (prevProp.forwardToggled !== forwardToggled && this.state.isActive) {
+    if (prevProp.forwardToggled !== forwardToggled && isActive) {
       this.webref && this.webref.goForward();
     }
-    if (prevProp.reloadToggled !== reloadToggled && this.state.isActive) {
+    if (prevProp.reloadToggled !== reloadToggled && isActive) {
       this.webref && this.webref.reload();
     }
 
     // focused pane is changed to browser
     if (
-      this.props.tabNumber === activeTabIndex &&
+      isActive &&
       prevProp.focusedPane !== focusedPane &&
       focusedPane === "browser"
     ) {
@@ -159,17 +154,16 @@ class TabWindow extends Component<Props, State, any> {
   }
 
   blurWindow() {
-    this.setState({ isActive: false });
     this.webref &&
       this.webref.injectJavaScript(`document.activeElement.blur();`);
   }
 
   handleBrowserActions = async event => {
-    const { dispatch, activeTabIndex, keyMode, homeUrl, sites } = this.props;
+    const { dispatch, keyMode, isActive } = this.props;
     if (
       (keyMode === KeyMode.Terminal || keyMode === KeyMode.Text) &&
       this.webref &&
-      this.state.isActive &&
+      isActive &&
       this.state.isLoadingJSInjection === false
     ) {
       console.log("action at tabwindow", event);
@@ -232,109 +226,130 @@ class TabWindow extends Component<Props, State, any> {
   };
 
   typing(data) {
-    console.log("terminal input", data);
-    let charCode;
-    let modifiers = Object.assign({}, data.modifiers);
-    switch (data.key) {
-      case "Backspace":
-        charCode = 8;
-        break;
-      case "Return":
-        charCode = 13;
-        break;
-      case "Tab":
-        charCode = 9;
-        break;
-      case "Esc":
-        charCode = 27;
-        break;
-      case "Up":
-        charCode = "P".charCodeAt(0);
-        modifiers.ctrlKey = true;
-        break;
-      case "Down":
-        charCode = "N".charCodeAt(0);
-        modifiers.ctrlKey = true;
-        break;
-      case "Left":
-        charCode = "B".charCodeAt(0);
-        modifiers.ctrlKey = true;
-        break;
-      case "Right":
-        charCode = "F".charCodeAt(0);
-        modifiers.ctrlKey = true;
-        break;
-      default:
-        charCode = data.key.charCodeAt(0);
-    }
-
-    // if (modifiers.ctrlKey) {
-    //   charCode = data.key.toUpperCase().charCodeAt(0);
-    // }
-
-    // handle shift key to make it Uppercase
-    if (modifiers.shiftKey) {
-      if (data.key.match(/[a-z]/)) {
-        charCode = data.key.toUpperCase().charCodeAt(0);
+    const { isActive } = this.props;
+    if (isActive) {
+      console.log("terminal input", data);
+      let charCode;
+      let modifiers = Object.assign({}, data.modifiers);
+      switch (data.key) {
+        case "Backspace":
+          charCode = 8;
+          break;
+        case "Return":
+          charCode = 13;
+          break;
+        case "Tab":
+          charCode = 9;
+          break;
+        case "Esc":
+          charCode = 27;
+          break;
+        case "Up":
+          charCode = "P".charCodeAt(0);
+          modifiers.ctrlKey = true;
+          break;
+        case "Down":
+          charCode = "N".charCodeAt(0);
+          modifiers.ctrlKey = true;
+          break;
+        case "Left":
+          charCode = "B".charCodeAt(0);
+          modifiers.ctrlKey = true;
+          break;
+        case "Right":
+          charCode = "F".charCodeAt(0);
+          modifiers.ctrlKey = true;
+          break;
+        default:
+          charCode = data.key.charCodeAt(0);
       }
-    }
 
-    const modifiersStr = JSON.stringify(modifiers);
+      // if (modifiers.ctrlKey) {
+      //   charCode = data.key.toUpperCase().charCodeAt(0);
+      // }
 
-    if (
-      32 <= charCode &&
-      charCode < 128 &&
-      !modifiers.ctrlKey &&
-      !modifiers.altKey &&
-      !modifiers.metaKey
-    ) {
-      this.webref.injectJavaScript(
-        `simulateKeyPress(window.term.textarea, ${charCode}, '${modifiersStr}')`
-      );
-    } else {
-      this.webref.injectJavaScript(
-        `simulateKeyDown(window.term.textarea, ${charCode}, '${modifiersStr}')`
-      );
+      // handle shift key to make it Uppercase
+      if (modifiers.shiftKey) {
+        if (data.key.match(/[a-z]/)) {
+          charCode = data.key.toUpperCase().charCodeAt(0);
+        }
+      }
+
+      const modifiersStr = JSON.stringify(modifiers);
+
+      if (
+        32 <= charCode &&
+        charCode < 128 &&
+        !modifiers.ctrlKey &&
+        !modifiers.altKey &&
+        !modifiers.metaKey
+      ) {
+        this.webref.injectJavaScript(
+          `simulateKeyPress(window.term.textarea, ${charCode}, '${modifiersStr}')`
+        );
+      } else {
+        this.webref.injectJavaScript(
+          `simulateKeyDown(window.term.textarea, ${charCode}, '${modifiersStr}')`
+        );
+      }
     }
   }
 
   textTyping(data) {
-    console.log(data);
+    const { isActive } = this.props;
 
-    // handle shift key to make it Uppercase
-    if (data.modifiers.shiftKey) {
-      if (data.key.match(/[a-z]/)) {
-        data.key = data.key.toUpperCase();
+    if (isActive) {
+      console.log(data);
+
+      // handle shift key to make it Uppercase
+      if (data.modifiers.shiftKey) {
+        if (data.key.match(/[a-z]/)) {
+          data.key = data.key.toUpperCase();
+        }
       }
-    }
 
-    switch (data.key) {
-      case "Esc":
-        this.webref.injectJavaScript(`document.activeElement.blur();`);
-        break;
-      case "Backspace":
-        this.webref.injectJavaScript(`deletePreviousChar()`);
-        break;
-      default:
-        this.webref.injectJavaScript(`typingFromRN('${data.key}')`);
+      // dealing with some exception
+      if (data.key === "\\") {
+        data.key = "\\\\";
+      } else if (data.key === String.fromCharCode(39)) {
+        this.webref.injectJavaScript(`typingFromRN("'")`);
+        return;
+      }
+
+      switch (data.key) {
+        case "Esc":
+          this.webref.injectJavaScript(`document.activeElement.blur();`);
+          break;
+        case "Backspace":
+          this.webref.injectJavaScript(`deletePreviousChar()`);
+          break;
+        default:
+          this.webref.injectJavaScript(`typingFromRN('${data.key}')`);
+      }
     }
   }
 
   onLoadEnd(syntheticEvent) {
     const { nativeEvent } = syntheticEvent;
-    const { dispatch, tabNumber, activeTabIndex } = this.props;
-    if (tabNumber === activeTabIndex) {
+    const {
+      dispatch,
+      tabNumber,
+      activeTabIndex,
+      paneId,
+      isActive
+    } = this.props;
+    if (isActive) {
       dispatch(
         updateSite(
           activeTabIndex,
           nativeEvent.title,
           nativeEvent.url,
           nativeEvent.canGoBack,
-          nativeEvent.canGoForward
+          nativeEvent.canGoForward,
+          paneId
         )
       );
       this.focusWindow();
-      this.setState({ isActive: true });
       dispatch(addHistory(nativeEvent.url, nativeEvent.title));
     }
   }
@@ -342,10 +357,6 @@ class TabWindow extends Component<Props, State, any> {
   onLoadStart(syntheticEvent) {
     this.setState({ isLoadingJSInjection: true });
     const { nativeEvent } = syntheticEvent;
-    const { dispatch, tabNumber, activeTabIndex } = this.props;
-    if (tabNumber === activeTabIndex) {
-      //console.log(this.webref.props.injectedJavaScript);
-    }
   }
 
   onMessage(event) {
@@ -404,15 +415,11 @@ class TabWindow extends Component<Props, State, any> {
 function mapStateToProps(state, ownProps) {
   const keymap = selectBrowserKeymap(state);
   const modifiers = selectModifiers(state);
-  const activeTabIndex = state.ui.get("activeTabIndex");
   const activeUrl = selectActiveUrl(state);
-  const sites = selectSites(state);
-  const keyMode = state.ui.get("keyMode");
   const focusedPane = state.ui.get("focusedPane");
   const backToggled = state.ui.get("backToggled");
   const forwardToggled = state.ui.get("forwardToggled");
   const reloadToggled = state.ui.get("reloadToggled");
-  const homeUrl = state.user.get("homeUrl");
   const keySwitchOn = state.ui.get("keySwitchOn");
   const excludedPatterns = state.user.get("excludedPatterns").toArray();
   return {
@@ -421,10 +428,6 @@ function mapStateToProps(state, ownProps) {
     reloadToggled,
     keymap,
     modifiers,
-    sites,
-    activeTabIndex,
-    keyMode,
-    homeUrl,
     focusedPane,
     excludedPatterns,
     activeUrl,
@@ -593,15 +596,19 @@ true
 // specify 16px fontSize not to zoom in.
 const focusJS = `
 setTimeout(function(){
-  var input = document.createElement("input");
-  input.type = "text";  
-  input.style.position = "absolute";
-  input.style.fontSize = "16px";
-  input.style.top = window.pageYOffset + 'px';
-  document.body.appendChild(input);
-  input.focus();
-  input.blur();
-  input.setAttribute("style", "display:none");
-  delete input;
+  if (/^https:\\/\\/www\\.wazaterm\\.com\\/terminals\\/\\S+/.test(window.location.href)){
+    window.term.focus()
+  }else{
+    var input = document.createElement("input");
+    input.type = "text";  
+    input.style.position = "absolute";
+    input.style.fontSize = "16px";
+    input.style.top = window.pageYOffset + 'px';
+    document.body.appendChild(input);
+    input.focus();
+    input.blur();
+    input.setAttribute("style", "display:none");
+    delete input;
+  }
 }, 500);
 `;

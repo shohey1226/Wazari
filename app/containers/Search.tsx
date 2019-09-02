@@ -32,13 +32,7 @@ import { SearchEngine } from "../components/SearchEnginePicker";
 import { KeyMode } from "../types/index.d";
 import Modal from "react-native-modal";
 
-import {
-  addNewTab,
-  selectTab,
-  updateSite,
-  toggleBack,
-  toggleForward
-} from "../actions/ui";
+import { addNewTab, selectTab, toggleBack, toggleForward } from "../actions/ui";
 
 import Fuse from "fuse.js";
 
@@ -58,7 +52,6 @@ interface IState {
 interface Props {
   searchIsFocused: boolean;
   dispatch: (any) => void;
-  activeTabIndex: number;
   searchEngine: SearchEngine;
   homeUrl: string;
   keyMode: KeyMode;
@@ -120,7 +113,6 @@ class Search extends Component<Props, IState, any> {
   componentDidUpdate(prevProp, prevState) {
     const {
       dispatch,
-      activeTabIndex,
       orientation,
       activeUrl,
       activeSite,
@@ -175,7 +167,7 @@ class Search extends Component<Props, IState, any> {
   }
 
   onEndEditing() {
-    const { dispatch, activeTabIndex, searchEngine, sites } = this.props;
+    const { dispatch, searchEngine, sites } = this.props;
     const trimmedText = this.state.text.replace(/^\s+|\s+$/g, "");
     if (trimmedText === "") {
       this.searchRef && this.searchRef._root.blur();
@@ -192,7 +184,7 @@ class Search extends Component<Props, IState, any> {
       }
     }
     setTimeout(() => {
-      dispatch(selectTab(sites.length));
+      dispatch(selectTab(sites.length + 1));
     }, 50);
     this.setState({ text: "" });
     this.props.closeSearch();
@@ -551,31 +543,8 @@ class Search extends Component<Props, IState, any> {
 }
 
 function mapStateToProps(state, ownProps) {
-  const keymap = selectBrowserKeymap(state);
-  const modifiers = selectModifiers(state);
-  const activeTabIndex = state.ui.get("activeTabIndex");
-  const activeUrl = selectActiveUrl(state);
-  const sites = selectSites(state);
-  const activeSite = selectActiveSite(state);
-  const searchEngine = state.user.get("searchEngine");
   const history = state.user.get("history").toJS();
-  const homeUrl = state.user.get("homeUrl");
-  const keyMode = state.ui.get("keyMode");
-  const orientation = state.ui.get("orientation");
-  const focusedPane = state.ui.get("focusedPane");
-
   return {
-    keymap,
-    modifiers,
-    activeTabIndex,
-    searchEngine,
-    homeUrl,
-    keyMode,
-    orientation,
-    activeUrl,
-    activeSite,
-    sites,
-    focusedPane,
     history
   };
 }

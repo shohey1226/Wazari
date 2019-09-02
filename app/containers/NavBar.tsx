@@ -37,7 +37,6 @@ import Modal from "react-native-modal";
 import {
   addNewTab,
   selectTab,
-  updateSite,
   toggleBack,
   toggleForward,
   toggleReload
@@ -367,6 +366,7 @@ class NavBar extends Component<Props, IState, any> {
             searchIsFocused={this.state.searchModalIsVisiable}
             closeSearch={this.closeSearch.bind(this)}
             openSearch={this.openSearch.bind(this)}
+            {...this.props}
           />
         </Modal>
       </Header>
@@ -377,10 +377,15 @@ class NavBar extends Component<Props, IState, any> {
 function mapStateToProps(state, ownProps) {
   const keymap = selectBrowserKeymap(state);
   const modifiers = selectModifiers(state);
-  const activeTabIndex = state.ui.get("activeTabIndex");
-  const activeUrl = selectActiveUrl(state);
-  const sites = selectSites(state);
-  const activeSite = selectActiveSite(state);
+  const activeTabIndex = state.ui.getIn([
+    "panes",
+    ownProps.paneId,
+    "activeTabIndex"
+  ]);
+  const activePaneId = state.ui.get("activePaneId");
+  const sites = selectSites(state, activePaneId);
+  const activeSite = selectActiveSite(state, activePaneId);
+  const activeUrl = selectActiveUrl(state, activePaneId);
   const searchEngine = state.user.get("searchEngine");
   const homeUrl = state.user.get("homeUrl");
   const keyMode = state.ui.get("keyMode");

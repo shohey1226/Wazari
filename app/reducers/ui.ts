@@ -9,9 +9,13 @@ import {
   UPDATE_ORIENTATION,
   UPDATE_FOUCUSED_PANE,
   UPDATE_KEY_SWITCH,
-  TOGGLE_RELOAD
+  TOGGLE_RELOAD,
+  ADD_PANE,
+  REMOVE_PANE,
+  SELECT_PANE,
+  UPDATE_PANE_BLUEPRINT
 } from "../actions/ui";
-import { Map, fromJS } from "immutable";
+import { Map, fromJS, List } from "immutable";
 import { KeyMode } from "../types/index.d";
 
 type Site = {
@@ -22,8 +26,6 @@ type Site = {
 };
 
 export interface UiState extends Map<any, any> {
-  sites: Array<Site>;
-  activeTabIndex: number | null;
   keyMode: KeyMode;
   backToggled: boolean;
   forwardToggled: boolean;
@@ -31,17 +33,25 @@ export interface UiState extends Map<any, any> {
   orientation: string;
   focusedPane: string;
   keySwitchOn: boolean;
+  paneIds: Array<string>;
+  panes: {
+    [key: string]: { activeTabIndex: number | null; sites: Array<Site> };
+  };
+  activePaneId: string;
+  paneBlueprint: any;
 }
 
 const initialState: UiState = fromJS({
-  sites: [],
-  activeTabIndex: 0,
   keyMode: KeyMode.Text,
   backToggled: false,
   forwardToggled: false,
   reloadToggled: false,
   focusedPane: "browser",
-  keySwitchOn: true
+  keySwitchOn: true,
+  paneIds: List(),
+  activePaneId: null,
+  paneBlueprint: {},
+  panes: {}
 });
 
 export default function ui(state = initialState, action) {
@@ -56,42 +66,52 @@ export default function ui(state = initialState, action) {
       return state.set("reloadToggled", !state.get("reloadToggled"));
 
     case ADD_NEW_TAB:
-      return state.set(
-        "sites",
-        state.get("sites").push(Map({ url: action.url }))
+      return state.setIn(
+        ["panes", action.paneId, "sites"],
+        state
+          .getIn(["panes", action.paneId, "sites"])
+          .push(Map({ url: action.url }))
       );
 
     case SELECT_TAB:
       mode = KeyMode.Text;
       if (
         /^https:\/\/www\.wazaterm\.com\/terminals\/\S+/.test(
-          state.get("sites").getIn([action.index, "url"])
+          state
+            .getIn(["panes", action.paneId, "sites"])
+            .getIn([action.index, "url"])
         )
       ) {
         mode = KeyMode.Terminal;
       }
-      return state.set("activeTabIndex", action.index).set("keyMode", mode);
+
+      return state
+        .setIn(["panes", action.paneId, "activeTabIndex"], action.index)
+        .set("keyMode", mode);
 
     case CLOSE_TAB:
-      return state.set("sites", state.get("sites").delete(action.index));
+      return state.setIn(
+        ["panes", action.paneId, "sites"],
+        state.getIn(["panes", action.paneId, "sites"]).delete(action.index)
+      );
 
-    case SELECT_TAB:
-      return state.set("activeTabIndex", action.index);
     case UPDATE_SITE:
       mode = KeyMode.Text;
       if (/^https:\/\/www\.wazaterm\.com\/terminals\/\S+/.test(action.url)) {
         mode = KeyMode.Terminal;
       }
       return state
-        .set(
-          "sites",
-          state.get("sites").update(action.index, site => {
-            return site
-              .set("url", action.url)
-              .set("title", action.title)
-              .set("canGoBack", action.canGoBack)
-              .set("canGoForward", action.canGoForward);
-          })
+        .setIn(
+          ["panes", action.paneId, "sites"],
+          state
+            .getIn(["panes", action.paneId, "sites"])
+            .update(action.index, site => {
+              return site
+                .set("url", action.url)
+                .set("title", action.title)
+                .set("canGoBack", action.canGoBack)
+                .set("canGoForward", action.canGoForward);
+            })
         )
         .set("keyMode", mode);
 
@@ -106,6 +126,48 @@ export default function ui(state = initialState, action) {
 
     case UPDATE_ORIENTATION:
       return state.set("orientation", action.orientation);
+
+    case ADD_PANE:
+      return state
+        .set("paneIds", state.get("paneIds").push(action.paneId))
+        .set("activePaneId", action.paneId)
+        .setIn(["panes", action.paneId], {
+          sites: List(),
+          activeTabIndex: 0
+        });
+    case REMOVE_PANE:
+      return state
+        .set(
+          "activePaneId",
+          state.get("paneIds").indexOf(action.paneId) !== 0
+            ? state
+                .get("paneIds")
+                .get(state.get("paneIds").indexOf(action.paneId) - 1)
+            : state.get("paneIds").get(1)
+        )
+        .set("paneIds", state.get("paneIds").filter(t => t !== action.paneId))
+        .set("panes", state.get("panes").delete(action.paneId));
+
+    case SELECT_PANE:
+      mode = KeyMode.Text;
+      if (
+        /^https:\/\/www\.wazaterm\.com\/terminals\/\S+/.test(
+          state.getIn([
+            "panes",
+            action.paneId,
+            "sites",
+            state.getIn(["panes", action.paneId, "activeTabIndex"]),
+            "url"
+          ])
+        )
+      ) {
+        mode = KeyMode.Terminal;
+      }
+
+      return state.set("activePaneId", action.paneId).set("keyMode", mode);
+
+    case UPDATE_PANE_BLUEPRINT:
+      return state.set("paneBlueprint", fromJS(action.blueprint));
 
     // case LOGOUT:
     //   // make it default state

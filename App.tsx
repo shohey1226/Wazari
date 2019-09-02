@@ -23,6 +23,7 @@ import getTheme from "./native-base-theme/components";
 import platform from "./native-base-theme/variables/platform";
 import { updateOrientation } from "./app/actions/ui";
 import Browser from "./app/containers/Browser";
+import PaneRoot from "./app/containers/PaneRoot";
 import Setting from "./app/components/Setting";
 import KeySetting from "./app/containers/KeySetting";
 import GeneralSetting from "./app/containers/GeneralSetting";
@@ -42,7 +43,7 @@ const { store, persistor } = configureStore({});
 
 let RootStack = createStackNavigator({
   Home: {
-    screen: Browser,
+    screen: PaneRoot,
     navigationOptions: ({ navigation }) => ({
       title: "",
       header: <NavBar {...navigation} />

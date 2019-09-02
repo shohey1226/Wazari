@@ -12,6 +12,10 @@ export const UPDATE_MODE = "UPDATE_MODE";
 export const UPDATE_ORIENTATION = "UPDATE_ORIENTATION";
 export const UPDATE_FOUCUSED_PANE = "UPDATE_FOUCUSED_PANE";
 export const UPDATE_KEY_SWITCH = "UPDATE_KEY_SWITCH";
+export const ADD_PANE = "ADD_PANE";
+export const REMOVE_PANE = "REMOVE_PANE";
+export const SELECT_PANE = "SELECT_PANE";
+export const UPDATE_PANE_BLUEPRINT = "UPDATE_PANE_BLUEPRINT";
 
 export function toggleForward() {
   return {
@@ -32,23 +36,40 @@ export function toggleReload() {
 }
 
 export function addNewTab(url) {
-  return {
-    type: ADD_NEW_TAB,
-    url: url
+  return (dispatch, getState) => {
+    const activePaneId = getState().ui.get("activePaneId");
+    dispatch(_addNewTab(url, activePaneId));
   };
 }
 
-export function closeTab(index: number) {
+function _addNewTab(url: string, paneId: number) {
+  return {
+    type: ADD_NEW_TAB,
+    url: url,
+    paneId: paneId
+  };
+}
+
+export function closeTab(index: number, paneId: number) {
   return {
     type: CLOSE_TAB,
-    index: index
+    index: index,
+    paneId: paneId
   };
 }
 
 export function selectTab(index) {
+  return (dispatch, getState) => {
+    const activePaneId = getState().ui.get("activePaneId");
+    dispatch(_selectTab(index, activePaneId));
+  };
+}
+
+function _selectTab(index, paneId: number) {
   return {
     type: SELECT_TAB,
-    index: index
+    index: index,
+    paneId: paneId
   };
 }
 
@@ -57,7 +78,8 @@ export function updateSite(
   title: string,
   url: string,
   canGoBack: boolean,
-  canGoForward: boolean
+  canGoForward: boolean,
+  paneId: number
 ) {
   return {
     type: UPDATE_SITE,
@@ -65,7 +87,8 @@ export function updateSite(
     title: title,
     url: url,
     canGoBack: canGoBack,
-    canGoForward: canGoForward
+    canGoForward: canGoForward,
+    paneId: paneId
   };
 }
 
@@ -95,4 +118,84 @@ export function updateFocusedPane(pane: string) {
     type: UPDATE_FOUCUSED_PANE,
     pane: pane
   };
+}
+
+export function addPane(paneId: number) {
+  return (dispatch, getState) => {
+    if (isValidPanes(getState().ui)) {
+      dispatch(_addPane(paneId));
+    } else {
+      console.log("pane state is not valid");
+    }
+  };
+}
+
+function _addPane(paneId: number) {
+  return {
+    type: ADD_PANE,
+    paneId: paneId
+  };
+}
+
+export function removePane(paneId: number) {
+  return (dispatch, getState) => {
+    if (isValidPanes(getState().ui)) {
+      dispatch(_removePane(paneId));
+    } else {
+      console.log("pane state is not valid");
+    }
+  };
+}
+
+function _removePane(paneId: number) {
+  return {
+    type: REMOVE_PANE,
+    paneId: paneId
+  };
+}
+
+export function selectPane(paneId: number) {
+  return (dispatch, getState) => {
+    if (isValidPanes(getState().ui)) {
+      dispatch(_selectPane(paneId));
+    } else {
+      console.log("pane state is not valid");
+    }
+  };
+}
+
+function _selectPane(paneId: number) {
+  return {
+    type: SELECT_PANE,
+    paneId: paneId
+  };
+}
+
+export function updatePaneBlueprint(blueprint: Object) {
+  return {
+    type: UPDATE_PANE_BLUEPRINT,
+    blueprint: blueprint
+  };
+}
+
+function isValidPanes(uiState): boolean {
+  const paneIds = uiState.get("paneIds").toArray();
+  const panes = uiState.get("panes").toJS();
+  const activePaneId = uiState.get("activePaneId");
+
+  if (activePaneId === null) {
+    return true;
+  }
+
+  if (paneIds.indexOf(activePaneId) === -1) {
+    return false;
+  }
+
+  paneIds.forEach(paneId => {
+    if (!(paneId in panes)) {
+      return false;
+    }
+  });
+
+  return true;
 }
