@@ -40,7 +40,7 @@ const defaultKeymap = {
       }
     },
     addRowPane: {
-      key: "5",
+      key: "'",
       modifiers: {
         capslockKey: false,
         shiftKey: true,
@@ -50,7 +50,7 @@ const defaultKeymap = {
       }
     },
     addColumnPane: {
-      key: "'",
+      key: "5",
       modifiers: {
         capslockKey: false,
         shiftKey: true,

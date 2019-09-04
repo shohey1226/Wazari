@@ -30,6 +30,7 @@ import GeneralSetting from "./app/containers/GeneralSetting";
 import ExcludedPatternList from "./app/containers/ExcludedPatternList";
 import NavBar from "./app/containers/NavBar";
 import SettingBackButton from "./app/components/SettingBackButton";
+import LaunchScreen from "./app/components/LaunchScreen";
 import configureStore from "./app/configureStore";
 import { PersistGate } from "redux-persist/integration/react";
 import { selectAppKeymap, selectModifiers } from "./app/selectors/keymap";
@@ -102,7 +103,7 @@ class App extends React.Component {
     return (
       <StyleProvider style={getTheme(platform)}>
         <Provider store={store}>
-          <PersistGate loading={null} persistor={persistor}>
+          <PersistGate loading={<LaunchScreen />} persistor={persistor}>
             <Navigation />
           </PersistGate>
         </Provider>
