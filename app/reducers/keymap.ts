@@ -303,10 +303,10 @@ const defaultKeymap = {
       }
     },
     zoomIn: {
-      key: "+",
+      key: "=",
       modifiers: {
         capslockKey: false,
-        shiftKey: false,
+        shiftKey: true,
         altKey: false,
         ctrlKey: false,
         metaKey: true

@@ -33,7 +33,11 @@ import SettingBackButton from "./app/components/SettingBackButton";
 import LaunchScreen from "./app/components/LaunchScreen";
 import configureStore from "./app/configureStore";
 import { PersistGate } from "redux-persist/integration/react";
-import { selectAppKeymap, selectModifiers } from "./app/selectors/keymap";
+import {
+  selectAppKeymap,
+  selectModifiers,
+  selectBrowserKeymap
+} from "./app/selectors/keymap";
 import keymapper from "./app/utils/Keymapper";
 const { DAVKeyManager } = NativeModules;
 const DAVKeyManagerEmitter = new NativeEventEmitter(DAVKeyManager);
@@ -80,15 +84,25 @@ let Navigation = createAppContainer(RootStack);
 
 class App extends React.Component {
   componentDidMount() {
+    this._setKeymaps();
+    Orientation.addOrientationListener(this._orientationDidChange);
+    persistor.subscribe(this._setKeymaps); // called after rehydrate redux-persist
+  }
+
+  // (re)set keymapping
+  _setKeymaps = () => {
     const state = store.getState();
     const appKeymap = selectAppKeymap(state);
+    const browserKeymap = selectBrowserKeymap(state);
     const modifiers = selectModifiers(state);
     DAVKeyManager.updateModifiers(modifiers);
     DAVKeyManager.setAppKeymap(
       keymapper.convertToNativeFormat(appKeymap, modifiers)
     );
-    Orientation.addOrientationListener(this._orientationDidChange);
-  }
+    DAVKeyManager.setBrowserKeymap(
+      keymapper.convertToNativeFormat(browserKeymap, modifiers)
+    );
+  };
 
   _orientationDidChange = orientation => {
     const { dispatch } = store;

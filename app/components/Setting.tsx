@@ -31,7 +31,7 @@ class Setting extends Component<Props, State> {
     Dimensions.addEventListener("change", this.handler);
   }
   componentWillMount() {
-    Dimensions.addEventListener("change", this.handler);
+    Dimensions.removeEventListener("change", this.handler);
   }
 
   clickMenuItem(item: MenuItem) {
