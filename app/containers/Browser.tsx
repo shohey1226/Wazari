@@ -274,7 +274,7 @@ class Browser extends Component<Props, State> {
         <Tab
           key={`tab-${i}`}
           heading={
-            <TabHeading style={{ paddingLeft: 5, paddingRight: 5 }}>
+            <TabHeading style={{ paddingLeft: 5, paddingRight: 0 }}>
               <Text
                 style={{
                   fontSize: 10.5,
