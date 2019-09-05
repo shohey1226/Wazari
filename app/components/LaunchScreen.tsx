@@ -8,7 +8,7 @@ class LaunchScreen extends Component {
       <Animatable.View
         animation="fadeOut"
         useNativeDriver={true}
-        duration={5000}
+        duration={500}
         iterationCount={1}
         delay={0}
         style={{
@@ -18,12 +18,7 @@ class LaunchScreen extends Component {
           alignItems: "center"
         }}
       >
-        <Animatable.Text
-          animation="rubberBand"
-          useNativeDriver={true}
-          duration={500}
-          iterationCount={"infinite"}
-          delay={0}
+        <Text
           style={{
             color: "#78D7C2",
             fontSize: 32,
@@ -32,7 +27,7 @@ class LaunchScreen extends Component {
           }}
         >
           Wazari
-        </Animatable.Text>
+        </Text>
       </Animatable.View>
     );
   }
