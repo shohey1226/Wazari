@@ -274,7 +274,7 @@ class Browser extends Component<Props, State> {
         <Tab
           key={`tab-${i}`}
           heading={
-            <TabHeading style={{ paddingLeft: 10, paddingRight: 10 }}>
+            <TabHeading style={{ paddingLeft: 5, paddingRight: 5 }}>
               <Text
                 style={{
                   fontSize: 10.5,
@@ -293,7 +293,11 @@ class Browser extends Component<Props, State> {
               >
                 <Icon
                   name="md-close"
-                  style={{ marginLeft: 5, marginRight: 1, fontSize: 13 }}
+                  style={{
+                    marginLeft: 5,
+                    marginRight: 10,
+                    fontSize: 13
+                  }}
                 />
               </Button>
             </TabHeading>

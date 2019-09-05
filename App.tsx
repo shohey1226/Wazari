@@ -103,7 +103,7 @@ class App extends React.Component {
     return (
       <StyleProvider style={getTheme(platform)}>
         <Provider store={store}>
-          <PersistGate loading={<LaunchScreen />} persistor={persistor}>
+          <PersistGate loading={null} persistor={persistor}>
             <Navigation />
           </PersistGate>
         </Provider>
