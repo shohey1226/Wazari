@@ -8,7 +8,7 @@ class LaunchScreen extends Component {
       <Animatable.View
         animation="fadeOut"
         useNativeDriver={true}
-        duration={2000}
+        duration={5000}
         iterationCount={1}
         delay={0}
         style={{
@@ -19,10 +19,10 @@ class LaunchScreen extends Component {
         }}
       >
         <Animatable.Text
-          animation="zoomOut"
+          animation="rubberBand"
           useNativeDriver={true}
-          duration={1000}
-          iterationCount={1}
+          duration={500}
+          iterationCount={"infinite"}
           delay={0}
           style={{
             color: "#78D7C2",
