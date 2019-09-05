@@ -22,7 +22,7 @@ import {
 import DeviceInfo from "react-native-device-info";
 import TabWindow from "./TabWindow";
 import { selectSites } from "../selectors/ui";
-import { selectBrowserKeymap, selectModifiers } from "../selectors/keymap";
+import { selectAppKeymap, selectModifiers } from "../selectors/keymap";
 import { addNewTab, selectTab, closeTab, updateMode } from "../actions/ui";
 import keymapper from "../utils/Keymapper";
 import { KeyMode } from "../types/index.d";
@@ -86,15 +86,12 @@ class Browser extends Component<Props, State> {
 
     this.setIOSMode(keyMode);
 
-    DAVKeyManager.setBrowserKeymap(
+    DAVKeyManager.setAppKeymap(
       keymapper.convertToNativeFormat(keymap, modifiers)
     );
 
     this.subscriptions.push(
-      DAVKeyManagerEmitter.addListener(
-        "RNBrowserKeyEvent",
-        this.handleBrowserActions
-      )
+      DAVKeyManagerEmitter.addListener("RNAppKeyEvent", this.handleAppActions)
     );
 
     // virtual keyboard is used
@@ -194,7 +191,7 @@ class Browser extends Component<Props, State> {
     }
   }
 
-  handleBrowserActions = async event => {
+  handleAppActions = async event => {
     const {
       dispatch,
       activeTabIndex,
@@ -346,7 +343,7 @@ class Browser extends Component<Props, State> {
 }
 
 function mapStateToProps(state, ownProps) {
-  const keymap = selectBrowserKeymap(state);
+  const keymap = selectAppKeymap(state);
   const modifiers = selectModifiers(state);
   const activePaneId = state.ui.get("activePaneId");
   const paneIds = state.ui.get("paneIds").toArray();

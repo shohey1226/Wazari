@@ -108,6 +108,56 @@ const defaultKeymap = {
         ctrlKey: false,
         metaKey: false
       }
+    },
+    newTab: {
+      key: "t",
+      modifiers: {
+        capslockKey: false,
+        shiftKey: false,
+        altKey: false,
+        ctrlKey: false,
+        metaKey: true
+      }
+    },
+    reload: {
+      key: "r",
+      modifiers: {
+        capslockKey: false,
+        shiftKey: false,
+        altKey: false,
+        ctrlKey: false,
+        metaKey: true
+      }
+    },
+    nextTab: {
+      key: "Tab",
+      modifiers: {
+        capslockKey: false,
+        shiftKey: false,
+        altKey: true,
+        ctrlKey: false,
+        metaKey: false
+      }
+    },
+    previousTab: {
+      key: "Tab",
+      modifiers: {
+        capslockKey: false,
+        shiftKey: true,
+        altKey: true,
+        ctrlKey: false,
+        metaKey: false
+      }
+    },
+    closeTab: {
+      key: "w",
+      modifiers: {
+        capslockKey: false,
+        shiftKey: false,
+        altKey: false,
+        ctrlKey: false,
+        metaKey: true
+      }
     }
   },
   browser: {
@@ -221,56 +271,7 @@ const defaultKeymap = {
         metaKey: true
       }
     },
-    newTab: {
-      key: "t",
-      modifiers: {
-        capslockKey: false,
-        shiftKey: false,
-        altKey: false,
-        ctrlKey: false,
-        metaKey: true
-      }
-    },
-    reload: {
-      key: "r",
-      modifiers: {
-        capslockKey: false,
-        shiftKey: false,
-        altKey: false,
-        ctrlKey: false,
-        metaKey: true
-      }
-    },
-    nextTab: {
-      key: "Tab",
-      modifiers: {
-        capslockKey: false,
-        shiftKey: false,
-        altKey: true,
-        ctrlKey: false,
-        metaKey: false
-      }
-    },
-    previousTab: {
-      key: "Tab",
-      modifiers: {
-        capslockKey: false,
-        shiftKey: true,
-        altKey: true,
-        ctrlKey: false,
-        metaKey: false
-      }
-    },
-    closeTab: {
-      key: "w",
-      modifiers: {
-        capslockKey: false,
-        shiftKey: false,
-        altKey: false,
-        ctrlKey: false,
-        metaKey: true
-      }
-    },
+
     scrollDown: {
       key: "n",
       modifiers: {
