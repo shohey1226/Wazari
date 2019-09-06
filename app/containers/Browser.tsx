@@ -58,7 +58,8 @@ class Browser extends Component<Props, State> {
   keyboardDidShowListener: any;
   keyboardDidHideListener: any;
   subscriptions: Array<any> = [];
-  tabViews: Array<any> = {};
+  tabViews: Array<any> = [];
+  width: number;
 
   constructor(props) {
     super(props);
@@ -262,6 +263,10 @@ class Browser extends Component<Props, State> {
     this.setState({ activeIndex: tab.i });
   }
 
+  handleLayout(event) {
+    this.width = event.nativeEvent.layout.width;
+  }
+
   renderTabs() {
     const { sites, keyMode, activeTabIndex, paneId } = this.props;
     let tabs = [];
@@ -310,6 +315,7 @@ class Browser extends Component<Props, State> {
             isActive={activeTabIndex === i && this.state.isActivePane}
             activeTabIndex={activeTabIndex}
             {...this.props}
+            width={this.width}
           />
         </Tab>
       );
@@ -329,19 +335,23 @@ class Browser extends Component<Props, State> {
     }
 
     return (
-      <Tabs
-        ref={r => (this.tabsRef = r as any)}
-        renderTabBar={() => (
-          <ScrollableTab style={{ backgroundColor: "#222", ...style }} />
-        )}
-        onChangeTab={this.onChangeTab.bind(this)}
+      <View
+        onLayout={this.handleLayout.bind(this)}
         style={{
           borderWidth: this.state.isActivePane && paneIds.length > 1 ? 1 : 0,
           borderColor: "#30d158"
         }}
       >
-        {this.renderTabs()}
-      </Tabs>
+        <Tabs
+          ref={r => (this.tabsRef = r as any)}
+          renderTabBar={() => (
+            <ScrollableTab style={{ backgroundColor: "#222", ...style }} />
+          )}
+          onChangeTab={this.onChangeTab.bind(this)}
+        >
+          {this.renderTabs()}
+        </Tabs>
+      </View>
     );
   }
 }

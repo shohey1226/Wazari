@@ -26,6 +26,11 @@ import { KeyMode } from "../types/index.d";
 const { DAVKeyManager } = NativeModules;
 const DAVKeyManagerEmitter = new NativeEventEmitter(DAVKeyManager);
 
+const DESKTOP_UA =
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.0 Safari/605.1.15";
+const MOBILE_UA =
+  "Mozilla/5.0 (iPhone; CPU iPhone OS 12_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.0 Mobile/15E148 Safari/604.1";
+
 interface State {
   isLoadingSVim: boolean; // state to load local sVim files
   isLoadingJSInjection: boolean; // state to load injectedJS so commands can be used
@@ -47,7 +52,6 @@ interface Props {
 
 class TabWindow extends Component<Props, State, any> {
   webref: WebView | null = null;
-  conditionalProps: object = {};
   subscriptions: Array<any> = [];
 
   constructor(props) {
@@ -57,11 +61,19 @@ class TabWindow extends Component<Props, State, any> {
       isLoadingJSInjection: true
     };
     this.subscriptions = [];
-    if (DeviceInfo.isTablet()) {
-      this.conditionalProps.userAgent =
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.0 Safari/605.1.15";
-    }
   }
+
+  getUserAgent = () => {
+    if (DeviceInfo.isTablet()) {
+      if (this.props.width > 414) {
+        return DESKTOP_UA;
+      } else {
+        return MOBILE_UA;
+      }
+    } else {
+      return MOBILE_UA;
+    }
+  };
 
   componentDidMount() {
     const { isActive } = this.props;
@@ -405,7 +417,7 @@ class TabWindow extends Component<Props, State, any> {
             .replace("SVIM_HELPER", sVim.sVimHelper)
             .replace("SVIM_TAB", sVim.sVimTab)
             .replace("SVIM_HINT", sVim.sVimHint)}
-          {...this.conditionalProps}
+          userAgent={this.getUserAgent()}
         />
       );
     }
