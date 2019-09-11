@@ -22,6 +22,7 @@ import {
 import { addHistory } from "../actions/user";
 import { selectSites, selectActiveUrl } from "../selectors/ui";
 import { KeyMode } from "../types/index.d";
+import KeyboardSpacer from "react-native-keyboard-spacer";
 
 const { DAVKeyManager } = NativeModules;
 const DAVKeyManagerEmitter = new NativeEventEmitter(DAVKeyManager);
@@ -396,29 +397,32 @@ class TabWindow extends Component<Props, State, any> {
       return <View />;
     } else {
       return (
-        <WebView
-          ref={r => (this.webref = r as any)}
-          source={{ uri: url }}
-          keyboardDisplayRequiresUserAction={false}
-          sharedCookiesEnabled={true}
-          useWebKit={true}
-          hideKeyboardAccessoryView={true}
-          onLoadStart={this.onLoadStart.bind(this)}
-          onLoadEnd={this.onLoadEnd.bind(this)}
-          onNavigationStateChange={this.onNavigationStateChange.bind(this)}
-          onMessage={this.onMessage.bind(this)}
-          renderLoading={() => <Loader />}
-          renderError={errorName => <Error name={errorName} />}
-          startInLoadingState={true}
-          decelerationRate="fast"
-          injectedJavaScript={injectingJs
-            .replace("SVIM_PREDEFINE", sVim.sVimPredefine)
-            .replace("SVIM_GLOBAL", sVim.sVimGlobal)
-            .replace("SVIM_HELPER", sVim.sVimHelper)
-            .replace("SVIM_TAB", sVim.sVimTab)
-            .replace("SVIM_HINT", sVim.sVimHint)}
-          userAgent={this.getUserAgent()}
-        />
+        <View style={{ flex: 1 }}>
+          <WebView
+            ref={r => (this.webref = r as any)}
+            source={{ uri: url }}
+            keyboardDisplayRequiresUserAction={false}
+            sharedCookiesEnabled={true}
+            useWebKit={true}
+            hideKeyboardAccessoryView={true}
+            onLoadStart={this.onLoadStart.bind(this)}
+            onLoadEnd={this.onLoadEnd.bind(this)}
+            onNavigationStateChange={this.onNavigationStateChange.bind(this)}
+            onMessage={this.onMessage.bind(this)}
+            renderLoading={() => <Loader />}
+            renderError={errorName => <Error name={errorName} />}
+            startInLoadingState={true}
+            decelerationRate="fast"
+            injectedJavaScript={injectingJs
+              .replace("SVIM_PREDEFINE", sVim.sVimPredefine)
+              .replace("SVIM_GLOBAL", sVim.sVimGlobal)
+              .replace("SVIM_HELPER", sVim.sVimHelper)
+              .replace("SVIM_TAB", sVim.sVimTab)
+              .replace("SVIM_HINT", sVim.sVimHint)}
+            userAgent={this.getUserAgent()}
+          />
+          <KeyboardSpacer />
+        </View>
       );
     }
   }
