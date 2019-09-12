@@ -61,6 +61,7 @@ interface Props {
   focusedPane: string;
   sites: any;
   history: Array<any>;
+  closeSearch: () => void;
 }
 
 class Search extends Component<Props, IState, any> {
@@ -383,8 +384,7 @@ class Search extends Component<Props, IState, any> {
           this.handleActions({ action: "moveForwardOneChar" });
           return;
         case "Esc":
-          this.setState({ text: "" });
-          this.props.closeSearch();
+          this.closingSearch();
           return;
       }
       let newText = this.state.text + data.key;
@@ -398,6 +398,7 @@ class Search extends Component<Props, IState, any> {
 
   onPressHistoryItem(url: string) {
     this.setState({ text: url });
+    this.props.closeSearch();
   }
 
   renderHistory() {
@@ -408,12 +409,13 @@ class Search extends Component<Props, IState, any> {
           <ListItem
             key={`history-${i}`}
             style={{
+              marginLeft: 0,
               backgroundColor:
-                i === this.state.selectedItemIndex ? "#ccc" : "transparent"
+                i === this.state.selectedItemIndex ? "#eee" : "transparent"
             }}
             onPress={() => this.onPressHistoryItem(item.url)}
           >
-            <Text>
+            <Text style={{ fontSize: 12, paddingLeft: 10 }}>
               {item.url} - {item.title}
             </Text>
           </ListItem>
@@ -425,8 +427,9 @@ class Search extends Component<Props, IState, any> {
           <ListItem
             key={`history-result-${i}`}
             style={{
+              marginLeft: 0,
               backgroundColor:
-                i === this.state.selectedItemIndex ? "#ccc" : "transparent"
+                i === this.state.selectedItemIndex ? "#eee" : "transparent"
             }}
             onPress={() => this.onPressHistoryItem(h.item.url)}
           >
@@ -445,14 +448,14 @@ class Search extends Component<Props, IState, any> {
       let v: Array<any> = [];
       for (let index of m.indices) {
         v.push(
-          <Text key={`${m.value}-start-${index[0]}`}>
+          <Text key={`${m.value}-start-${index[0]}`} style={{ fontSize: 12 }}>
             {m.value.slice(s, index[0])}
           </Text>
         );
         v.push(
           <Text
             key={`${m.value}-target-${index[0]}-${index[1]}`}
-            style={{ fontWeight: "bold", color: "#007aff" }}
+            style={{ fontWeight: "bold", color: "#007aff", fontSize: 12 }}
           >
             {m.value.slice(index[0], index[1] + 1)}
           </Text>
@@ -460,7 +463,9 @@ class Search extends Component<Props, IState, any> {
         s = index[1] + 1;
       }
       v.push(
-        <Text key={`${m.value}-end`}>{m.value.slice(s, m.value.length)}</Text>
+        <Text key={`${m.value}-end`} style={{ fontSize: 12 }}>
+          {m.value.slice(s, m.value.length)}
+        </Text>
       );
       if (m.key === "url") {
         urlView = v;
@@ -470,24 +475,41 @@ class Search extends Component<Props, IState, any> {
     }
 
     if (urlView.length === 0) {
-      urlView.push(<Text key={`text-url-${h.item.url}`}>{h.item.url}</Text>);
+      urlView.push(
+        <Text key={`text-url-${h.item.url}`} style={{ fontSize: 12 }}>
+          {h.item.url}
+        </Text>
+      );
     }
     if (titleView.length === 0) {
       titleView.push(
-        <Text key={`text-title-${h.item.title}`}>{h.item.title}</Text>
+        <Text key={`text-title-${h.item.title}`} style={{ fontSize: 12 }}>
+          {h.item.title}
+        </Text>
       );
     }
 
     return (
       <View
         key={`view-${h.item.url}`}
-        style={{ flex: 1, flexDirection: "row" }}
+        style={{
+          flex: 1,
+          flexDirection: "row",
+          flexWrap: "wrap",
+          alignItems: "center",
+          paddingLeft: 10
+        }}
       >
-        {urlView}
-        <Text> - </Text>
         {titleView}
+        <Text> - </Text>
+        {urlView}
       </View>
     );
+  }
+
+  closingSearch() {
+    this.setState({ text: "" });
+    this.props.closeSearch();
   }
 
   render() {
@@ -520,7 +542,7 @@ class Search extends Component<Props, IState, any> {
           <Button
             dark
             transparent
-            onPress={() => this.props.closeSearch()}
+            onPress={() => this.closingSearch()}
             style={{ margin: 10 }}
           >
             <Text
