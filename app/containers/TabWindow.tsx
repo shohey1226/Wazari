@@ -22,7 +22,6 @@ import {
 import { addHistory } from "../actions/user";
 import { selectSites, selectActiveUrl } from "../selectors/ui";
 import { KeyMode } from "../types/index.d";
-import KeyboardSpacer from "react-native-keyboard-spacer";
 
 const { DAVKeyManager } = NativeModules;
 const DAVKeyManagerEmitter = new NativeEventEmitter(DAVKeyManager);
@@ -380,32 +379,29 @@ class TabWindow extends Component<Props, State, any> {
       return <View />;
     } else {
       return (
-        <View style={{ flex: 1 }}>
-          <WebView
-            ref={r => (this.webref = r as any)}
-            source={{ uri: url }}
-            keyboardDisplayRequiresUserAction={false}
-            sharedCookiesEnabled={true}
-            useWebKit={true}
-            hideKeyboardAccessoryView={true}
-            onLoadStart={this.onLoadStart.bind(this)}
-            onLoadEnd={this.onLoadEnd.bind(this)}
-            onNavigationStateChange={this.onNavigationStateChange.bind(this)}
-            onMessage={this.onMessage.bind(this)}
-            renderLoading={() => <Loader />}
-            renderError={errorName => <Error name={errorName} />}
-            startInLoadingState={true}
-            decelerationRate="fast"
-            injectedJavaScript={injectingJs
-              .replace("SVIM_PREDEFINE", sVim.sVimPredefine)
-              .replace("SVIM_GLOBAL", sVim.sVimGlobal)
-              .replace("SVIM_HELPER", sVim.sVimHelper)
-              .replace("SVIM_TAB", sVim.sVimTab)
-              .replace("SVIM_HINT", sVim.sVimHint)}
-            userAgent="Mozilla / 5.0 (iPad; CPU OS 13_0 like Mac OS X) AppleWebKit / 605.1.15 (KHTML, like Gecko) Mobile / 15E148"
-          />
-          <KeyboardSpacer />
-        </View>
+        <WebView
+          ref={r => (this.webref = r as any)}
+          source={{ uri: url }}
+          keyboardDisplayRequiresUserAction={false}
+          sharedCookiesEnabled={true}
+          useWebKit={true}
+          hideKeyboardAccessoryView={true}
+          onLoadStart={this.onLoadStart.bind(this)}
+          onLoadEnd={this.onLoadEnd.bind(this)}
+          onNavigationStateChange={this.onNavigationStateChange.bind(this)}
+          onMessage={this.onMessage.bind(this)}
+          renderLoading={() => <Loader />}
+          renderError={errorName => <Error name={errorName} />}
+          startInLoadingState={true}
+          decelerationRate="fast"
+          injectedJavaScript={injectingJs
+            .replace("SVIM_PREDEFINE", sVim.sVimPredefine)
+            .replace("SVIM_GLOBAL", sVim.sVimGlobal)
+            .replace("SVIM_HELPER", sVim.sVimHelper)
+            .replace("SVIM_TAB", sVim.sVimTab)
+            .replace("SVIM_HINT", sVim.sVimHint)}
+          userAgent="Mozilla / 5.0 (iPad; CPU OS 13_0 like Mac OS X) AppleWebKit / 605.1.15 (KHTML, like Gecko) Mobile / 15E148"
+        />
       );
     }
   }

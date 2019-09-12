@@ -27,6 +27,7 @@ import {
 import TreeUtils from "../utils/tree";
 import { selectAppKeymap, selectModifiers } from "../selectors/keymap";
 import keymapper from "../utils/Keymapper";
+import KeyboardSpacer from "react-native-keyboard-spacer";
 
 const { DAVKeyManager } = NativeModules;
 const DAVKeyManagerEmitter = new NativeEventEmitter(DAVKeyManager);
@@ -211,7 +212,12 @@ class PaneRoot extends Component<Props, State> {
 
   render() {
     let v = this.renderRecursively(this.root);
-    return <Grid>{v}</Grid>;
+    return (
+      <View style={{ flex: 1 }}>
+        <Grid>{v}</Grid>
+        <KeyboardSpacer />
+      </View>
+    );
   }
 }
 
