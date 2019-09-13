@@ -10,9 +10,18 @@ Wazari Browser is an oepn source and you can down load iOS app from
 
 ## Feature
 
-## FAQ
+* Customizable shortcuts to operate browser. e.g. Change tabs without touching screen.
+* Panes to split views vertiacally or horizontally.
+* Hit-A-Hint - without touching, click links to move pages.
+* Customizable modifiers. e.g. swap capslock with ctrl key.
+* Customizable default search engine - DuckDuckGo or Google
+* Exclude web sites not to use keymapping. Some dynamic web site doesn't use Input type=text or textarea, which Wazari keymapping doesn't work. But you can exclude these website so you can still type on it.
+* Histories to go back easily
+* (Optional and Paying serivce) Integrated to [Wazaterm](https:/www.wazaterm.com) so you can terminal.
 
+## Bugs/Issues
 
+Please raise bugs/issues in Github issues. It would be really helpful if you mention how to replicate it.
 
 
 
