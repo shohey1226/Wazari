@@ -400,7 +400,7 @@ class TabWindow extends Component<Props, State, any> {
             .replace("SVIM_HELPER", sVim.sVimHelper)
             .replace("SVIM_TAB", sVim.sVimTab)
             .replace("SVIM_HINT", sVim.sVimHint)}
-          userAgent="Mozilla / 5.0 (iPad; CPU OS 13_0 like Mac OS X) AppleWebKit / 605.1.15 (KHTML, like Gecko) Mobile / 15E148"
+          userAgent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.1 Safari/605.1.15"
         />
       );
     }
