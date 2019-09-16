@@ -328,9 +328,9 @@ class TabWindow extends Component<Props, State, any> {
           // From iOS13, keyevent is not listening and need to dispatch by ourselves
           const majorVersionIOS = parseInt(Platform.Version, 10);
           if (majorVersionIOS >= 13) {
-            const charCode = data.key.toUpperCase().charCodeAt(0);
+            const charCode = data.key.charCodeAt(0);
             this.webref.injectJavaScript(
-              `simulateKeyDown(document, ${charCode}, null)`
+              `dispatchKeyEventForHints(${charCode})`
             );
           }
       }
@@ -594,6 +594,10 @@ function typingFromRN(key){
   var el = document.activeElement;
   var value = el.value;    
   el.value = value + key;
+}
+
+function dispatchKeyEventForHints(charCode){
+  sVimTab.mode === "hint" && simulateKeyDown(document, charCode, null);
 }
 
 window.ReactNativeWebView.postMessage(JSON.stringify({isLoading: false, postFor: "jsloading"}))
