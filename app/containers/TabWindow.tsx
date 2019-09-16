@@ -3,7 +3,8 @@ import {
   View,
   NativeModules,
   NativeEventEmitter,
-  Clipboard
+  Clipboard,
+  Platform
 } from "react-native";
 import { WebView } from "react-native-webview";
 import { connect } from "react-redux";
@@ -323,6 +324,15 @@ class TabWindow extends Component<Props, State, any> {
           break;
         default:
           this.webref.injectJavaScript(`typingFromRN('${data.key}')`);
+
+          // From iOS13, keyevent is not listening and need to dispatch by ourselves
+          const majorVersionIOS = parseInt(Platform.Version, 10);
+          if (majorVersionIOS >= 13) {
+            const charCode = data.key.toUpperCase().charCodeAt(0);
+            this.webref.injectJavaScript(
+              `simulateKeyDown(document, ${charCode}, null)`
+            );
+          }
       }
     }
   }
@@ -584,10 +594,6 @@ function typingFromRN(key){
   var el = document.activeElement;
   var value = el.value;    
   el.value = value + key;
-
-  charCode = key.toUpperCase().charCodeAt(0);
-  simulateKeyDown(document, charCode, null)
-
 }
 
 window.ReactNativeWebView.postMessage(JSON.stringify({isLoading: false, postFor: "jsloading"}))
