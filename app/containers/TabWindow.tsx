@@ -53,7 +53,10 @@ class TabWindow extends Component<Props, State, any> {
     super(props);
     this.state = {
       isLoadingSVim: true,
-      isLoadingJSInjection: true
+      isLoadingJSInjection: true,
+      userAgent: DeviceInfo.isTablet()
+        ? "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.1 Safari/605.1.15"
+        : null
     };
     this.subscriptions = [];
   }
@@ -400,7 +403,7 @@ class TabWindow extends Component<Props, State, any> {
             .replace("SVIM_HELPER", sVim.sVimHelper)
             .replace("SVIM_TAB", sVim.sVimTab)
             .replace("SVIM_HINT", sVim.sVimHint)}
-          userAgent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.1 Safari/605.1.15"
+          userAgent={this.state.userAgent}
         />
       );
     }
@@ -578,9 +581,13 @@ function pasteFromRN(content) {
 }
 
 function typingFromRN(key){
-  var el = document.activeElement;   
+  var el = document.activeElement;
   var value = el.value;    
   el.value = value + key;
+
+  charCode = key.toUpperCase().charCodeAt(0);
+  simulateKeyDown(document, charCode, null)
+
 }
 
 window.ReactNativeWebView.postMessage(JSON.stringify({isLoading: false, postFor: "jsloading"}))
