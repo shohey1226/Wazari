@@ -322,13 +322,38 @@ class TabWindow extends Component<Props, State, any> {
         case "Backspace":
           this.webref.injectJavaScript(`deletePreviousChar()`);
           break;
+        case "Left":
+          this.webref.injectJavaScript(`moveBackOneChar()`);
+          break;
+        case "Right":
+          this.webref.injectJavaScript(`moveForwardOneChar()`);
+          break;
+        case "Up":
+          return;
+        case "Down":
+          return;
         default:
           this.webref.injectJavaScript(`typingFromRN('${data.key}')`);
 
           // From iOS13, keyevent is not listening and need to dispatch by ourselves
           const majorVersionIOS = parseInt(Platform.Version, 10);
           if (majorVersionIOS >= 13) {
-            const charCode = data.key.charCodeAt(0);
+            let charCode = data.key.charCodeAt(0);
+            switch (data.key) {
+              case "Backspace":
+                charCode = 8;
+                break;
+              case "Return":
+                charCode = 13;
+                break;
+              case "Tab":
+                charCode = 9;
+                break;
+              case "Esc":
+                charCode = 27;
+                break;
+            }
+
             this.webref.injectJavaScript(
               `dispatchKeyEventForHints(${charCode})`
             );
