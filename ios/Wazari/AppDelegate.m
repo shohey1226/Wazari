@@ -65,7 +65,7 @@
   
   RCTBridge *bridge = [[RCTBridge alloc] initWithDelegate:self launchOptions:nil];
   RCTRootView *rootView = [[RCTRootView alloc] initWithBridge:bridge
-                                                   moduleName:@"Wazari"
+                                                   moduleName:@"SecondScreen"
                                             initialProperties:nil];
   
   UIViewController *rootViewController = [UIViewController new];

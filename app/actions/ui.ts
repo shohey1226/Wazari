@@ -123,7 +123,15 @@ export function updateFocusedPane(pane: string) {
 export function addPane(paneId: number) {
   return (dispatch, getState) => {
     if (isValidPanes(getState().ui)) {
-      dispatch(_addPane(paneId));
+      const paneIds = getState()
+        .ui.get("paneIds")
+        .toArray();
+      // dispatch only if paneId is not null and there is no paneId
+      if (paneId && paneIds.indexOf(paneId) === -1) {
+        dispatch(_addPane(paneId));
+      } else {
+        console.log(`${paneId} is null or already exists`);
+      }
     } else {
       console.log("pane state is not valid");
     }

@@ -31,6 +31,7 @@ import ExcludedPatternList from "./app/containers/ExcludedPatternList";
 import NavBar from "./app/containers/NavBar";
 import SettingBackButton from "./app/components/SettingBackButton";
 import LaunchScreen from "./app/components/LaunchScreen";
+import SecondScreen from "./app/containers/SecondScreen";
 import configureStore from "./app/configureStore";
 import { PersistGate } from "redux-persist/integration/react";
 import {
@@ -126,4 +127,37 @@ class App extends React.Component {
   }
 }
 
-export default App;
+class SecondScreenApp extends React.Component {
+  componentDidMount() {
+    this._setKeymaps();
+  }
+
+  // (re)set keymapping
+  _setKeymaps = () => {
+    const state = store.getState();
+    const appKeymap = selectAppKeymap(state);
+    const browserKeymap = selectBrowserKeymap(state);
+    const modifiers = selectModifiers(state);
+    DAVKeyManager.updateModifiers(modifiers);
+    DAVKeyManager.setAppKeymap(
+      keymapper.convertToNativeFormat(appKeymap, modifiers)
+    );
+    DAVKeyManager.setBrowserKeymap(
+      keymapper.convertToNativeFormat(browserKeymap, modifiers)
+    );
+  };
+
+  render() {
+    return (
+      <StyleProvider style={getTheme(platform)}>
+        <Provider store={store}>
+          <PersistGate loading={null} persistor={persistor}>
+            <SecondScreen />
+          </PersistGate>
+        </Provider>
+      </StyleProvider>
+    );
+  }
+}
+
+export { App, SecondScreenApp };
