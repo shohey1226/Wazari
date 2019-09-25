@@ -119,16 +119,6 @@ const defaultKeymap = {
         metaKey: true
       }
     },
-    reload: {
-      key: "r",
-      modifiers: {
-        capslockKey: false,
-        shiftKey: false,
-        altKey: false,
-        ctrlKey: false,
-        metaKey: true
-      }
-    },
     nextTab: {
       key: "Tab",
       modifiers: {
@@ -271,7 +261,16 @@ const defaultKeymap = {
         metaKey: true
       }
     },
-
+    reload: {
+      key: "r",
+      modifiers: {
+        capslockKey: false,
+        shiftKey: false,
+        altKey: false,
+        ctrlKey: false,
+        metaKey: true
+      }
+    },
     scrollDown: {
       key: "n",
       modifiers: {

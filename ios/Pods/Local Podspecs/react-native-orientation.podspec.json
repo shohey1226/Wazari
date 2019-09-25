@@ -4,11 +4,7 @@
   "summary": "Listen to device orientation changes in React Native applications and programmatically set preferred orientations on a per screen basis",
   "description": "Listen to device orientation changes in React Native applications and programmatically set preferred orientations on a per screen basis",
   "license": "ISC",
-  "authors": {
-    "name": "Yamill Vallecillo",
-    "email": "yamill@gmail.com",
-    "url": "github.com/yamill"
-  },
+  "authors": "Yamill Vallecillo <yamill@gmail.com> (github.com/yamill)",
   "homepage": "https://github.com/yamill/react-native-orientation#readme",
   "source": {
     "git": "https://github.com/yamill/react-native-orientation.git",
