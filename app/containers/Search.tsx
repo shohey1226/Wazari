@@ -152,18 +152,25 @@ class Search extends Component<Props, IState, any> {
       selectMode === true &&
       prevState.selectedItemIndex !== selectedItemIndex
     ) {
-      if (result.length === 0) {
-        this.setState({ text: history[selectedItemIndex].url });
-      } else {
-        this.setState({ text: result[selectedItemIndex].item.url });
+      let nextText = history[selectedItemIndex].url;
+      if (result.length !== 0) {
+        nextText = result[selectedItemIndex].item.url;
       }
+      this.setState({ text: nextText });
+
       // cursor to end
-      this.searchRef.setNativeProps({
-        selection: {
-          start: this.state.text.length,
-          end: this.state.text.length
-        }
-      });
+      setTimeout(() => {
+        this.searchRef.setNativeProps({
+          selection: {
+            start: nextText.length,
+            end: nextText.length
+          }
+        });
+        this.setState({
+          selectionStart: nextText.length,
+          selectionEnd: nextText.length
+        });
+      }, 100);
     }
   }
 
@@ -236,11 +243,21 @@ class Search extends Component<Props, IState, any> {
               this.state.selectionStart,
               this.state.text.length
             );
-            this.setState({
-              text: first + second,
-              selectionStart: this.state.selectionStart - 1,
-              selectionEnd: this.state.selectionEnd - 1
-            });
+
+            setTimeout(() => {
+              let nextStart = this.state.selectionStart - 1;
+              this.setState({
+                text: first + second,
+                selectionStart: nextStart,
+                selectionEnd: nextStart
+              });
+              this.searchRef.setNativeProps({
+                selection: {
+                  start: nextStart + 1,
+                  end: nextStart + 1
+                }
+              });
+            }, 50);
           }
           break;
         case "deleteNextChar":
@@ -262,7 +279,6 @@ class Search extends Component<Props, IState, any> {
               });
             }, 50);
           }
-
           break;
         case "moveBackOneChar":
           this.searchRef.setNativeProps({
@@ -365,11 +381,7 @@ class Search extends Component<Props, IState, any> {
       let text = this.state.text;
       switch (data.key) {
         case "Backspace":
-          this.setState({
-            text: text.slice(0, -1),
-            selectionStart: text.length - 1,
-            selectionEnd: text.length - 1
-          });
+          this.handleActions({ action: "deletePreviousChar" });
           return;
         case "Up":
           this.previousHistoryItem();
@@ -387,11 +399,14 @@ class Search extends Component<Props, IState, any> {
           this.closingSearch();
           return;
       }
-      let newText = this.state.text + data.key;
+      let newText =
+        this.state.text.slice(0, this.state.selectionStart) +
+        data.key +
+        this.state.text.slice(this.state.selectionStart);
       this.setState({
         text: newText,
-        selectionStart: newText.length,
-        selectionEnd: newText.length
+        selectionStart: this.state.selectionStart + 1,
+        selectionEnd: this.state.selectionStart + 1
       });
     }
   };
