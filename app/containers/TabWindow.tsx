@@ -448,7 +448,8 @@ class TabWindow extends Component<Props, State, any> {
 function mapStateToProps(state, ownProps) {
   const keymap = selectBrowserKeymap(state);
   const modifiers = selectModifiers(state);
-  const activeUrl = selectActiveUrl(state);
+  const activePaneId = state.ui.get("activePaneId");
+  const activeUrl = selectActiveUrl(state, activePaneId);
   const focusedPane = state.ui.get("focusedPane");
   const backToggled = state.ui.get("backToggled");
   const forwardToggled = state.ui.get("forwardToggled");
