@@ -199,10 +199,10 @@ class TabWindow extends Component<Props, State, any> {
           this.webref.injectJavaScript(`document.activeElement.blur();`);
           break;
         case "scrollDown":
-          this.webref.injectJavaScript(`sVimTab.commands.scrollDown()`);
+          this.webref.injectJavaScript(`sVimTab.commands.scrollPageDown()`);
           break;
         case "scrollUp":
-          this.webref.injectJavaScript(`sVimTab.commands.scrollUp()`);
+          this.webref.injectJavaScript(`sVimTab.commands.scrollPageUp()`);
           break;
         case "deleteLine":
           this.webref.injectJavaScript(`deleteLine()`);
