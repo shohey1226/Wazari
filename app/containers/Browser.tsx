@@ -339,6 +339,7 @@ class Browser extends Component<Props, State> {
           borderWidth: this.state.isActivePane && paneIds.length > 1 ? 1 : 0,
           borderColor: "#30d158"
         }}
+        scrollWithoutAnimation={true}
       >
         {this.renderTabs()}
       </Tabs>

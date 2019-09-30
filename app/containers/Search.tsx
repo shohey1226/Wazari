@@ -452,7 +452,7 @@ class Search extends Component<Props, IState, any> {
     });
   }
 
-  renderHistory() {
+  renderCandidates() {
     const { history } = this.props;
     if (this.state.text.length === 0) {
       return this.renderCurrentTabs();
@@ -593,7 +593,7 @@ class Search extends Component<Props, IState, any> {
             <Icon name="ios-close" style={{ paddingLeft: 0, fontSize: 30 }} />
           </Button>
         </Item>
-        <List>{this.renderHistory()}</List>
+        <List>{this.renderCandidates()}</List>
       </Content>
     );
   }
