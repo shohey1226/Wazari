@@ -201,7 +201,7 @@ class Search extends Component<Props, IState, any> {
         }
       }
       setTimeout(() => {
-        dispatch(selectTab(sites.length + 1));
+        dispatch(selectTab(sites.length));
       }, 50);
     }
     this.setState({ text: "", selectMode: false });
