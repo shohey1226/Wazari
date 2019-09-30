@@ -31,9 +31,7 @@ import { addExcludedPattern, removeExcludedPattern } from "../actions/user";
 import { SearchEngine } from "../components/SearchEnginePicker";
 import { KeyMode } from "../types/index.d";
 import Modal from "react-native-modal";
-
 import { addNewTab, selectTab, toggleBack, toggleForward } from "../actions/ui";
-
 import Fuse from "fuse.js";
 
 const { DAVKeyManager } = NativeModules;
@@ -120,7 +118,8 @@ class Search extends Component<Props, IState, any> {
       focusedPane,
       keyMode,
       searchIsFocused,
-      history
+      history,
+      sites
     } = this.props;
     const { text, selectMode, selectedItemIndex, result } = this.state;
 
@@ -133,18 +132,18 @@ class Search extends Component<Props, IState, any> {
     }
 
     if (prevState.text !== text) {
-      if (text.length > 0) {
-        if (!selectMode) {
-          // only updates when it's not select mode
-          const result = this.fuse.search(text);
-          this.setState({ result: result });
-        }
-      } else if (text.length === 0) {
+      if (text.length === 0) {
         this.setState({
           result: [],
           selectMode: false,
           selectedItemIndex: null
         });
+      } else {
+        if (!selectMode) {
+          // only updates when it's not select mode
+          const result = this.fuse.search(text);
+          this.setState({ result: result });
+        }
       }
     }
 
@@ -152,49 +151,60 @@ class Search extends Component<Props, IState, any> {
       selectMode === true &&
       prevState.selectedItemIndex !== selectedItemIndex
     ) {
-      let nextText = history[selectedItemIndex].url;
-      if (result.length !== 0) {
-        nextText = result[selectedItemIndex].item.url;
-      }
-      this.setState({ text: nextText });
+      if (text.length === 0) {
+      } else {
+        let nextText = history[selectedItemIndex].url;
+        if (result.length !== 0) {
+          nextText = result[selectedItemIndex].item.url;
+        }
+        this.setState({ text: nextText });
 
-      // cursor to end
-      setTimeout(() => {
-        this.searchRef.setNativeProps({
-          selection: {
-            start: nextText.length,
-            end: nextText.length
-          }
-        });
-        this.setState({
-          selectionStart: nextText.length,
-          selectionEnd: nextText.length
-        });
-      }, 100);
+        // cursor to end
+        setTimeout(() => {
+          this.searchRef.setNativeProps({
+            selection: {
+              start: nextText.length,
+              end: nextText.length
+            }
+          });
+          this.setState({
+            selectionStart: nextText.length,
+            selectionEnd: nextText.length
+          });
+        }, 100);
+      }
     }
   }
 
   onEndEditing() {
     const { dispatch, searchEngine, sites } = this.props;
-    const trimmedText = this.state.text.replace(/^\s+|\s+$/g, "");
-    if (trimmedText === "") {
-      this.searchRef && this.searchRef._root.blur();
-      return;
-    } else if (/^http/.test(this.state.text)) {
-      dispatch(addNewTab(this.state.text));
-    } else {
-      if (searchEngine === SearchEngine.Google) {
-        dispatch(
-          addNewTab(`https://www.google.com/search?q=${this.state.text}`)
-        );
-      } else if (searchEngine === SearchEngine.DuckDuckGo) {
-        dispatch(addNewTab(`https://duckduckgo.com/?q=${this.state.text}`));
+    if (this.state.text.length === 0) {
+      if (this.state.selectMode) {
+        setTimeout(() => {
+          dispatch(selectTab(this.state.selectedItemIndex));
+        }, 500);
       }
+    } else {
+      const trimmedText = this.state.text.replace(/^\s+|\s+$/g, "");
+      if (trimmedText === "") {
+        this.searchRef && this.searchRef._root.blur();
+        return;
+      } else if (/^http/.test(this.state.text)) {
+        dispatch(addNewTab(this.state.text));
+      } else {
+        if (searchEngine === SearchEngine.Google) {
+          dispatch(
+            addNewTab(`https://www.google.com/search?q=${this.state.text}`)
+          );
+        } else if (searchEngine === SearchEngine.DuckDuckGo) {
+          dispatch(addNewTab(`https://duckduckgo.com/?q=${this.state.text}`));
+        }
+      }
+      setTimeout(() => {
+        dispatch(selectTab(sites.length + 1));
+      }, 50);
     }
-    setTimeout(() => {
-      dispatch(selectTab(sites.length + 1));
-    }, 50);
-    this.setState({ text: "" });
+    this.setState({ text: "", selectMode: false });
     this.props.closeSearch();
   }
 
@@ -336,9 +346,14 @@ class Search extends Component<Props, IState, any> {
   };
 
   nextHistoryItem() {
-    const { history } = this.props;
-    const { result, selectedItemIndex, selectMode } = this.state;
-    const maxItemCount = result.length === 0 ? history.length : result.length;
+    const { history, sites } = this.props;
+    const { result, selectedItemIndex, selectMode, text } = this.state;
+    const maxItemCount: number =
+      text.length === 0
+        ? sites.length
+        : result.length === 0
+        ? history.length
+        : result.length;
 
     if (!selectMode) {
       this.setState({ selectMode: true });
@@ -349,7 +364,7 @@ class Search extends Component<Props, IState, any> {
       if (selectedItemIndex + 1 < maxItemCount) {
         nextIndex = selectedItemIndex + 1;
       } else {
-        nextIndex = selectedItemIndex;
+        nextIndex = 0;
       }
     }
 
@@ -416,26 +431,31 @@ class Search extends Component<Props, IState, any> {
     this.props.closeSearch();
   }
 
+  renderCurrentTabs() {
+    const { sites } = this.props;
+    return sites.map((item, i) => {
+      return (
+        <ListItem
+          key={`current-tabs-${i}`}
+          style={{
+            marginLeft: 0,
+            backgroundColor:
+              i === this.state.selectedItemIndex ? "#eee" : "transparent"
+          }}
+          onPress={() => this.onPressHistoryItem(item.url)}
+        >
+          <Text style={{ fontSize: 12, paddingLeft: 10 }}>
+            {sites[i].url} - {sites[i].title}
+          </Text>
+        </ListItem>
+      );
+    });
+  }
+
   renderHistory() {
     const { history } = this.props;
-    if (this.state.result.length === 0) {
-      return history.map((item, i) => {
-        return (
-          <ListItem
-            key={`history-${i}`}
-            style={{
-              marginLeft: 0,
-              backgroundColor:
-                i === this.state.selectedItemIndex ? "#eee" : "transparent"
-            }}
-            onPress={() => this.onPressHistoryItem(item.url)}
-          >
-            <Text style={{ fontSize: 12, paddingLeft: 10 }}>
-              {item.url} - {item.title}
-            </Text>
-          </ListItem>
-        );
-      });
+    if (this.state.text.length === 0) {
+      return this.renderCurrentTabs();
     } else {
       return this.state.result.map((h, i) => {
         return (
@@ -581,8 +601,11 @@ class Search extends Component<Props, IState, any> {
 
 function mapStateToProps(state, ownProps) {
   const history = state.user.get("history").toJS();
+  const activePaneId = state.ui.get("activePaneId");
+  const sites = selectSites(state, activePaneId);
   return {
-    history
+    history,
+    sites
   };
 }
 
