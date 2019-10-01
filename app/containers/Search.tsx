@@ -94,7 +94,7 @@ class Search extends Component<Props, IState, any> {
     this.fuse = new Fuse(history, {
       shouldSort: true,
       includeMatches: true,
-      threshold: 0.3,
+      threshold: 0.2,
       location: 0,
       distance: 100,
       maxPatternLength: 32,
