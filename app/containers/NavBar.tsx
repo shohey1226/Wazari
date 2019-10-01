@@ -235,6 +235,9 @@ class NavBar extends Component<Props, IState, any> {
       case "focusOnSearch":
         this.openSearch();
         break;
+      case "toggleWazariInput":
+        this.onPressSwitch();
+        break;
     }
   };
 

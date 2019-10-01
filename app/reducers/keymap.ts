@@ -139,6 +139,16 @@ const defaultKeymap = {
         metaKey: false
       }
     },
+    toggleWazariInput: {
+      key: "t",
+      modifiers: {
+        capslockKey: false,
+        shiftKey: false,
+        altKey: true,
+        ctrlKey: false,
+        metaKey: false
+      }
+    },
     closeTab: {
       key: "w",
       modifiers: {
