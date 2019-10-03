@@ -542,12 +542,9 @@ function cursorToBeginning(){
   if(!inp.value){
     return
   }  
-  if (inp.createTextRange) {
-    var part = inp.createTextRange();
-    part.move("character", 0);
-    part.select();
-  } else if (inp.setSelectionRange) {
-    inp.setSelectionRange(0, 0);
+  var pos = inp.value.lastIndexOf('\\n', inp.selectionStart)
+  if (inp.setSelectionRange) {
+    inp.setSelectionRange(pos+1, pos+1);
   }  
 }
 
