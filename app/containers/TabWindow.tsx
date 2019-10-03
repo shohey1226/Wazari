@@ -398,21 +398,7 @@ class TabWindow extends Component<Props, State, any> {
 
   onLoadStart(syntheticEvent) {
     this.setState({ isLoadingJSInjection: true });
-    this.updateProgressBar();
     const { nativeEvent } = syntheticEvent;
-  }
-
-  updateProgressBar() {
-    let myInterval = setInterval(() => {
-      if (this.state.progress === 100) {
-        clearInterval(myInterval);
-        this.setState({ progress: 0 });
-      } else if (this.state.progress === 95) {
-        this.setState({ progress: 0 });
-      } else {
-        this.setState({ progress: this.state.progress + 5 });
-      }
-    }, 300);
   }
 
   onMessage(event) {
@@ -421,7 +407,7 @@ class TabWindow extends Component<Props, State, any> {
     switch (data.postFor) {
       case "jsloading":
         if (!data.isLoading) {
-          this.setState({ isLoadingJSInjection: false, progress: 100 });
+          this.setState({ isLoadingJSInjection: false });
         }
         break;
       case "copy":
@@ -462,6 +448,9 @@ class TabWindow extends Component<Props, State, any> {
             hideKeyboardAccessoryView={true}
             onLoadStart={this.onLoadStart.bind(this)}
             onLoadEnd={this.onLoadEnd.bind(this)}
+            onLoadProgress={({ nativeEvent }) => {
+              this.setState({ progress: nativeEvent.progress * 100 });
+            }}
             onNavigationStateChange={this.onNavigationStateChange.bind(this)}
             onMessage={this.onMessage.bind(this)}
             renderLoading={() => <Loader />}
@@ -509,6 +498,13 @@ function mapStateToProps(state, ownProps) {
 export default connect(mapStateToProps)(TabWindow);
 
 let injectingJs = `
+
+// https://github.com/react-native-community/react-native-webview/issues/447
+var viewPortTag=document.createElement('meta');
+viewPortTag.id="viewport";
+viewPortTag.name = "viewport";
+viewPortTag.content = "width=device-width, initial-scale=1;";
+document.getElementsByTagName('head')[0].appendChild(viewPortTag);
 
 SVIM_PREDEFINE
 SVIM_HELPER
