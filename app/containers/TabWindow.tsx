@@ -4,11 +4,13 @@ import {
   NativeModules,
   NativeEventEmitter,
   Clipboard,
-  Platform
+  Platform,
+  Dimensions
 } from "react-native";
 import { WebView } from "react-native-webview";
 import { connect } from "react-redux";
 import DeviceInfo from "react-native-device-info";
+import ProgressBarAnimated from "react-native-progress-bar-animated";
 import Loader from "../components/Loader";
 import Error from "../components/Error";
 import sVim from "../utils/sVim";
@@ -30,6 +32,9 @@ const DAVKeyManagerEmitter = new NativeEventEmitter(DAVKeyManager);
 interface State {
   isLoadingSVim: boolean; // state to load local sVim files
   isLoadingJSInjection: boolean; // state to load injectedJS so commands can be used
+  width: number;
+  progress: number;
+  userAgent: string | null;
 }
 
 interface Props {
@@ -46,18 +51,22 @@ interface Props {
   isActive: boolean;
 }
 
+const USER_AGENT =
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.1 Safari/605.1.15";
+
 class TabWindow extends Component<Props, State, any> {
   webref: WebView | null = null;
   subscriptions: Array<any> = [];
 
   constructor(props) {
     super(props);
+    let { height, width } = Dimensions.get("window");
     this.state = {
       isLoadingSVim: true,
       isLoadingJSInjection: true,
-      userAgent: DeviceInfo.isTablet()
-        ? "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.1 Safari/605.1.15"
-        : null
+      width: width,
+      progress: 0,
+      userAgent: DeviceInfo.isTablet() ? USER_AGENT : null
     };
     this.subscriptions = [];
   }
@@ -389,7 +398,21 @@ class TabWindow extends Component<Props, State, any> {
 
   onLoadStart(syntheticEvent) {
     this.setState({ isLoadingJSInjection: true });
+    this.updateProgressBar();
     const { nativeEvent } = syntheticEvent;
+  }
+
+  updateProgressBar() {
+    let myInterval = setInterval(() => {
+      if (this.state.progress === 100) {
+        clearInterval(myInterval);
+        this.setState({ progress: 0 });
+      } else if (this.state.progress === 95) {
+        this.setState({ progress: 0 });
+      } else {
+        this.setState({ progress: this.state.progress + 5 });
+      }
+    }, 200);
   }
 
   onMessage(event) {
@@ -398,7 +421,7 @@ class TabWindow extends Component<Props, State, any> {
     switch (data.postFor) {
       case "jsloading":
         if (!data.isLoading) {
-          this.setState({ isLoadingJSInjection: false });
+          this.setState({ isLoadingJSInjection: false, progress: 100 });
         }
         break;
       case "copy":
@@ -413,33 +436,47 @@ class TabWindow extends Component<Props, State, any> {
 
   render() {
     const { url } = this.props;
+    const progressCustomStyles = {
+      borderRadius: 0
+    };
     if (this.state.isLoadingSVim) {
       return <View />;
     } else {
       return (
-        <WebView
-          ref={r => (this.webref = r as any)}
-          source={{ uri: url }}
-          keyboardDisplayRequiresUserAction={false}
-          sharedCookiesEnabled={true}
-          useWebKit={true}
-          hideKeyboardAccessoryView={true}
-          onLoadStart={this.onLoadStart.bind(this)}
-          onLoadEnd={this.onLoadEnd.bind(this)}
-          onNavigationStateChange={this.onNavigationStateChange.bind(this)}
-          onMessage={this.onMessage.bind(this)}
-          renderLoading={() => <Loader />}
-          renderError={errorName => <Error name={errorName} />}
-          startInLoadingState={true}
-          decelerationRate="fast"
-          injectedJavaScript={injectingJs
-            .replace("SVIM_PREDEFINE", sVim.sVimPredefine)
-            .replace("SVIM_GLOBAL", sVim.sVimGlobal)
-            .replace("SVIM_HELPER", sVim.sVimHelper)
-            .replace("SVIM_TAB", sVim.sVimTab)
-            .replace("SVIM_HINT", sVim.sVimHint)}
-          userAgent={this.state.userAgent}
-        />
+        <View style={{ flex: 1 }}>
+          {this.state.isLoadingJSInjection ? (
+            <ProgressBarAnimated
+              {...progressCustomStyles}
+              height={5}
+              borderWidth={0}
+              value={this.state.progress}
+              width={this.state.width}
+            />
+          ) : null}
+          <WebView
+            ref={r => (this.webref = r as any)}
+            source={{ uri: url }}
+            keyboardDisplayRequiresUserAction={false}
+            sharedCookiesEnabled={true}
+            useWebKit={true}
+            hideKeyboardAccessoryView={true}
+            onLoadStart={this.onLoadStart.bind(this)}
+            onLoadEnd={this.onLoadEnd.bind(this)}
+            onNavigationStateChange={this.onNavigationStateChange.bind(this)}
+            onMessage={this.onMessage.bind(this)}
+            renderLoading={() => <Loader />}
+            renderError={errorName => <Error name={errorName} />}
+            startInLoadingState={true}
+            decelerationRate="fast"
+            injectedJavaScript={injectingJs
+              .replace("SVIM_PREDEFINE", sVim.sVimPredefine)
+              .replace("SVIM_GLOBAL", sVim.sVimGlobal)
+              .replace("SVIM_HELPER", sVim.sVimHelper)
+              .replace("SVIM_TAB", sVim.sVimTab)
+              .replace("SVIM_HINT", sVim.sVimHint)}
+            userAgent={this.state.userAgent}
+          />
+        </View>
       );
     }
   }
