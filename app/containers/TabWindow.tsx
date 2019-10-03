@@ -655,8 +655,16 @@ function pasteFromRN(content) {
 
 function typingFromRN(key){
   var el = document.activeElement;
+  var startPosition = el.selectionStart;
   var value = el.value;    
-  el.value = value + key;
+  el.value = value.slice(0, startPosition) + key + value.slice(startPosition);
+  if (el.createTextRange) {
+    var part = el.createTextRange();
+    part.move("character", startPosition+1);
+    part.select();
+  } else if (el.setSelectionRange) {
+    el.setSelectionRange(startPosition+1, startPosition+1);
+  }  
 }
 
 function dispatchKeyEventForHints(charCode){
