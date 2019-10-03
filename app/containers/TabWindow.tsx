@@ -542,7 +542,7 @@ function cursorToBeginning(){
   if(!inp.value){
     return
   }  
-  var pos = inp.value.lastIndexOf('\\n', inp.selectionStart)
+  var pos = inp.value.lastIndexOf('\\n', inp.selectionStart-1)
   if (inp.setSelectionRange) {
     inp.setSelectionRange(pos+1, pos+1);
   }  
@@ -553,12 +553,12 @@ function cursorToEnd(){
   if(!inp.value){
     return
   }  
-  if (inp.createTextRange) {
-    var part = inp.createTextRange();
-    part.move("character", inp.value.length);
-    part.select();
-  } else if (inp.setSelectionRange) {
-    inp.setSelectionRange(inp.value.length, inp.value.length);
+ var pos = inp.value.indexOf('\\n', inp.selectionStart)  
+ if(pos === -1){
+   pos = inp.value.length;
+ }
+ if (inp.setSelectionRange) {
+    inp.setSelectionRange(pos, pos);
   }  
 }
 
