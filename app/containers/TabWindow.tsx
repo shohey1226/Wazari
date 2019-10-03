@@ -412,7 +412,7 @@ class TabWindow extends Component<Props, State, any> {
       } else {
         this.setState({ progress: this.state.progress + 5 });
       }
-    }, 200);
+    }, 300);
   }
 
   onMessage(event) {

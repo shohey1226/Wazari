@@ -434,17 +434,24 @@ class Search extends Component<Props, IState, any> {
   renderCurrentTabs() {
     const { sites } = this.props;
     return sites.map((item, i) => {
+      let isSelected = i === this.state.selectedItemIndex;
       return (
         <ListItem
           key={`current-tabs-${i}`}
           style={{
             marginLeft: 0,
-            backgroundColor:
-              i === this.state.selectedItemIndex ? "#eee" : "transparent"
+            borderLeftWidth: isSelected ? 5 : 0,
+            borderLeftColor: "#30d158",
+            backgroundColor: isSelected ? "#eee" : "transparent"
           }}
           onPress={() => this.onPressHistoryItem(item.url)}
         >
-          <Text style={{ fontSize: 12, paddingLeft: 10 }}>
+          <Text
+            style={{
+              fontSize: 12,
+              paddingLeft: 10
+            }}
+          >
             {sites[i].url} - {sites[i].title}
           </Text>
         </ListItem>
@@ -458,13 +465,15 @@ class Search extends Component<Props, IState, any> {
       return this.renderCurrentTabs();
     } else {
       return this.state.result.map((h, i) => {
+        let isSelected = i === this.state.selectedItemIndex;
         return (
           <ListItem
             key={`history-result-${i}`}
             style={{
               marginLeft: 0,
-              backgroundColor:
-                i === this.state.selectedItemIndex ? "#eee" : "transparent"
+              borderLeftWidth: isSelected ? 5 : 0,
+              borderLeftColor: "#30d158",
+              backgroundColor: isSelected ? "#eee" : "transparent"
             }}
             onPress={() => this.onPressHistoryItem(h.item.url)}
           >
