@@ -338,8 +338,10 @@ class TabWindow extends Component<Props, State, any> {
           this.webref.injectJavaScript(`moveForwardOneChar()`);
           break;
         case "Up":
+          this.webref.injectJavaScript(`moveUpOneLine()`);
           return;
         case "Down":
+          this.webref.injectJavaScript(`moveDownOneLine()`);
           return;
         default:
           this.webref.injectJavaScript(`typingFromRN('${data.key}')`);
@@ -632,6 +634,35 @@ function moveForwardOneChar(){
       inp.setSelectionRange(caretPos+1, caretPos+1);
     }
   }
+}
+
+function moveUpOneLine(){
+  var inp = document.activeElement;
+  if(!inp.value){
+    return
+  }  
+  var pos = inp.value.lastIndexOf('\\n', inp.selectionStart);
+  if(pos === -1){
+    return
+  }
+  var countInLine = inp.selectionStart - pos;
+  var upPos = inp.value.lastIndexOf('\\n', pos-1);
+  inp.setSelectionRange(upPos+countInLine, upPos+countInLine);
+}
+
+function moveDownOneLine(){
+  var inp = document.activeElement;
+  if(!inp.value){
+    return
+  }  
+  var pos = inp.value.lastIndexOf('\\n', inp.selectionStart);
+  var countInLine = pos === -1 ? inp.selectionStart : inp.selectionStart - pos;
+  var endLinePos = inp.value.indexOf('\\n',inp.selectionStart-1);  
+  if(endLinePos === -1){
+    return;
+  }
+  inp.setSelectionRange(endLinePos+countInLine+1, endLinePos+countInLine+1);  
+
 }
 
 function copyToRN() {
