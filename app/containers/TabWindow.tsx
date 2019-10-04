@@ -645,8 +645,11 @@ function moveUpOneLine(){
   if(pos === -1){
     return
   }
+  var upPos = inp.value.lastIndexOf('\\n', pos-1);  
   var countInLine = inp.selectionStart - pos;
-  var upPos = inp.value.lastIndexOf('\\n', pos-1);
+  if((pos-upPos) < countInLine){
+    countInLine = pos-upPos;
+  }
   inp.setSelectionRange(upPos+countInLine, upPos+countInLine);
 }
 
@@ -655,14 +658,21 @@ function moveDownOneLine(){
   if(!inp.value){
     return
   }  
-  var pos = inp.value.lastIndexOf('\\n', inp.selectionStart);
-  var countInLine = pos === -1 ? inp.selectionStart : inp.selectionStart - pos;
-  var endLinePos = inp.value.indexOf('\\n',inp.selectionStart-1);  
+  var endLinePos = inp.value.indexOf('\\n',inp.selectionStart);  
   if(endLinePos === -1){
+    // no next line
     return;
   }
-  inp.setSelectionRange(endLinePos+countInLine+1, endLinePos+countInLine+1);  
-
+  var pos = inp.value.lastIndexOf('\\n', inp.selectionStart-1);
+  var countInLine = pos === -1 ? inp.selectionStart+1 : inp.selectionStart - pos;        
+  var nextLineEndPos = inp.value.indexOf('\\n',endLinePos+1); 
+  if(nextLineEndPos === -1){
+    nextLineEndPos = inp.value.length;
+  }
+  if((nextLineEndPos-endLinePos) < countInLine){
+    countInLine = nextLineEndPos-endLinePos;
+  }
+  inp.setSelectionRange(endLinePos+countInLine, endLinePos+countInLine);  
 }
 
 function copyToRN() {
