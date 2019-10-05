@@ -106,11 +106,15 @@ class TabWindow extends Component<Props, State, any> {
       focusedPane,
       activeUrl,
       keySwitchOn,
-      isActive
+      isActive,
+      activePaneId
     } = this.props;
 
     // tab is chagned
-    if (prevProp.isActive !== isActive) {
+    if (
+      prevProp.isActive !== isActive ||
+      prevProp.activePaneId !== activePaneId
+    ) {
       if (isActive) {
         this.focusWindow();
         if (activeUrl !== prevProp.activeUrl) {
@@ -493,7 +497,8 @@ function mapStateToProps(state, ownProps) {
     focusedPane,
     excludedPatterns,
     activeUrl,
-    keySwitchOn
+    keySwitchOn,
+    activePaneId
   };
 }
 
