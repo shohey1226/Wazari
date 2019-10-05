@@ -109,6 +109,11 @@ class Browser extends Component<Props, State> {
     //     keyMode !== KeyMode.Direct && dispatch(updateMode(KeyMode.Text));
     //   }
     // );
+    if (activeTabIndex) {
+      setTimeout(() => {
+        this.tabsRef.goToPage(activeTabIndex);
+      }, 50);
+    }
   }
 
   componentWillUnmount() {
