@@ -573,10 +573,15 @@ function deleteLine(){
   var el = document.activeElement;  
   if(!el.value){
     return
-  }  
+  }
+  var endPos = el.value.indexOf('\\n', el.selectionStart);  
+  if(endPos === -1){
+    endPos = el.value.length;
+  }
   var caretPos = el.selectionStart;  
   var content = el.value;
-  el.value = content.substring(0, caretPos);
+  el.value = content.substring(0, caretPos) + content.substring(endPos, content.length);
+  el.setSelectionRange(caretPos, caretPos);
 }
 
 function deletePreviousChar(){
