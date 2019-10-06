@@ -212,10 +212,10 @@ class TabWindow extends Component<Props, State, any> {
           this.webref.injectJavaScript(`document.activeElement.blur();`);
           break;
         case "scrollDown":
-          this.webref.injectJavaScript(`sVimTab.commands.scrollPageDown()`);
+          this.webref.injectJavaScript(`scrollPageDown()`);
           break;
         case "scrollUp":
-          this.webref.injectJavaScript(`sVimTab.commands.scrollPageUp()`);
+          this.webref.injectJavaScript(`scrollPageUp()`);
           break;
         case "deleteLine":
           this.webref.injectJavaScript(`deleteLine()`);
@@ -713,6 +713,24 @@ function typingFromRN(key){
 
 function dispatchKeyEventForHints(charCode){
   sVimTab.mode === "hint" && simulateKeyDown(document, charCode, null);
+}
+
+function scrollPageUp(){
+  var el = document.activeElement;
+  if(el.type === "textarea"){
+    moveUpOneLine();
+  }else{
+    sVimTab.commands.scrollPageUp();
+  }
+}
+
+function scrollPageDown(){
+  var el = document.activeElement;
+  if(el.type === "textarea"){
+    moveDownOneLine();
+  }else{
+    sVimTab.commands.scrollPageDown();
+  }
 }
 
 window.ReactNativeWebView.postMessage(JSON.stringify({isLoading: false, postFor: "jsloading"}))
