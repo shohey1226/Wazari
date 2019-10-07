@@ -700,10 +700,15 @@ function copyToRN() {
   window.ReactNativeWebView.postMessage(JSON.stringify({selection: selectedText, postFor: "copy"}));
 }
 
-function pasteFromRN(content) {
+function pasteFromRN(words) {
   var el = document.activeElement;   
-  var value = el.value;    
-  el.value = value + content;
+  if(!el){
+    return
+  }  
+  var content = el.value;      
+  var caretPos= el.selectionStart;
+  el.value =content.substring(0, caretPos) + words + content.substring(caretPos, content.length);
+  el.setSelectionRange(caretPos+words.length, caretPos+words.length);  
 }
 
 function typingFromRN(key){
