@@ -673,14 +673,19 @@ function moveDownOneLine(){
     // no next line
     return;
   }
-  var pos = inp.value.lastIndexOf('\\n', inp.selectionStart-1);
-  var countInLine = pos === -1 ? inp.selectionStart+1 : inp.selectionStart - pos;        
+  // -1 for just before new line  
+  var pos = inp.value.lastIndexOf('\\n', inp.selectionStart-1); 
+  
+  var countInLine = pos === -1 ? inp.selectionStart+1 : inp.selectionStart - pos;
+
   var nextLineEndPos = inp.value.indexOf('\\n',endLinePos+1); 
   if(nextLineEndPos === -1){
     nextLineEndPos = inp.value.length;
   }
   if((nextLineEndPos-endLinePos) < countInLine){
     countInLine = nextLineEndPos-endLinePos;
+  }else if(countInLine === 0){ // no word in current line which you need to add the next line
+    countInLine += nextLineEndPos-endLinePos;
   }
   inp.setSelectionRange(endLinePos+countInLine, endLinePos+countInLine);  
 }
