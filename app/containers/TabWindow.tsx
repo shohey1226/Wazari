@@ -580,6 +580,10 @@ function deleteLine(){
   }
   var caretPos = el.selectionStart;  
   var content = el.value;
+  var words = content.substring(caretPos, endPos);
+  if(words){
+    window.ReactNativeWebView.postMessage(JSON.stringify({selection: words, postFor: "copy"}));    
+  }
   el.value = content.substring(0, caretPos) + content.substring(endPos, content.length);
   el.setSelectionRange(caretPos, caretPos);
 }
@@ -675,7 +679,7 @@ function moveDownOneLine(){
   }
   // -1 for just before new line  
   var pos = inp.value.lastIndexOf('\\n', inp.selectionStart-1); 
-  
+
   var countInLine = pos === -1 ? inp.selectionStart+1 : inp.selectionStart - pos;
 
   var nextLineEndPos = inp.value.indexOf('\\n',endLinePos+1); 
