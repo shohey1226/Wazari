@@ -225,6 +225,8 @@ sVimHint.start = function(newTab) {
       lastElement.focus();
       if (!newTab && /https?:\/\//.test(lastElement.href)) {
         sVimTab.commands.newTabBackground(lastElement.href);
+      }else if(newTab && /https?:\/\//.test(lastElement.href)){
+        newTab(lastElement.href);
       }
       else {
         fireEvent(lastElement, 'click');

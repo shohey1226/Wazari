@@ -311,6 +311,16 @@ const defaultKeymap = {
         metaKey: false
       }
     },
+    hitAHintOpeningNewTab: {
+      key: "i",
+      modifiers: {
+        capslockKey: false,
+        shiftKey: true,
+        altKey: false,
+        ctrlKey: true,
+        metaKey: false
+      }
+    },
     zoomIn: {
       key: "=",
       modifiers: {

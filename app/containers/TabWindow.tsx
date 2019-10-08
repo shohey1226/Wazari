@@ -211,6 +211,10 @@ class TabWindow extends Component<Props, State, any> {
           this.webref.injectJavaScript(`sVimHint.start()`);
           this.webref.injectJavaScript(`document.activeElement.blur();`);
           break;
+        case "hitAHintOpeningNewTab":
+          this.webref.injectJavaScript(`hitAHintOpeningNewTab()`);
+          this.webref.injectJavaScript(`document.activeElement.blur();`);
+          break;
         case "scrollDown":
           this.webref.injectJavaScript(`scrollPageDown()`);
           break;
@@ -408,6 +412,7 @@ class TabWindow extends Component<Props, State, any> {
   }
 
   onMessage(event) {
+    const { dispatch, sites } = this.props;
     const data = JSON.parse(event.nativeEvent.data);
     console.log(data);
     switch (data.postFor) {
@@ -418,6 +423,12 @@ class TabWindow extends Component<Props, State, any> {
         break;
       case "copy":
         Clipboard.setString(data.selection);
+        break;
+      case "openNewTab":
+        dispatch(addNewTab(data.url));
+        setTimeout(() => {
+          dispatch(selectTab(sites.length));
+        }, 500);
         break;
     }
   }
@@ -714,15 +725,17 @@ function pasteFromRN(words) {
 function typingFromRN(key){
   var el = document.activeElement;
   var startPosition = el.selectionStart;
-  var value = el.value;    
-  el.value = value.slice(0, startPosition) + key + value.slice(startPosition);
-  if (el.createTextRange) {
-    var part = el.createTextRange();
-    part.move("character", startPosition+1);
-    part.select();
-  } else if (el.setSelectionRange) {
-    el.setSelectionRange(startPosition+1, startPosition+1);
-  }  
+  var value = el.value;
+  if(el.type === "text" || el.type === "textarea"){
+    el.value = value.slice(0, startPosition) + key + value.slice(startPosition);
+    if (el.createTextRange) {
+      var part = el.createTextRange();
+      part.move("character", startPosition+1);
+      part.select();
+    } else if (el.setSelectionRange) {
+      el.setSelectionRange(startPosition+1, startPosition+1);
+    }
+  }
 }
 
 function dispatchKeyEventForHints(charCode){
@@ -747,9 +760,16 @@ function scrollPageDown(){
   }
 }
 
+function hitAHintOpeningNewTab(){
+  var openUrl = function(url){
+    window.ReactNativeWebView.postMessage(JSON.stringify({url: url, postFor: "openNewTab"}));
+  };
+  sVimHint.start(openUrl);
+}
+
 window.ReactNativeWebView.postMessage(JSON.stringify({isLoading: false, postFor: "jsloading"}))
 
-true
+true;
 `;
 
 // specify 16px fontSize not to zoom in.
