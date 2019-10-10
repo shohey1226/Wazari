@@ -136,6 +136,8 @@ Input Mode - App + Input
     [appKeymapSet addObject:[UIKeyCommand keyCommandWithInput:@"\r" modifierFlags:kNilOptions action:@selector(handleCommand:)]];
     /* Tab */
     [appKeymapSet addObject:[UIKeyCommand keyCommandWithInput:@"\t" modifierFlags:kNilOptions action:@selector(handleCommand:)]];
+    /* Space */
+    [appKeymapSet addObject:[UIKeyCommand keyCommandWithInput:@" " modifierFlags:kNilOptions action:@selector(handleCommand:)]];
   }
 
   // keymap for input - cache as it's long list of hooks
