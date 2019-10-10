@@ -145,7 +145,7 @@ Input Mode - App + Input
 
     // https://github.com/kishikawakatsumi/KeyboardShortcuts/blob/master/KeyCommands/ViewController.m
     _commands = [[NSMutableArray alloc] init];
-    NSString *characters = @"`~!@#$%^&*()_+{}|\":?><1234567890-=qwertyuiop[]asdfghjkl;'zxcvbnm, ./\\";
+    NSString *characters = @"`~!@#$%^&*()_+{}|\":?><1234567890-=qwertyuiop[]asdfghjkl;'zxcvbnm,./\\";
     for (NSInteger i = 0; i < characters.length; i++) {
       NSString *input = [characters substringWithRange:NSMakeRange(i, 1)];
       
