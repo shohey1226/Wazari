@@ -575,7 +575,13 @@ class Search extends Component<Props, IState, any> {
           <Input
             ref={r => (this.searchRef = r as any)}
             placeholder={`URL or Search with ${searchEngine}`}
-            onChangeText={text => this.setState({ text })}
+            onChangeText={text =>
+              this.setState({
+                text: text,
+                selectionStart: text.length,
+                selectionEnd: text.length
+              })
+            }
             value={this.state.text}
             autoCorrect={false}
             onEndEditing={this.onEndEditing.bind(this)}
