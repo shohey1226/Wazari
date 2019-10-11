@@ -42,8 +42,6 @@ You can modify shortcuts in setting page. OS maybe already took the shortcut. In
 | Command-[     | Back page                             |
 | Command-]     | Forward page                          |
 | Command-r     | Reload Page                           |
-| Ctrl-n        | Scroll down                           |
-| Ctrl-p        | Scroll up                             |
 | Ctrl-i        | Show Hit-a-hint                       |
 | Ctrl-+        | Zoom in                               |
 | Ctrl--        | Zoom out (Ctrl with dash/minus)       |
@@ -67,6 +65,8 @@ You can modify shortcuts in setting page. OS maybe already took the shortcut. In
 | Ctrl-b       | Move cursor back one char           |
 | Ctrl-k       | Delete entire text in focused input |
 | Ctl-f        | Move cursor forward one char        |
+| Ctrl-n       | Move down one line                  |
+| Ctrl-p       | Move up one line                    |
 
 ## Bugs/Issues
 

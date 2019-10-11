@@ -198,6 +198,12 @@ class TabWindow extends Component<Props, State, any> {
         case "moveForwardOneChar":
           this.webref.injectJavaScript(`moveForwardOneChar()`);
           break;
+        case "moveUpOneLine":
+          this.webref.injectJavaScript(`moveUpOneLine()`);
+          break;
+        case "moveDownOneLine":
+          this.webref.injectJavaScript(`moveDownOneLine()`);
+          break;
         case "goBack":
           this.webref.goBack();
           break;
@@ -214,12 +220,6 @@ class TabWindow extends Component<Props, State, any> {
         case "hitAHintOpeningNewTab":
           this.webref.injectJavaScript(`hitAHintOpeningNewTab()`);
           this.webref.injectJavaScript(`document.activeElement.blur();`);
-          break;
-        case "scrollDown":
-          this.webref.injectJavaScript(`scrollPageDown()`);
-          break;
-        case "scrollUp":
-          this.webref.injectJavaScript(`scrollPageUp()`);
           break;
         case "deleteLine":
           this.webref.injectJavaScript(`deleteLine()`);
@@ -726,6 +726,7 @@ function typingFromRN(key){
   var el = document.activeElement;
   var startPosition = el.selectionStart;
   var value = el.value;
+
   el.value = value.slice(0, startPosition) + key + value.slice(startPosition);
   if (el.createTextRange) {
     var part = el.createTextRange();
@@ -739,24 +740,6 @@ function typingFromRN(key){
 
 function dispatchKeyEventForHints(charCode){
   sVimTab.mode === "hint" && simulateKeyDown(document, charCode, null);
-}
-
-function scrollPageUp(){
-  var el = document.activeElement;
-  if(el.type === "textarea"){
-    moveUpOneLine();
-  }else{
-    sVimTab.commands.scrollPageUp();
-  }
-}
-
-function scrollPageDown(){
-  var el = document.activeElement;
-  if(el.type === "textarea"){
-    moveDownOneLine();
-  }else{
-    sVimTab.commands.scrollPageDown();
-  }
 }
 
 function hitAHintOpeningNewTab(){

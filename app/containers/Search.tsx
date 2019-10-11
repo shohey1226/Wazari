@@ -331,10 +331,10 @@ class Search extends Component<Props, IState, any> {
             text: newText
           });
           break;
-        case "scrollDown":
+        case "moveDownOneLine":
           this.nextHistoryItem();
           break;
-        case "scrollUp":
+        case "moveUpOneLine":
           this.previousHistoryItem();
           break;
         case "copy":

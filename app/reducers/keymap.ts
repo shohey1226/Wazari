@@ -281,7 +281,7 @@ const defaultKeymap = {
         metaKey: true
       }
     },
-    scrollDown: {
+    moveDownOneLine: {
       key: "n",
       modifiers: {
         capslockKey: false,
@@ -291,7 +291,7 @@ const defaultKeymap = {
         metaKey: false
       }
     },
-    scrollUp: {
+    moveUpOneLine: {
       key: "p",
       modifiers: {
         capslockKey: false,
