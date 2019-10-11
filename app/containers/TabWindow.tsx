@@ -5,7 +5,8 @@ import {
   NativeEventEmitter,
   Clipboard,
   Platform,
-  Dimensions
+  Dimensions,
+  AppState
 } from "react-native";
 import { WebView } from "react-native-webview";
 import { connect } from "react-redux";
@@ -89,13 +90,26 @@ class TabWindow extends Component<Props, State, any> {
         }
       })
     );
+    AppState.addEventListener("change", this._handleAppStateChange);
   }
 
   componentWillUnmount() {
     this.subscriptions.forEach(subscription => {
       subscription.remove();
     });
+    AppState.removeEventListener("change", this._handleAppStateChange);
   }
+
+  _handleAppStateChange = nextAppState => {
+    const { isActive } = this.props;
+    if (nextAppState === "active") {
+      if (isActive) {
+        this.focusWindow();
+      } else {
+        this.blurWindow();
+      }
+    }
+  };
 
   componentDidUpdate(prevProp) {
     const {
