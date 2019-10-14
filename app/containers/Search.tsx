@@ -26,7 +26,12 @@ import {
   selectActiveSite,
   selectSites
 } from "../selectors/ui";
-import { updateMode, updateFocusedPane, updateKeySwitch } from "../actions/ui";
+import {
+  updateMode,
+  updateFocusedPane,
+  updateKeySwitch,
+  findInPage
+} from "../actions/ui";
 import { addExcludedPattern, removeExcludedPattern } from "../actions/user";
 import { SearchEngine } from "../components/SearchEnginePicker";
 import { KeyMode } from "../types/index.d";
@@ -411,6 +416,10 @@ class Search extends Component<Props, IState, any> {
           this.handleActions({ action: "moveForwardOneChar" });
           return;
         case "Esc":
+          this.closingSearch();
+          return;
+        case "?":
+          dispatch(findInPage(this.state.text));
           this.closingSearch();
           return;
       }

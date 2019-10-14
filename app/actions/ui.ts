@@ -16,6 +16,14 @@ export const ADD_PANE = "ADD_PANE";
 export const REMOVE_PANE = "REMOVE_PANE";
 export const SELECT_PANE = "SELECT_PANE";
 export const UPDATE_PANE_BLUEPRINT = "UPDATE_PANE_BLUEPRINT";
+export const FIND_IN_PAGE = "FIND_IN_PAGE";
+
+export function findInPage(words: string) {
+  return {
+    type: FIND_IN_PAGE,
+    words: words
+  };
+}
 
 export function toggleForward() {
   return {

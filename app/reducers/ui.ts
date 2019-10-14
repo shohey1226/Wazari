@@ -13,7 +13,8 @@ import {
   ADD_PANE,
   REMOVE_PANE,
   SELECT_PANE,
-  UPDATE_PANE_BLUEPRINT
+  UPDATE_PANE_BLUEPRINT,
+  FIND_IN_PAGE
 } from "../actions/ui";
 import { Map, fromJS, List } from "immutable";
 import { KeyMode } from "../types/index.d";
@@ -39,6 +40,7 @@ export interface UiState extends Map<any, any> {
   };
   activePaneId: string;
   paneBlueprint: any;
+  wordsForPageFind: string;
 }
 
 const initialState: UiState = fromJS({
@@ -51,12 +53,16 @@ const initialState: UiState = fromJS({
   paneIds: List(),
   activePaneId: null,
   paneBlueprint: {},
-  panes: {}
+  panes: {},
+  wordsForPageFind: ""
 });
 
 export default function ui(state = initialState, action) {
   let mode;
   switch (action.type) {
+    case FIND_IN_PAGE:
+      return state.set("wordsForPageFind", action.words);
+
     // Back/Forward button on bar
     case TOGGLE_BACK:
       return state.set("backToggled", !state.get("backToggled"));
