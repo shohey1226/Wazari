@@ -464,7 +464,7 @@ class TabWindow extends Component<Props, State, any> {
           {this.state.isLoadingJSInjection ? (
             <ProgressBarAnimated
               {...progressCustomStyles}
-              height={5}
+              height={2}
               borderWidth={0}
               value={this.state.progress}
               width={this.state.width}
