@@ -416,9 +416,6 @@ class Search extends Component<Props, IState, any> {
           this.handleActions({ action: "moveForwardOneChar" });
           return;
         case "Esc":
-          this.closingSearch();
-          return;
-        case "?":
           dispatch(updateWordsForPageFind(this.state.text));
           this.closingSearch();
           return;

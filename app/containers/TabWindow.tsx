@@ -476,7 +476,7 @@ class TabWindow extends Component<Props, State, any> {
           {this.state.isLoadingJSInjection ? (
             <ProgressBarAnimated
               {...progressCustomStyles}
-              height={2}
+              height={3}
               borderWidth={0}
               value={this.state.progress}
               width={this.state.width}
@@ -779,6 +779,8 @@ function hitAHintOpeningNewTab(){
 
 function findInPage(text){
   if (text == null || text.length == 0) return;
+
+  text = text.toLowerCase();
   
   var spans = document.getElementsByClassName("labnol");
   if (spans) {
@@ -792,7 +794,7 @@ function findInPage(text){
     var pos, skip, spannode, middlebit, endbit, middleclone;
     skip = 0;
     if (node.nodeType == 3) {
-      pos = node.data.indexOf(te);
+      pos = node.data.toLowerCase().indexOf(te);
       if (pos >= 0) {
         spannode = document.createElement("span");
         spannode.setAttribute("class", "labnol");
