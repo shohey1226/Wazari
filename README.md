@@ -52,6 +52,8 @@ You can modify shortcuts in setting page. OS maybe already took the shortcut. In
 | Command-t     | Open homepage with a new tab          |
 | Command-w     | Remove current tab                    |
 
+Use defualt `space` to scroll down and `shift-space` to scroll up.
+
 ### Text actions
 
 | Shortcut key | Description                         |
