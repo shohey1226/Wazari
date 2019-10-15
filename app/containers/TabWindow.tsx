@@ -169,6 +169,7 @@ class TabWindow extends Component<Props, State, any> {
     ) {
       this.webref.injectJavaScript(`findInPage("${wordsForPageFind}")`);
       dispatch(updateWordsForPageFind(""));
+      this.focusWindow();
     }
   }
 
@@ -780,8 +781,6 @@ function hitAHintOpeningNewTab(){
 function findInPage(text){
   if (text == null || text.length == 0) return;
 
-  text = text.toLowerCase();
-  
   var spans = document.getElementsByClassName("labnol");
   if (spans) {
     for (var i = 0; i < spans.length; i++) {
@@ -813,7 +812,7 @@ function findInPage(text){
     }
     return skip;
   }
-  searchWithinNode(document.body, text, text.length);  
+  searchWithinNode(document.body, text.toLowerCase(), text.length);  
 }
 
 window.ReactNativeWebView.postMessage(JSON.stringify({isLoading: false, postFor: "jsloading"}))
