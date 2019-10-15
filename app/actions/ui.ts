@@ -16,11 +16,11 @@ export const ADD_PANE = "ADD_PANE";
 export const REMOVE_PANE = "REMOVE_PANE";
 export const SELECT_PANE = "SELECT_PANE";
 export const UPDATE_PANE_BLUEPRINT = "UPDATE_PANE_BLUEPRINT";
-export const FIND_IN_PAGE = "FIND_IN_PAGE";
+export const UPDATE_WORDS_FOR_PAGE_FIND = "UPDATE_WORDS_FOR_PAGE_FIND";
 
-export function findInPage(words: string) {
+export function updateWordsForPageFind(words: string) {
   return {
-    type: FIND_IN_PAGE,
+    type: UPDATE_WORDS_FOR_PAGE_FIND,
     words: words
   };
 }

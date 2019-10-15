@@ -30,7 +30,7 @@ import {
   updateMode,
   updateFocusedPane,
   updateKeySwitch,
-  findInPage
+  updateWordsForPageFind
 } from "../actions/ui";
 import { addExcludedPattern, removeExcludedPattern } from "../actions/user";
 import { SearchEngine } from "../components/SearchEnginePicker";
@@ -419,7 +419,7 @@ class Search extends Component<Props, IState, any> {
           this.closingSearch();
           return;
         case "?":
-          dispatch(findInPage(this.state.text));
+          dispatch(updateWordsForPageFind(this.state.text));
           this.closingSearch();
           return;
       }

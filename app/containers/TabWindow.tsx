@@ -21,7 +21,8 @@ import {
   selectTab,
   updateSite,
   closeTab,
-  updateKeySwitch
+  updateKeySwitch,
+  updateWordsForPageFind
 } from "../actions/ui";
 import { addHistory } from "../actions/user";
 import { selectSites, selectActiveUrl } from "../selectors/ui";
@@ -113,6 +114,7 @@ class TabWindow extends Component<Props, State, any> {
 
   componentDidUpdate(prevProp) {
     const {
+      dispatch,
       backToggled,
       forwardToggled,
       reloadToggled,
@@ -160,8 +162,13 @@ class TabWindow extends Component<Props, State, any> {
       this.focusWindow();
     }
 
-    if (isActive && wordsForPageFind !== prevProp.wordsForPageFind) {
+    if (
+      isActive &&
+      wordsForPageFind !== "" &&
+      wordsForPageFind !== prevProp.wordsForPageFind
+    ) {
       this.webref.injectJavaScript(`findInPage("${wordsForPageFind}")`);
+      dispatch(updateWordsForPageFind(""));
     }
   }
 

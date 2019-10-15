@@ -14,7 +14,7 @@ import {
   REMOVE_PANE,
   SELECT_PANE,
   UPDATE_PANE_BLUEPRINT,
-  FIND_IN_PAGE
+  UPDATE_WORDS_FOR_PAGE_FIND
 } from "../actions/ui";
 import { Map, fromJS, List } from "immutable";
 import { KeyMode } from "../types/index.d";
@@ -60,7 +60,7 @@ const initialState: UiState = fromJS({
 export default function ui(state = initialState, action) {
   let mode;
   switch (action.type) {
-    case FIND_IN_PAGE:
+    case UPDATE_WORDS_FOR_PAGE_FIND:
       return state.set("wordsForPageFind", action.words);
 
     // Back/Forward button on bar
