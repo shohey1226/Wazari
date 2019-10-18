@@ -19,6 +19,7 @@ import {
   TabHeading,
   Icon
 } from "native-base";
+import Favicon from "../components/Favicon";
 import DeviceInfo from "react-native-device-info";
 import TabWindow from "./TabWindow";
 import { selectSites } from "../selectors/ui";
@@ -237,7 +238,12 @@ class Browser extends Component<Props, State> {
   };
 
   // https://qiita.com/hirocueki2/items/137400e236189a0a6b3e
-  _truncate(str, len) {
+  _truncate(str) {
+    let len = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff66-\uff9f]/.test(
+      str
+    )
+      ? 9
+      : 16;
     return str.length <= len ? str : str.substr(0, len) + "...";
   }
 
@@ -272,20 +278,28 @@ class Browser extends Component<Props, State> {
     let tabs = [];
     for (let i = 0; i < sites.length; i++) {
       const tabTitle = sites[i].title
-        ? this._truncate(sites[i].title, 10)
-        : this._truncate(sites[i].url, 10);
+        ? this._truncate(sites[i].title)
+        : this._truncate(sites[i].url);
 
       tabs.push(
         <Tab
           key={`tab-${i}`}
           heading={
-            <TabHeading style={{ paddingLeft: 5, paddingRight: 0 }}>
+            <TabHeading
+              style={{
+                paddingLeft: 5,
+                paddingRight: 0,
+                justifyContent: "flex-start"
+              }}
+            >
+              <View style={{ marginLeft: 5 }}>
+                <Favicon url={sites[i].url} />
+              </View>
               <Text
                 style={{
+                  textAlign: "left",
                   fontSize: 10.5,
-                  marginLeft: 1,
-                  width: 105,
-                  textAlign: "center"
+                  width: 105
                 }}
               >
                 {tabTitle}
@@ -299,8 +313,7 @@ class Browser extends Component<Props, State> {
                 <Icon
                   name="md-close"
                   style={{
-                    marginLeft: 5,
-                    marginRight: 10,
+                    marginRight: 5,
                     fontSize: 13
                   }}
                 />

@@ -20,6 +20,7 @@ import {
   Content
 } from "native-base";
 import MCIcon from "react-native-vector-icons/MaterialCommunityIcons";
+import Favicon from "../components/Favicon";
 import { selectBrowserKeymap, selectModifiers } from "../selectors/keymap";
 import {
   selectActiveUrl,
@@ -454,10 +455,13 @@ class Search extends Component<Props, IState, any> {
           }}
           onPress={() => this.onPressHistoryItem(item.url)}
         >
+          <View style={{ marginLeft: 10 }}>
+            <Favicon url={item.url} />
+          </View>
           <Text
             style={{
               fontSize: 12,
-              paddingLeft: 10
+              paddingLeft: 5
             }}
           >
             {sites[i].url} - {sites[i].title}
@@ -485,6 +489,9 @@ class Search extends Component<Props, IState, any> {
             }}
             onPress={() => this.onPressHistoryItem(h.item.url)}
           >
+            <View style={{ marginLeft: 10 }}>
+              <Favicon domain={"www.wazaterm.com"} />
+            </View>
             {this.renderMatchedText(h)}
           </ListItem>
         );

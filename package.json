@@ -36,7 +36,8 @@
     "redux-thunk": "^2.3.0",
     "reselect": "^4.0.0",
     "rn-placeholder": "^3.0.0",
-    "tree-model": "^1.0.7"
+    "tree-model": "^1.0.7",
+    "url": "^0.11.0"
   },
   "devDependencies": {
     "@babel/core": "7.5.4",
