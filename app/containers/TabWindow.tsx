@@ -500,6 +500,7 @@ class TabWindow extends Component<Props, State, any> {
             renderLoading={() => <Loader />}
             renderError={errorName => <Error name={errorName} />}
             startInLoadingState={true}
+            allowsBackForwardNavigationGestures={true}
             decelerationRate="fast"
             injectedJavaScript={injectingJs
               .replace("SVIM_PREDEFINE", sVim.sVimPredefine)

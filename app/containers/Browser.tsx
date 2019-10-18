@@ -358,6 +358,7 @@ class Browser extends Component<Props, State> {
           borderColor: "#30d158"
         }}
         scrollWithoutAnimation={true}
+        locked={true}
       >
         {this.renderTabs()}
       </Tabs>
