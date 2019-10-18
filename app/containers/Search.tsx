@@ -380,10 +380,26 @@ class Search extends Component<Props, IState, any> {
   }
 
   previousHistoryItem() {
-    let index =
-      this.state.selectedItemIndex !== null && this.state.selectedItemIndex > 0
-        ? this.state.selectedItemIndex - 1
-        : 0;
+    const { history, sites } = this.props;
+    const { result, selectedItemIndex, selectMode, text } = this.state;
+    const maxItemCount: number =
+      text.length === 0
+        ? sites.length
+        : result.length === 0
+        ? history.length
+        : result.length;
+
+    if (!selectMode) {
+      this.setState({ selectMode: true });
+    }
+
+    let index: number = maxItemCount - 1;
+    if (selectedItemIndex !== null) {
+      if (this.state.selectedItemIndex > 0) {
+        index = this.state.selectedItemIndex - 1;
+      }
+    }
+
     this.setState({
       selectedItemIndex: index
     });
@@ -567,7 +583,7 @@ class Search extends Component<Props, IState, any> {
   }
 
   closingSearch() {
-    this.setState({ text: "" });
+    this.setState({ text: "", selectedItemIndex: null });
     this.props.closeSearch();
   }
 
