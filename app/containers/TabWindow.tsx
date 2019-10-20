@@ -561,6 +561,11 @@ SVIM_GLOBAL
 SVIM_HINT
 sVimTab.bind();
 
+window.term && window.term.onSelectionChange(function(){
+  var selectedText = window.term.getSelection()
+  window.ReactNativeWebView.postMessage(JSON.stringify({selection: selectedText, postFor: "copy"}));
+})
+
 function simulateKeyPress(element, charCode, modifiers) {
   var modifierObjects = JSON.parse(modifiers);
   var event = {};  
