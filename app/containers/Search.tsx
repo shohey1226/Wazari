@@ -66,6 +66,7 @@ interface Props {
   sites: any;
   history: Array<any>;
   closeSearch: () => void;
+  activeTabIndex: number | null;
 }
 
 class Search extends Component<Props, IState, any> {
@@ -583,7 +584,7 @@ class Search extends Component<Props, IState, any> {
   }
 
   closingSearch() {
-    this.setState({ text: "", selectedItemIndex: null });
+    this.setState({ text: "", selectedItemIndex: this.props.activeTabIndex });
     this.props.closeSearch();
   }
 
@@ -649,9 +650,16 @@ function mapStateToProps(state, ownProps) {
   const history = state.user.get("history").toJS();
   const activePaneId = state.ui.get("activePaneId");
   const sites = selectSites(state, activePaneId);
+  const activeTabIndex = state.ui.getIn([
+    "panes",
+    activePaneId,
+    "activeTabIndex"
+  ]);
+
   return {
     history,
-    sites
+    sites,
+    activeTabIndex
   };
 }
 
