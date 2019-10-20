@@ -747,14 +747,18 @@ function copyToRN() {
 }
 
 function pasteFromRN(words) {
-  var el = document.activeElement;   
-  if(!el){
-    return
-  }  
-  var content = el.value;      
-  var caretPos= el.selectionStart;
-  el.value =content.substring(0, caretPos) + words + content.substring(caretPos, content.length);
-  el.setSelectionRange(caretPos+words.length, caretPos+words.length);  
+  if(window.term){
+    window.term.textarea.value = words;
+  }else{
+    var el = document.activeElement;   
+    if(!el){
+      return
+    }  
+    var content = el.value;      
+    var caretPos= el.selectionStart;
+    el.value =content.substring(0, caretPos) + words + content.substring(caretPos, content.length);
+    el.setSelectionRange(caretPos+words.length, caretPos+words.length);  
+  }
 }
 
 function typingFromRN(key){
