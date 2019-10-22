@@ -449,7 +449,9 @@ class TabWindow extends Component<Props, State, any> {
         }
         break;
       case "copy":
-        Clipboard.setString(data.selection);
+        if (data.selection && data.selection !== "") {
+          Clipboard.setString(data.selection);
+        }
         break;
       case "openNewTab":
         dispatch(addNewTab(data.url));
@@ -744,7 +746,7 @@ function copyToRN() {
 
 function pasteFromRN(words) {
   if(window.term){
-    window.term.textarea.value = words;
+    window.term.textarea.value = words;    
   }else{
     var el = document.activeElement;   
     if(!el){
