@@ -561,10 +561,6 @@ SVIM_GLOBAL
 SVIM_HINT
 sVimTab.bind();
 
-window.term && window.term.onSelectionChange(function(){
-  var selectedText = window.term.getSelection()
-  window.ReactNativeWebView.postMessage(JSON.stringify({selection: selectedText, postFor: "copy"}));
-})
 
 function simulateKeyPress(element, charCode, modifiers) {
   var modifierObjects = JSON.parse(modifiers);
@@ -824,6 +820,16 @@ function findInPage(text){
   }
   searchWithinNode(document.body, text.toLowerCase(), text.length);  
 }
+
+var termSelectionHandler = null;
+setTimeout(function(){
+  if(window.term && !termSelectionHandler){
+    termSelectionHandler = window.term.onSelectionChange(function(){
+      var selectedText = window.term.getSelection()
+      window.ReactNativeWebView.postMessage(JSON.stringify({selection: selectedText, postFor: "copy"}));
+    })
+  }
+}, 800);
 
 window.ReactNativeWebView.postMessage(JSON.stringify({isLoading: false, postFor: "jsloading"}))
 
