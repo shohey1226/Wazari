@@ -449,7 +449,9 @@ class TabWindow extends Component<Props, State, any> {
         }
         break;
       case "copy":
-        Clipboard.setString(data.selection);
+        if (data.selection && data.selection !== "") {
+          Clipboard.setString(data.selection);
+        }
         break;
       case "openNewTab":
         dispatch(addNewTab(data.url));
@@ -561,10 +563,6 @@ SVIM_GLOBAL
 SVIM_HINT
 sVimTab.bind();
 
-window.term && window.term.onSelectionChange(function(){
-  var selectedText = window.term.getSelection()
-  window.ReactNativeWebView.postMessage(JSON.stringify({selection: selectedText, postFor: "copy"}));
-})
 
 function simulateKeyPress(element, charCode, modifiers) {
   var modifierObjects = JSON.parse(modifiers);
@@ -748,7 +746,7 @@ function copyToRN() {
 
 function pasteFromRN(words) {
   if(window.term){
-    window.term.textarea.value = words;
+    window.term.textarea.value = words;    
   }else{
     var el = document.activeElement;   
     if(!el){
@@ -824,6 +822,16 @@ function findInPage(text){
   }
   searchWithinNode(document.body, text.toLowerCase(), text.length);  
 }
+
+var termSelectionHandler = null;
+setTimeout(function(){
+  if(window.term && !termSelectionHandler){
+    termSelectionHandler = window.term.onSelectionChange(function(){
+      var selectedText = window.term.getSelection()
+      window.ReactNativeWebView.postMessage(JSON.stringify({selection: selectedText, postFor: "copy"}));
+    })
+  }
+}, 800);
 
 window.ReactNativeWebView.postMessage(JSON.stringify({isLoading: false, postFor: "jsloading"}))
 
