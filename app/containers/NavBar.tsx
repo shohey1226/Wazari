@@ -211,13 +211,23 @@ class NavBar extends Component<Props, IState, any> {
   }
 
   switchIcon() {
+    const { activeUrl } = this.props;
     if (this.props.keySwitchOn) {
-      return (
-        <MCIcon
-          name="toggle-switch"
-          style={{ color: "#30d158", fontSize: 22 }}
-        />
-      );
+      if (/^https:\/\/www\.wazaterm\.com\/terminals\/\S+/.test(activeUrl)) {
+        return (
+          <MCIcon
+            name="toggle-switch"
+            style={{ color: "#ffd60a", fontSize: 22 }}
+          />
+        );
+      } else {
+        return (
+          <MCIcon
+            name="toggle-switch"
+            style={{ color: "#30d158", fontSize: 22 }}
+          />
+        );
+      }
     } else {
       return (
         <MCIcon
