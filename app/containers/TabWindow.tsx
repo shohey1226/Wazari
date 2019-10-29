@@ -134,9 +134,6 @@ class TabWindow extends Component<Props, State, any> {
     ) {
       if (isActive) {
         this.focusWindow();
-        if (activeUrl !== prevProp.activeUrl) {
-          this.setSwitch(activeUrl);
-        }
       } else {
         this.blurWindow();
       }
@@ -171,21 +168,6 @@ class TabWindow extends Component<Props, State, any> {
       dispatch(updateWordsForPageFind(""));
       this.focusWindow();
     }
-  }
-
-  setSwitch(url) {
-    const { excludedPatterns, dispatch, keyMode, keySwitchOn } = this.props;
-    let switchOn = true;
-    let pattern: string | null = null;
-    for (let p of excludedPatterns) {
-      let regex = new RegExp(p);
-      if (regex.test(url)) {
-        switchOn = false;
-        pattern = p;
-        break;
-      }
-    }
-    keySwitchOn !== switchOn && dispatch(updateKeySwitch(switchOn));
   }
 
   focusWindow() {

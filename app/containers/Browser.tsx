@@ -24,7 +24,7 @@ import DeviceInfo from "react-native-device-info";
 import TabWindow from "./TabWindow";
 import { selectSites } from "../selectors/ui";
 import { selectAppKeymap, selectModifiers } from "../selectors/keymap";
-import { addNewTab, selectTab, closeTab, updateMode } from "../actions/ui";
+import { addNewTab, selectTab, closeTab } from "../actions/ui";
 import keymapper from "../utils/Keymapper";
 import { KeyMode } from "../types/index.d";
 
@@ -182,14 +182,6 @@ class Browser extends Component<Props, State> {
     // Set iOS keymap!!!
     if (prevProp.keyMode !== keyMode) {
       this.setIOSMode(keyMode);
-    }
-
-    if (prevProp.keySwitchOn !== keySwitchOn) {
-      if (keySwitchOn) {
-        dispatch(updateMode(KeyMode.Text));
-      } else {
-        dispatch(updateMode(KeyMode.Browser));
-      }
     }
 
     if (prevProp.activePaneId !== activePaneId) {
