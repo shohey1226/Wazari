@@ -80,20 +80,10 @@ export default function ui(state = initialState, action) {
       );
 
     case SELECT_TAB:
-      mode = KeyMode.Text;
-      if (
-        /^https:\/\/www\.wazaterm\.com\/terminals\/\S+/.test(
-          state
-            .getIn(["panes", action.paneId, "sites"])
-            .getIn([action.index, "url"])
-        )
-      ) {
-        mode = KeyMode.Terminal;
-      }
-
       return state
         .setIn(["panes", action.paneId, "activeTabIndex"], action.index)
-        .set("keyMode", mode);
+        .set("keyMode", action.mode)
+        .set("keySwitchOn", action.keySwitchOn);
 
     case CLOSE_TAB:
       return state.setIn(
@@ -102,10 +92,6 @@ export default function ui(state = initialState, action) {
       );
 
     case UPDATE_SITE:
-      mode = KeyMode.Text;
-      if (/^https:\/\/www\.wazaterm\.com\/terminals\/\S+/.test(action.url)) {
-        mode = KeyMode.Terminal;
-      }
       return state
         .setIn(
           ["panes", action.paneId, "sites"],
@@ -119,7 +105,8 @@ export default function ui(state = initialState, action) {
                 .set("canGoForward", action.canGoForward);
             })
         )
-        .set("keyMode", mode);
+        .set("keyMode", action.mode)
+        .set("keySwitchOn", action.keySwitchOn);
 
     case UPDATE_MODE:
       return state.set("keyMode", action.mode);
@@ -155,22 +142,10 @@ export default function ui(state = initialState, action) {
         .set("panes", state.get("panes").delete(action.paneId));
 
     case SELECT_PANE:
-      mode = KeyMode.Text;
-      if (
-        /^https:\/\/www\.wazaterm\.com\/terminals\/\S+/.test(
-          state.getIn([
-            "panes",
-            action.paneId,
-            "sites",
-            state.getIn(["panes", action.paneId, "activeTabIndex"]),
-            "url"
-          ])
-        )
-      ) {
-        mode = KeyMode.Terminal;
-      }
-
-      return state.set("activePaneId", action.paneId).set("keyMode", mode);
+      return state
+        .set("activePaneId", action.paneId)
+        .set("keyMode", action.mode)
+        .set("keySwitchOn", action.keySwitchOn);
 
     case UPDATE_PANE_BLUEPRINT:
       return state.set("paneBlueprint", fromJS(action.blueprint));

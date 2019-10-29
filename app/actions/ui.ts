@@ -69,16 +69,65 @@ export function closeTab(index: number, paneId: number) {
 export function selectTab(index) {
   return (dispatch, getState) => {
     const activePaneId = getState().ui.get("activePaneId");
-    dispatch(_selectTab(index, activePaneId));
+    const { mode, keySwitchOn } = _getModeAndSwitch(
+      activePaneId,
+      index,
+      getState()
+    );
+    dispatch(_selectTab(index, activePaneId, mode, keySwitchOn));
   };
 }
 
-function _selectTab(index, paneId: number) {
+function _selectTab(
+  index,
+  paneId: number,
+  mode: KeyMode,
+  keySwitchOn: boolean
+) {
   return {
     type: SELECT_TAB,
     index: index,
-    paneId: paneId
+    paneId: paneId,
+    mode: mode,
+    keySwitchOn: keySwitchOn
   };
+}
+
+function _getModeAndSwitch(
+  activePaneId,
+  index,
+  state
+): { mode: KeyMode; keySwitchOn: boolean } {
+  const excludedPatterns = state.user.get("excludedPatterns").toArray();
+  const url = state.ui
+    .getIn(["panes", activePaneId, "sites"])
+    .getIn([index, "url"]);
+  const keySwitchOn = _isSwitchOn(url, excludedPatterns);
+  let mode = KeyMode.Text;
+  if (/^https:\/\/www\.wazaterm\.com\/terminals\/\S+/.test(url)) {
+    mode = KeyMode.Terminal;
+  } else if (!keySwitchOn) {
+    mode = KeyMode.Browser;
+  }
+  return { mode: mode, keySwitchOn: keySwitchOn };
+}
+
+function _isSwitchOn(url: string, excludedPatterns: Array<string>): boolean {
+  // wazaterm -
+  if (/^https:\/\/www\.wazaterm\.com\/terminals\/\S+/.test(url)) {
+    return true;
+  }
+  let switchOn = true;
+  let pattern: string | null = null;
+  for (let p of excludedPatterns) {
+    let regex = new RegExp(p);
+    if (regex.test(url)) {
+      switchOn = false;
+      pattern = p;
+      break;
+    }
+  }
+  return switchOn;
 }
 
 export function updateSite(
@@ -89,6 +138,38 @@ export function updateSite(
   canGoForward: boolean,
   paneId: number
 ) {
+  return (dispatch, getState) => {
+    const activePaneId = getState().ui.get("activePaneId");
+    const { mode, keySwitchOn } = _getModeAndSwitch(
+      activePaneId,
+      index,
+      getState()
+    );
+    dispatch(
+      _updateSite(
+        index,
+        title,
+        url,
+        canGoBack,
+        canGoForward,
+        paneId,
+        mode,
+        keySwitchOn
+      )
+    );
+  };
+}
+
+function _updateSite(
+  index: number,
+  title: string,
+  url: string,
+  canGoBack: boolean,
+  canGoForward: boolean,
+  paneId: number,
+  mode: KeyMode,
+  keySwitchOn: boolean
+) {
   return {
     type: UPDATE_SITE,
     index: index,
@@ -96,7 +177,9 @@ export function updateSite(
     url: url,
     canGoBack: canGoBack,
     canGoForward: canGoForward,
-    paneId: paneId
+    paneId: paneId,
+    mode: mode,
+    keySwitchOn: keySwitchOn
   };
 }
 
@@ -165,17 +248,29 @@ function _removePane(paneId: number) {
 export function selectPane(paneId: number) {
   return (dispatch, getState) => {
     if (isValidPanes(getState().ui)) {
-      dispatch(_selectPane(paneId));
+      const index = getState().ui.getIn([
+        "panes",
+        action.paneId,
+        "activeTabIndex"
+      ]);
+      const { mode, keySwitchOn } = _getModeAndSwitch(
+        paneId,
+        index,
+        getState()
+      );
+      dispatch(_selectPane(paneId, mode, keySwitchOn));
     } else {
       console.log("pane state is not valid");
     }
   };
 }
 
-function _selectPane(paneId: number) {
+function _selectPane(paneId: number, mode, keySwitchOn) {
   return {
     type: SELECT_PANE,
-    paneId: paneId
+    paneId: paneId,
+    mode: mode,
+    keySwitchOn: keySwitchOn
   };
 }
 
