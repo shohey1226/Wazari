@@ -199,7 +199,6 @@ class NavBar extends Component<Props, IState, any> {
     } else {
       dispatch(removeExcludedPattern(pattern));
     }
-    dispatch(updateKeySwitch(!keySwitchOn));
   }
 
   urlToPattern(url) {
