@@ -248,11 +248,7 @@ function _removePane(paneId: number) {
 export function selectPane(paneId: number) {
   return (dispatch, getState) => {
     if (isValidPanes(getState().ui)) {
-      const index = getState().ui.getIn([
-        "panes",
-        action.paneId,
-        "activeTabIndex"
-      ]);
+      const index = getState().ui.getIn(["panes", paneId, "activeTabIndex"]);
       const { mode, keySwitchOn } = _getModeAndSwitch(
         paneId,
         index,
