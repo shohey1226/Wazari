@@ -24,6 +24,7 @@ type Site = {
   title: string;
   canGoBack: boolean;
   canGoForward: boolean;
+  updatedAt: number;
 };
 
 export interface UiState extends Map<any, any> {
@@ -82,6 +83,14 @@ export default function ui(state = initialState, action) {
     case SELECT_TAB:
       return state
         .setIn(["panes", action.paneId, "activeTabIndex"], action.index)
+        .setIn(
+          ["panes", action.paneId, "sites"],
+          state
+            .getIn(["panes", action.paneId, "sites"])
+            .update(action.index, site => {
+              return site.set("updatedAt", new Date().getTime());
+            })
+        )
         .set("keyMode", action.mode)
         .set("keySwitchOn", action.keySwitchOn);
 
@@ -102,7 +111,8 @@ export default function ui(state = initialState, action) {
                 .set("url", action.url)
                 .set("title", action.title)
                 .set("canGoBack", action.canGoBack)
-                .set("canGoForward", action.canGoForward);
+                .set("canGoForward", action.canGoForward)
+                .set("updatedAt", new Date().getTime());
             })
         )
         .set("keyMode", action.mode)

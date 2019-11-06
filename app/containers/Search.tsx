@@ -74,6 +74,9 @@ class Search extends Component<Props, IState, any> {
   private subscriptions: Array<any> = [];
   private fuse: any;
 
+  // For sort with usage on search. The element is original index. the Index is sorted one.
+  private currentTabIndice: Array<number> = [];
+
   constructor(props) {
     super(props);
     const site = props.activeSite;
@@ -188,7 +191,9 @@ class Search extends Component<Props, IState, any> {
     if (this.state.text.length === 0) {
       if (this.state.selectMode) {
         setTimeout(() => {
-          dispatch(selectTab(this.state.selectedItemIndex));
+          dispatch(
+            selectTab(this.currentTabIndice[this.state.selectedItemIndex])
+          );
         }, 500);
       }
     } else {
@@ -459,33 +464,49 @@ class Search extends Component<Props, IState, any> {
 
   renderCurrentTabs() {
     const { sites } = this.props;
-    return sites.map((item, i) => {
-      let isSelected = i === this.state.selectedItemIndex;
-      return (
-        <ListItem
-          key={`current-tabs-${i}`}
-          style={{
-            marginLeft: 0,
-            borderLeftWidth: isSelected ? 5 : 0,
-            borderLeftColor: "#30d158",
-            backgroundColor: isSelected ? "#eee" : "transparent"
-          }}
-          onPress={() => this.onPressHistoryItem(item.url)}
-        >
-          <View style={{ marginLeft: 10 }}>
-            <Favicon url={item.url} />
-          </View>
-          <Text
+    this.currentTabIndice = [];
+    return sites
+      .map((item, i) => {
+        item.idx = i; // keep original index to use the below map()
+        return item;
+      })
+      .sort((a, b) => {
+        if (!a.updatedAt || !b.updatedAt) {
+          return 0;
+        } else if (a.updatedAt > b.updatedAt) {
+          return -1;
+        } else {
+          return 1;
+        }
+      })
+      .map((item, i) => {
+        this.currentTabIndice[i] = item.idx;
+        let isSelected = i === this.state.selectedItemIndex;
+        return (
+          <ListItem
+            key={`current-tabs-${i}`}
             style={{
-              fontSize: 12,
-              paddingLeft: 5
+              marginLeft: 0,
+              borderLeftWidth: isSelected ? 5 : 0,
+              borderLeftColor: "#30d158",
+              backgroundColor: isSelected ? "#eee" : "transparent"
             }}
+            onPress={() => this.onPressHistoryItem(item.url)}
           >
-            {sites[i].url} - {sites[i].title}
-          </Text>
-        </ListItem>
-      );
-    });
+            <View style={{ marginLeft: 10 }}>
+              <Favicon url={item.url} />
+            </View>
+            <Text
+              style={{
+                fontSize: 12,
+                paddingLeft: 5
+              }}
+            >
+              {item.url} - {item.title}
+            </Text>
+          </ListItem>
+        );
+      });
   }
 
   renderCandidates() {
