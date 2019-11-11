@@ -362,7 +362,7 @@ class Search extends Component<Props, IState, any> {
     const { result, selectedItemIndex, selectMode, text } = this.state;
     const maxItemCount: number =
       text.length === 0
-        ? sites.length
+        ? sites.length - 1
         : result.length === 0
         ? history.length
         : result.length;
@@ -390,7 +390,7 @@ class Search extends Component<Props, IState, any> {
     const { result, selectedItemIndex, selectMode, text } = this.state;
     const maxItemCount: number =
       text.length === 0
-        ? sites.length
+        ? sites.length - 1
         : result.length === 0
         ? history.length
         : result.length;
@@ -463,13 +463,14 @@ class Search extends Component<Props, IState, any> {
   }
 
   renderCurrentTabs() {
-    const { sites } = this.props;
+    const { sites, activeTabIndex } = this.props;
     this.currentTabIndice = [];
     return sites
       .map((item, i) => {
         item.idx = i; // keep original index to use the below map()
         return item;
       })
+      .filter((item, i) => activeTabIndex !== i)
       .sort((a, b) => {
         if (!a.updatedAt || !b.updatedAt) {
           return 0;
