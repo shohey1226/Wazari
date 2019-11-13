@@ -462,6 +462,14 @@ class Search extends Component<Props, IState, any> {
     this.props.closeSearch();
   }
 
+  onPressTab(index: number) {
+    const { dispatch } = this.props;
+    setTimeout(() => {
+      dispatch(selectTab(index));
+    }, 500);
+    this.props.closeSearch();
+  }
+
   renderCurrentTabs() {
     const { sites, activeTabIndex } = this.props;
     this.currentTabIndice = [];
@@ -492,7 +500,7 @@ class Search extends Component<Props, IState, any> {
               borderLeftColor: "#30d158",
               backgroundColor: isSelected ? "#eee" : "transparent"
             }}
-            onPress={() => this.onPressHistoryItem(item.url)}
+            onPress={() => this.onPressTab(item.idx)}
           >
             <View style={{ marginLeft: 10 }}>
               <Favicon url={item.url} />
