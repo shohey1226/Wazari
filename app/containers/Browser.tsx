@@ -350,7 +350,8 @@ const Tab = ({
     paddingVertical: 0.5
   };
   const containerStyle = {
-    paddingHorizontal: 20,
+    paddingRight: 0,
+    paddingLeft: 20,
     paddingVertical: 1,
     flexDirection: "row",
     alignItems: "center",
@@ -382,7 +383,7 @@ const Tab = ({
           <Icon
             name="md-close"
             style={{
-              marginRight: 0,
+              paddingRight: 5,
               fontSize: 13,
               color: "#fff"
             }}
