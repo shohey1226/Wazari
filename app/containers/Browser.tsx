@@ -291,11 +291,14 @@ class Browser extends Component<Props, State> {
       sites.length < 2 ||
       (orientation === "LANDSCAPE" && DeviceInfo.getDeviceType() === "Handset")
         ? 0
-        : 50;
+        : 35;
 
     return (
       <ScrollableTabView
         ref={r => (this.tabsRef = r as any)}
+        tabBarPosition={
+          DeviceInfo.getDeviceType() === "Handset" ? "bottom" : "top"
+        }
         renderTabBar={() => (
           <TabBar
             underlineColor="#30d158"
@@ -350,13 +353,14 @@ const Tab = ({
     paddingHorizontal: 20,
     paddingVertical: 1,
     flexDirection: "row",
-    alignItems: "center"
+    alignItems: "center",
+    height: 30
   };
   const textStyle = {
     fontWeight: "600",
     fontSize: 12,
     marginLeft: 10,
-    marginRight: 5,
+    marginRight: 10,
     color: "white"
   };
   return (
@@ -369,11 +373,16 @@ const Tab = ({
       <View style={containerStyle}>
         <Favicon url={url} />
         <Text style={textStyle}>{label}</Text>
-        <Button transparent dark onPress={() => onPressButton()}>
+        <Button
+          style={{ height: 30 }}
+          transparent
+          dark
+          onPress={() => onPressButton()}
+        >
           <Icon
             name="md-close"
             style={{
-              marginRight: 5,
+              marginRight: 0,
               fontSize: 13,
               color: "#fff"
             }}
