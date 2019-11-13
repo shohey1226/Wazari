@@ -320,7 +320,8 @@ class NavBar extends Component<Props, IState, any> {
                 fontSize: 9,
                 textAlign: "left",
                 flex: 0.99,
-                color: "#666"
+                color: "#333",
+                fontWeight: 600
               }}
             >
               Search or URL {` - ${activeUrl}`}
@@ -349,7 +350,8 @@ class NavBar extends Component<Props, IState, any> {
                   marginLeft: 8,
                   marginRight: 3,
                   alignSelf: "flex-end",
-                  color: "#666"
+                  color: "#333",
+                  fontWeight: 600
                 }}
               />
             </Button>
