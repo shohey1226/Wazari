@@ -8,17 +8,9 @@ import {
   Keyboard
 } from "react-native";
 import { connect } from "react-redux";
-import {
-  Button,
-  Text,
-  Container,
-  Header,
-  Tab,
-  Tabs,
-  ScrollableTab,
-  TabHeading,
-  Icon
-} from "native-base";
+import { Button, Text, Container, Header, Icon } from "native-base";
+import ScrollableTabView from "react-native-scrollable-tab-view";
+import TabBar from "react-native-underline-tabbar";
 import Favicon from "../components/Favicon";
 import DeviceInfo from "react-native-device-info";
 import TabWindow from "./TabWindow";
@@ -274,54 +266,19 @@ class Browser extends Component<Props, State> {
         : this._truncate(sites[i].url);
 
       tabs.push(
-        <Tab
-          key={`tab-${i}`}
-          heading={
-            <TabHeading
-              style={{
-                paddingLeft: 5,
-                paddingRight: 0,
-                justifyContent: "flex-start"
-              }}
-            >
-              <View style={{ marginLeft: 5 }}>
-                <Favicon url={sites[i].url} />
-              </View>
-              <Text
-                style={{
-                  textAlign: "left",
-                  fontSize: 10.5,
-                  width: 105
-                }}
-              >
-                {tabTitle}
-              </Text>
-              <Button
-                transparent
-                light
-                onPress={() => this.pressCloseTab(i)}
-                style={{ alignSelf: "center" }}
-              >
-                <Icon
-                  name="md-close"
-                  style={{
-                    marginRight: 5,
-                    fontSize: 13
-                  }}
-                />
-              </Button>
-            </TabHeading>
-          }
-        >
-          <TabWindow
-            url={sites[i].url}
-            tabNumber={i}
-            keyMode={keyMode}
-            isActive={activeTabIndex === i && this.state.isActivePane}
-            activeTabIndex={activeTabIndex}
-            {...this.props}
-          />
-        </Tab>
+        <TabWindow
+          tabLabel={{
+            label: tabTitle,
+            onPressButton: () => this.pressCloseTab(i),
+            url: sites[i].url
+          }}
+          url={sites[i].url}
+          tabNumber={i}
+          keyMode={keyMode}
+          isActive={activeTabIndex === i && this.state.isActivePane}
+          activeTabIndex={activeTabIndex}
+          {...this.props}
+        />
       );
     }
     return tabs;
@@ -330,33 +287,102 @@ class Browser extends Component<Props, State> {
   render() {
     const { activeTabIndex, orientation, sites, paneIds, paneId } = this.props;
 
-    let style = { height: 35 };
-    if (
+    let height =
       sites.length < 2 ||
       (orientation === "LANDSCAPE" && DeviceInfo.getDeviceType() === "Handset")
-    ) {
-      style = { height: 0 };
-    }
+        ? 0
+        : 50;
 
     return (
-      <Tabs
+      <ScrollableTabView
         ref={r => (this.tabsRef = r as any)}
         renderTabBar={() => (
-          <ScrollableTab style={{ backgroundColor: "#222", ...style }} />
+          <TabBar
+            underlineColor="#30d158"
+            underlineHeight={4}
+            tabBarStyle={{
+              backgroundColor: "#222",
+              marginTop: 0,
+              height: height
+            }}
+            renderTab={(
+              tab,
+              page,
+              isTabActive,
+              onPressHandler,
+              onTabLayout
+            ) => (
+              <Tab
+                key={page}
+                tab={tab}
+                page={page}
+                isTabActive={isTabActive}
+                onPressHandler={onPressHandler}
+                onTabLayout={onTabLayout}
+              />
+            )}
+          />
         )}
         onChangeTab={this.onChangeTab.bind(this)}
-        style={{
-          borderWidth: this.state.isActivePane && paneIds.length > 1 ? 1 : 0,
-          borderColor: "#30d158"
-        }}
         scrollWithoutAnimation={true}
         locked={true}
       >
         {this.renderTabs()}
-      </Tabs>
+      </ScrollableTabView>
     );
   }
 }
+
+const Tab = ({
+  tab,
+  page,
+  isTabActive,
+  onPressHandler,
+  onTabLayout,
+  styles
+}) => {
+  const { label, url, onPressButton } = tab;
+  const style = {
+    marginHorizontal: 1,
+    paddingVertical: 0.5
+  };
+  const containerStyle = {
+    paddingHorizontal: 20,
+    paddingVertical: 1,
+    flexDirection: "row",
+    alignItems: "center"
+  };
+  const textStyle = {
+    fontWeight: "600",
+    fontSize: 12,
+    marginLeft: 10,
+    marginRight: 5,
+    color: "white"
+  };
+  return (
+    <TouchableOpacity
+      style={style}
+      onPress={onPressHandler}
+      onLayout={onTabLayout}
+      key={page}
+    >
+      <View style={containerStyle}>
+        <Favicon url={url} />
+        <Text style={textStyle}>{label}</Text>
+        <Button transparent dark onPress={() => onPressButton()}>
+          <Icon
+            name="md-close"
+            style={{
+              marginRight: 5,
+              fontSize: 13,
+              color: "#fff"
+            }}
+          />
+        </Button>
+      </View>
+    </TouchableOpacity>
+  );
+};
 
 function mapStateToProps(state, ownProps) {
   const keymap = selectAppKeymap(state);
