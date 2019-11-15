@@ -157,12 +157,16 @@ export function updateSite(
   paneId: number
 ) {
   return (dispatch, getState) => {
-    const activePaneId = getState().ui.get("activePaneId");
-    const { mode, keySwitchOn } = _getModeAndSwitch(
-      activePaneId,
-      index,
-      getState()
-    );
+    const excludedPatterns = getState()
+      .user.get("excludedPatterns")
+      .toArray();
+    const keySwitchOn = _isSwitchOn(url, excludedPatterns);
+    let mode = KeyMode.Text;
+    if (/^https:\/\/www\.wazaterm\.com\/terminals\/\S+/.test(url)) {
+      mode = KeyMode.Terminal;
+    } else if (!keySwitchOn) {
+      mode = KeyMode.Browser;
+    }
     dispatch(
       _updateSite(
         index,
