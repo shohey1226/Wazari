@@ -10,6 +10,10 @@ Wazari Browser is an oepn source and you can down load iOS app from
 
 This project is a part of [Wazaterm](https://www.wazaterm.com) which is a cloud terminal to run anywhere on any devices.
 
+## Document
+
+[Go to this page](https://www.wazaterm.com/wazaribrowser)
+
 
 ## Feature
 
