@@ -94,7 +94,7 @@ class Search extends Component<Props, IState, any> {
   componentDidMount() {
     const { activeSite, activeUrl, history } = this.props;
     this.subscriptions.push(
-      DAVKeyManagerEmitter.addListener("RNKeyEvent", this.typing),
+      //DAVKeyManagerEmitter.addListener("RNKeyEvent", this.typing),
       DAVKeyManagerEmitter.addListener("RNBrowserKeyEvent", this.handleActions)
     );
     this.props.searchIsFocused === true &&
@@ -639,7 +639,7 @@ class Search extends Component<Props, IState, any> {
             placeholder={`URL or Search with ${searchEngine}`}
             onChangeText={text =>
               this.setState({
-                text: text,
+                text: text.toLowerCase(),
                 selectionStart: text.length,
                 selectionEnd: text.length
               })
@@ -650,6 +650,9 @@ class Search extends Component<Props, IState, any> {
             textContentType="URL"
             autoCapitalize="none"
             style={{ fontSize: 16 }}
+            onKeyPress={({nativeEvent}) =>{
+              console.log(nativeEvent);
+            }}
           />
           <Button
             dark

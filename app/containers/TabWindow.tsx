@@ -531,6 +531,30 @@ export default connect(mapStateToProps)(TabWindow);
 
 let injectingJs = `
 
+// disable capslock
+window.addEventListener('keypress', function(e){
+  if(e.target.value && (e.keyCode >= 97 && e.keyCode <= 122 && e.shiftKey || e.keyCode >= 65 && e.keyCode <= 90 && !e.shiftKey)) {
+    var content = e.target.value;
+    var start = e.target.selectionStart;
+    e.target.value = content.slice(0, start) + e.key.toLowerCase() + content.slice(start);
+    e.target.setSelectionRange(start+1, start+1);
+    e.preventDefault();
+  }
+});
+
+window.addEventListener('keydown', function(e){
+  var keyObj = {
+    key: e.key,
+    keyCode: e.keyCode,
+    code: e.code,
+    altKey: e.altKey,
+    ctrlKey: e.ctrlKey,
+    shiftKey: e.shiftKey,
+    metaKey: e.metaKey,
+  }
+  window.ReactNativeWebView.postMessage(JSON.stringify({keyEvent: keyObj, postFor: "keydown"}))
+});
+
 // https://github.com/react-native-community/react-native-webview/issues/447
 var viewPortTag=document.createElement('meta');
 viewPortTag.id="viewport";

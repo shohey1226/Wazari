@@ -127,6 +127,7 @@ Input Mode - App + Input
   // If it's text mode, then, browser and input keymap
   } else if([_currentMode isEqual: @"text"]){
     [appKeymapSet addObjectsFromArray:  [self buildDAKeymap :@"browser"]];
+    return [appKeymapSet allObjects];
   }
   
   // Tab and Enter key should not be handled if it's text mode
@@ -142,6 +143,8 @@ Input Mode - App + Input
 
   // keymap for input - cache as it's long list of hooks
   if(!_commands){
+    
+  
 
     // https://github.com/kishikawakatsumi/KeyboardShortcuts/blob/master/KeyCommands/ViewController.m
     _commands = [[NSMutableArray alloc] init];
