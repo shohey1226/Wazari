@@ -21,8 +21,6 @@ RCT_EXPORT_MODULE();
 - (id)init
 {
   
-  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(inputModeDidChange:) name:UITextInputCurrentInputModeDidChangeNotification object: nil];
-  
   NSLog(@"init now");
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyEventReceived:) name:@"KeyEvent" object:nil];
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(appKeyEventReceived:) name:@"AppKeyEvent" object:nil];
@@ -59,14 +57,6 @@ RCT_EXPORT_MODULE();
   if (hasListeners) {
     [self sendEventWithName:@"RNAppKeyEvent" body:@{@"action": action}];
   }
-}
-
-- (void)inputModeDidChange:(NSNotification *)notification
-{
-  //UITextInputMode *inputMode = [notification object];
-  UITextInputMode *currentInputMode = [notification object];
-  NSLog(@"%@", currentInputMode);
-  NSLog(@"==================================");
 }
 
 - (void)browserKeyEventReceived:(NSNotification *)notification
