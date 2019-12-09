@@ -21,6 +21,7 @@ import {
 } from "native-base";
 import MCIcon from "react-native-vector-icons/MaterialCommunityIcons";
 import Favicon from "../components/Favicon";
+import WVInput from "../components/WVInput";
 import { selectBrowserKeymap, selectModifiers } from "../selectors/keymap";
 import {
   selectActiveUrl,
@@ -51,6 +52,7 @@ interface IState {
   selectedItemIndex: number | null;
   result: Array<any>;
   selectMode: boolean;
+  capsLockOn: boolean;
 }
 
 interface Props {
@@ -87,7 +89,8 @@ class Search extends Component<Props, IState, any> {
       selectionEnd: 0,
       selectedItemIndex: null,
       result: [],
-      selectMode: false
+      selectMode: false,
+      capsLockOn: false,
     };
   }
 
@@ -634,26 +637,11 @@ class Search extends Component<Props, IState, any> {
       >
         <Item>
           <Icon name="ios-search" style={{ paddingLeft: 10 }} />
-          <Input
-            ref={r => (this.searchRef = r as any)}
-            placeholder={`URL or Search with ${searchEngine}`}
-            onChangeText={text =>
-              this.setState({
-                text: text.toLowerCase(),
-                selectionStart: text.length,
-                selectionEnd: text.length
-              })
-            }
-            value={this.state.text}
-            autoCorrect={false}
-            onEndEditing={this.onEndEditing.bind(this)}
-            textContentType="URL"
-            autoCapitalize="none"
-            style={{ fontSize: 16 }}
-            onKeyPress={({nativeEvent}) =>{
-              console.log(nativeEvent);
-            }}
+          <WVInput 
+            keyup={(v) => this.setState({text: v})} 
+            updateCapsLockState={(s) => this.setState({capsLockOn: s})}
           />
+          <Text>capslock: {this.state.capsLockOn ? "on" : "off"}</Text>
           <Button
             dark
             transparent
