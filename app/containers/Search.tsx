@@ -91,7 +91,7 @@ class Search extends Component<Props, IState, any> {
       result: [],
       selectMode: false,
       capsLockOn: false,
-      action: "",
+      action: ""
     };
   }
 
@@ -623,7 +623,13 @@ class Search extends Component<Props, IState, any> {
   }
 
   render() {
-    const { searchEngine, orientation, keyMode } = this.props;
+    const {
+      searchEngine,
+      orientation,
+      keyMode,
+      browserKeymap,
+      modifiers
+    } = this.props;
     if (
       orientation === "LANDSCAPE" &&
       DeviceInfo.getDeviceType() === "Handset"
@@ -638,13 +644,14 @@ class Search extends Component<Props, IState, any> {
       >
         <Item>
           <Icon name="ios-search" style={{ paddingLeft: 10 }} />
-          <WVInput 
-            keyup={(v) => this.setState({text: v})} 
-            updateCapsLockState={(s) => this.setState({capsLockOn: s})}
-            updateAction={(a) => this.setState({action: a})}            
-
+          <WVInput
+            keyup={v => this.setState({ text: v })}
+            updateCapsLockState={s => this.setState({ capsLockOn: s })}
+            updateAction={a => this.setState({ action: a })}
+            modifiers={modifiers}
+            browserKeymap={browserKeymap}
           />
-          <Text>action: {this.state.action}</Text>          
+          <Text>action: {this.state.action}</Text>
           <Button
             dark
             transparent
@@ -679,11 +686,15 @@ function mapStateToProps(state, ownProps) {
     activePaneId,
     "activeTabIndex"
   ]);
+  const modifiers = selectModifiers(state);
+  const browserKeymap = selectBrowserKeymap(state);
 
   return {
     history,
     sites,
-    activeTabIndex
+    activeTabIndex,
+    modifiers,
+    browserKeymap
   };
 }
 

@@ -157,7 +157,10 @@ search.watch("d", function(map){
 class WVInput extends Component {
   webref: WebView | null = null;
 
-  componentDidMount() {}
+  componentDidMount() {
+    const { modifiers, browserKeymap } = this.props;
+    console.log(modifiers, browserKeymap);
+  }
   componentWillUnmount() {
     this.webref &&
       this.webref.injectJavaScript(`document.getElementById('search').blur()`);
@@ -180,10 +183,6 @@ class WVInput extends Component {
   }
 
   onLoadEnd() {
-    this.focusWindow();
-  }
-
-  focusWindow() {
     this.webref &&
       this.webref.injectJavaScript(`document.getElementById('search').focus()`);
   }
