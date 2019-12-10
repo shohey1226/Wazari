@@ -6,6 +6,13 @@ const HTML = `
   <input type="text" id="search">
 </div>
 <style>
+input[type="text"] {
+  border: 1px solid red;
+  border-radius:10px;
+}
+input[type="text"]:focus {
+  outline: none
+}
 #container {
 }
 #search{
@@ -17,10 +24,6 @@ const HTML = `
 }
 </style>
 <script>
-
-
-
-
 
 // https://stackoverflow.com/questions/5203407/how-to-detect-if-multiple-keys-are-pressed-at-once-using-javascript
 function Input(el){
@@ -148,18 +151,16 @@ search.watch("d", function(map){
 
 
 </script>
-`
-
-
+`;
 
 // Use webview input
 class WVInput extends Component {
   webref: WebView | null = null;
 
-  componentDidMount(){
-  }
-  componentWillUnmount(){
-    this.webref && this.webref.injectJavaScript(`document.getElementById('search').blur()`);
+  componentDidMount() {}
+  componentWillUnmount() {
+    this.webref &&
+      this.webref.injectJavaScript(`document.getElementById('search').blur()`);
   }
 
   onMessage(event) {
@@ -167,10 +168,10 @@ class WVInput extends Component {
     console.log(data);
     switch (data.postFor) {
       case "keyup":
-        this.props.keyup(data.inputValue)
+        this.props.keyup(data.inputValue);
         break;
       case "capsLock":
-        this.props.updateCapsLockState(data.capsLockOn)      
+        this.props.updateCapsLockState(data.capsLockOn);
         break;
       case "action":
         this.props.updateAction(data.name);
@@ -178,24 +179,25 @@ class WVInput extends Component {
     }
   }
 
-  onLoadEnd(){
+  onLoadEnd() {
     this.focusWindow();
   }
 
   focusWindow() {
-    this.webref && this.webref.injectJavaScript(`document.getElementById('search').focus()`);
+    this.webref &&
+      this.webref.injectJavaScript(`document.getElementById('search').focus()`);
   }
 
   render() {
     return (
       <WebView
         ref={r => (this.webref = r as any)}
-        originWhitelist={['*']}
+        originWhitelist={["*"]}
         source={{ html: HTML }}
         onLoadEnd={this.onLoadEnd.bind(this)}
         onMessage={this.onMessage.bind(this)}
       />
-    )
+    );
   }
 }
 
