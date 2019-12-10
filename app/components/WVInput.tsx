@@ -17,32 +17,135 @@ const HTML = `
 }
 </style>
 <script>
-var search = document.getElementById('search')
-search.addEventListener('keydown', function(e){
-  var keyObj = {
-    key: e.key,
-    keyCode: e.keyCode,
-    code: e.code,
-    altKey: e.altKey,
-    ctrlKey: e.ctrlKey,
-    shiftKey: e.shiftKey,
-    metaKey: e.metaKey,
-  }  
-  window.ReactNativeWebView.postMessage(JSON.stringify({keyEvent: keyObj, postFor: "keydown"}))
-});
-
-search.addEventListener('keyup', function(e){
-  window.ReactNativeWebView.postMessage(JSON.stringify({inputValue: this.value, postFor: "keyup"}))  
-});
 
 
-search.addEventListener('keypress', function(e){
-  if(e.target.value && (e.keyCode >= 97 && e.keyCode <= 122 && e.shiftKey || e.keyCode >= 65 && e.keyCode <= 90 && !e.shiftKey)) {
-    window.ReactNativeWebView.postMessage(JSON.stringify({capsLockOn: true, postFor: "capsLock"}))  
-  }else{
-    window.ReactNativeWebView.postMessage(JSON.stringify({capsLockOn: false, postFor: "capsLock"}))  
-  }
-});
+
+
+
+// https://stackoverflow.com/questions/5203407/how-to-detect-if-multiple-keys-are-pressed-at-once-using-javascript
+function Input(el){
+    var parent = el,
+        map = {},
+        intervals = {};
+
+    function ev_kdown(ev)
+    {
+        map[ev.key] = true;
+        //ev.preventDefault();
+        return;
+    }
+
+    function ev_kup(ev)
+    {
+        map[ev.key] = false;
+        //ev.preventDefault();
+        return;
+    }
+
+    function key_down(key)
+    {
+        return map[key];
+    }
+
+    function keys_down_array(array)
+    {
+        return typeof array.find( key => !key_down(key) ) === "undefined";
+    }
+
+    function keys_down_arguments(...args)
+    {
+        return keys_down_array(args);
+    }
+
+    function clear()
+    {
+        map = {};
+    }
+
+    function watch_loop(keylist, callback)
+    {
+      return function(){
+        if(keys_down_array(keylist)){
+          callback(map);
+        }
+      }
+    }
+
+    function watch(name, callback, ...keylist)
+    {
+        intervals[name] = setInterval(watch_loop(keylist, callback), 1000/24);
+    }
+
+    function unwatch(name)
+    {
+        clearInterval(intervals[name]);
+        delete intervals[name];
+    }
+
+    function detach()
+    {
+        parent.removeEventListener("keydown", ev_kdown);
+        parent.removeEventListener("keyup", ev_kup);
+    }
+
+    function attach()
+    {
+        parent.addEventListener("keydown", ev_kdown);
+        parent.addEventListener("keyup", ev_kup);
+    }
+
+    function Input()
+    {
+        attach();
+
+        return {
+            key_down:  key_down,
+            keys_down: keys_down_arguments,
+            watch:     watch,
+            unwatch:   unwatch,
+            clear:     clear,
+            detach:    detach
+        };
+    }
+
+    return Input();
+}
+
+var search = Input(document.getElementById("search"));
+search.watch("escape", function(map){
+  window.ReactNativeWebView.postMessage(JSON.stringify({name: "escape", postFor: "action"}));
+}, "Escape");
+search.watch("home", function(map){
+  window.ReactNativeWebView.postMessage(JSON.stringify({name: "home", postFor: "action"}));
+}, "CapsLock", "m");
+search.watch("CapsLock", function(map){
+  window.ReactNativeWebView.postMessage(JSON.stringify({name: "CapsLock", postFor: "action"}));
+}, "CapsLock");
+search.watch("Control", function(map){
+  window.ReactNativeWebView.postMessage(JSON.stringify({name: "Control", postFor: "action"}));
+}, "Control");
+search.watch("Meta", function(map){
+  window.ReactNativeWebView.postMessage(JSON.stringify({name: "Meta", postFor: "action"}));
+}, "Meta");
+search.watch("Alt", function(map){
+  window.ReactNativeWebView.postMessage(JSON.stringify({name: "Alt", postFor: "action"}));
+}, "Alt");
+search.watch("alt+l", function(map){
+  window.ReactNativeWebView.postMessage(JSON.stringify({name: "alt+l", postFor: "action"}));
+}, "Alt", "l");
+search.watch("control+l", function(map){
+  window.ReactNativeWebView.postMessage(JSON.stringify({name: "control+l", postFor: "action"}));
+}, "Control", "l");
+search.watch("meta+l", function(map){
+  window.ReactNativeWebView.postMessage(JSON.stringify({name: "meta+l", postFor: "action"}));
+}, "Meta", "l");
+search.watch("c", function(map){
+  window.ReactNativeWebView.postMessage(JSON.stringify({name: "c", postFor: "action"}));
+}, "c");
+search.watch("d", function(map){
+  window.ReactNativeWebView.postMessage(JSON.stringify({name: "d", postFor: "action"}));
+}, "d");
+
 
 </script>
 `
@@ -69,7 +172,8 @@ class WVInput extends Component {
       case "capsLock":
         this.props.updateCapsLockState(data.capsLockOn)      
         break;
-      case "keydown":    
+      case "action":
+        this.props.updateAction(data.name);
         break;
     }
   }

@@ -91,6 +91,7 @@ class Search extends Component<Props, IState, any> {
       result: [],
       selectMode: false,
       capsLockOn: false,
+      action: "",
     };
   }
 
@@ -640,8 +641,10 @@ class Search extends Component<Props, IState, any> {
           <WVInput 
             keyup={(v) => this.setState({text: v})} 
             updateCapsLockState={(s) => this.setState({capsLockOn: s})}
+            updateAction={(a) => this.setState({action: a})}            
+
           />
-          <Text>capslock: {this.state.capsLockOn ? "on" : "off"}</Text>
+          <Text>action: {this.state.action}</Text>          
           <Button
             dark
             transparent
