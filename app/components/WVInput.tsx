@@ -255,7 +255,10 @@ function loadKeymaps(keymapStr){
       }, ...h.keys);
     })
   });
+  return true;
 }
+
+true;
 
 </script>
 `;

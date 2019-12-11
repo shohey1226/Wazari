@@ -93,7 +93,7 @@
     if([mode  isEqual: @"app"]){
       [_commands addObject:[UIKeyCommand keyCommandWithInput:key modifierFlags:intMod action:@selector(handleAppCommand:)]];
     }else if([mode  isEqual: @"browser"]){
-      [_commands addObject:[UIKeyCommand keyCommandWithInput:key modifierFlags:intMod action:@selector(handleBrowserCommand:)]];
+      //[_commands addObject:[UIKeyCommand keyCommandWithInput:key modifierFlags:intMod action:@selector(handleBrowserCommand:)]];
     }else if([mode  isEqual: @"input"]){
       [_commands addObject:[UIKeyCommand keyCommandWithInput:key modifierFlags:intMod action:@selector(handleInputCommand:)]];
     }
