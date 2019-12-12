@@ -94,15 +94,19 @@ class WVInput extends Component {
     }
   }
 
+  handleKeys(keys) {
+    if (keys.length <= 1) {
+      return;
+    }
+    this.props.updateAction(keys.join(","));
+  }
+
   onMessage(event) {
     const data = JSON.parse(event.nativeEvent.data);
     console.log(data);
     switch (data.postFor) {
-      case "keyup":
-        this.props.keyup(data.inputValue);
-        break;
-      case "capsLock":
-        this.props.updateCapsLockState(data.capsLockOn);
+      case "pressedKeys":
+        this.handleKeys(data.keys);
         break;
       case "action":
         this.props.updateAction(data.name);
@@ -154,109 +158,30 @@ input[type="text"]:focus {
 </style>
 <script>
 
+var map = {};
 
-
-// https://stackoverflow.com/questions/5203407/how-to-detect-if-multiple-keys-are-pressed-at-once-using-javascript
-function Input(el){
-    var parent = el,
-        map = {},
-        intervals = {};
-
-    function ev_kdown(ev)
-    {
-        map[ev.key] = true;
-        //ev.preventDefault();
-        return;
-    }
-
-    function ev_kup(ev)
-    {
-        map[ev.key] = false;
-        //ev.preventDefault();
-        return;
-    }
-
-    function key_down(key)
-    {
-        return map[key];
-    }
-
-    function keys_down_array(array)
-    {
-        return typeof array.find( key => !key_down(key) ) === "undefined";
-    }
-
-    function keys_down_arguments(...args)
-    {
-        return keys_down_array(args);
-    }
-
-    function clear()
-    {
-        map = {};
-    }
-
-    function watch_loop(keylist, callback)
-    {
-      return function(){
-        if(keys_down_array(keylist)){
-          callback(map);
-        }
-      }
-    }
-
-    function watch(name, callback, ...keylist)
-    {
-        intervals[name] = setInterval(watch_loop(keylist, callback), 1000/24);
-    }
-
-    function unwatch(name)
-    {
-        clearInterval(intervals[name]);
-        delete intervals[name];
-    }
-
-    function detach()
-    {
-        parent.removeEventListener("keydown", ev_kdown);
-        parent.removeEventListener("keyup", ev_kup);
-    }
-
-    function attach()
-    {
-        parent.addEventListener("keydown", ev_kdown);
-        parent.addEventListener("keyup", ev_kup);
-    }
-
-    function Input()
-    {
-        attach();
-
-        return {
-            key_down:  key_down,
-            keys_down: keys_down_arguments,
-            watch:     watch,
-            unwatch:   unwatch,
-            clear:     clear,
-            detach:    detach
-        };
-    }
-
-    return Input();
+function keydown(e) {
+  map[e.key] = true;
+  sendKeys();
 }
 
-function loadKeymaps(keymapStr){
-  var search = Input(document.getElementById("search"));
-  var keymapObj = JSON.parse(keymapStr);
-  Object.keys(keymapObj).forEach((action) => {
-    keymapObj[action].forEach((h, index) => {
-      search.watch(action+index, function(map){
-        window.ReactNativeWebView.postMessage(JSON.stringify({name: action+index, postFor: "action"}));
-      }, ...h.keys);
-    })
-  });
-  return true;
+function keyup(e) {
+  map[e.key] = false;
 }
+
+function sendKeys() {
+  var pressedKeys = Object.keys(map).filter(k => map[k] === true);
+  window.ReactNativeWebView.postMessage(JSON.stringify({keys: pressedKeys, postFor: "pressedKeys"}));
+}
+
+var inputField = document.getElementById('search')
+inputField.setAttribute('autocorrection', false);
+inputField.setAttribute('spellcheck', 'false');
+inputField.setAttribute('autocomplete', 'off');
+inputField.setAttribute('autocorrect', 'off');
+inputField.setAttribute('autocapitalize', 'none');
+inputField.addEventListener('keydown', keydown, false);
+inputField.addEventListener('keyup', keyup, false);
 
 true;
 
