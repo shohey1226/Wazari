@@ -134,6 +134,7 @@ export default WVInput;
 const HTML = `
 <div id="container">
   <input type="text" id="search">
+  <div id="output"></div>
 </div>
 <style>
 input[type="text"] {
@@ -152,17 +153,22 @@ input[type="text"]:focus {
   line-height: 20px;
   width: 100%;
 }
+#output {
+  font-size: 10px;
+}
 </style>
 <script>
 
 var map = {};
 
 function keydown(e) {
+  document.getElementById("output").innerText += e.key + " " + e.type + " " + e.keyCode + "|";  
   map[e.key] = true;
-  sendKeys();
 }
 
 function keyup(e) {
+  document.getElementById("output").innerText += e.key + " " + e.type + " " + e.keyCode + "|";  
+  sendKeys();  
   map[e.key] = false;
 }
 
