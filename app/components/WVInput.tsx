@@ -95,9 +95,6 @@ class WVInput extends Component {
   }
 
   handleKeys(keys) {
-    if (keys.length <= 1) {
-      return;
-    }
     this.props.updateAction(keys.join(","));
   }
 

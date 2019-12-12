@@ -93,7 +93,7 @@
     if([mode  isEqual: @"app"]){
       [_commands addObject:[UIKeyCommand keyCommandWithInput:key modifierFlags:intMod action:@selector(handleAppCommand:)]];
     }else if([mode  isEqual: @"browser"]){
-      //[_commands addObject:[UIKeyCommand keyCommandWithInput:key modifierFlags:intMod action:@selector(handleBrowserCommand:)]];
+      [_commands addObject:[UIKeyCommand keyCommandWithInput:key modifierFlags:intMod action:@selector(handleBrowserCommand:)]];
     }else if([mode  isEqual: @"input"]){
       [_commands addObject:[UIKeyCommand keyCommandWithInput:key modifierFlags:intMod action:@selector(handleInputCommand:)]];
     }
@@ -127,7 +127,7 @@ Input Mode - App + Input
   // If it's text mode, then, browser and input keymap
   } else if([_currentMode isEqual: @"text"]){
     [appKeymapSet addObjectsFromArray:  [self buildDAKeymap :@"browser"]];
-    return [appKeymapSet allObjects];
+    //return [appKeymapSet allObjects];
   }
   
   // Tab and Enter key should not be handled if it's text mode
