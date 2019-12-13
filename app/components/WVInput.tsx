@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 import { WebView } from "react-native-webview";
-
-const HTML = require("../assets/search.html");
+import RNFS from "react-native-fs";
 
 // Use webview input
 class WVInput extends Component {
@@ -123,7 +122,7 @@ class WVInput extends Component {
       <WebView
         ref={r => (this.webref = r as any)}
         originWhitelist={["*"]}
-        source={HTML}
+        source={{ uri: "https://jsfiddle.net/shohey1226/ja2yzd3k/show" }}
         onLoadEnd={this.onLoadEnd.bind(this)}
         onMessage={this.onMessage.bind(this)}
       />
@@ -132,5 +131,3 @@ class WVInput extends Component {
 }
 
 export default WVInput;
-
-
