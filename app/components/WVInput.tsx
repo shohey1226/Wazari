@@ -122,7 +122,7 @@ class WVInput extends Component {
       <WebView
         ref={r => (this.webref = r as any)}
         originWhitelist={["*"]}
-        source={{ uri: "https://jsfiddle.net/shohey1226/ja2yzd3k/show" }}
+        source={{ uri: `file://${RNFS.MainBundlePath}/search.html` }}
         onLoadEnd={this.onLoadEnd.bind(this)}
         onMessage={this.onMessage.bind(this)}
       />
