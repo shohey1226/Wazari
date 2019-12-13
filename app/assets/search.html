@@ -1,0 +1,65 @@
+<html>
+  <body>
+    <div id="container">
+      <input type="text" id="search" />
+      <div id="output"></div>
+    </div>
+
+    <style>
+      input[type="text"] {
+        border: 1px solid red;
+        border-radius: 10px;
+      }
+      input[type="text"]:focus {
+        outline: none;
+      }
+      #container {
+      }
+      #search {
+        padding: 10px 0;
+        border: none;
+        font-size: 20px;
+        line-height: 20px;
+        width: 100%;
+      }
+      #output {
+        font-size: 10px;
+      }
+    </style>
+
+    <script>
+      var map = {};
+
+      function keydown(e) {
+        document.getElementById("output").innerText +=
+          e.key + " " + e.type + " " + e.keyCode + "|";
+        map[e.key] = true;
+      }
+
+      function keyup(e) {
+        document.getElementById("output").innerText +=
+          e.key + " " + e.type + " " + e.keyCode + "|";
+        sendKeys();
+        map[e.key] = false;
+      }
+
+      function sendKeys() {
+        var pressedKeys = Object.keys(map).filter(k => map[k] === true);
+        window.ReactNativeWebView.postMessage(
+          JSON.stringify({ keys: pressedKeys, postFor: "pressedKeys" })
+        );
+      }
+
+      var inputField = document.getElementById("search");
+      inputField.setAttribute("autocorrection", false);
+      inputField.setAttribute("spellcheck", "false");
+      inputField.setAttribute("autocomplete", "off");
+      inputField.setAttribute("autocorrect", "off");
+      inputField.setAttribute("autocapitalize", "none");
+      inputField.addEventListener("keydown", keydown, false);
+      inputField.addEventListener("keyup", keyup, false);
+
+      true;
+    </script>
+  </body>
+</html>

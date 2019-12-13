@@ -642,7 +642,7 @@ class Search extends Component<Props, IState, any> {
           backgroundColor: "white"
         }}
       >
-        <Item>
+        <Item style={{ height: 300 }}>
           <Icon name="ios-search" style={{ paddingLeft: 10 }} />
           <WVInput
             keyup={v => this.setState({ text: v })}

@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { WebView } from "react-native-webview";
+import RNFS from "react-native-fs";
 
 // Use webview input
 class WVInput extends Component {
@@ -121,7 +122,7 @@ class WVInput extends Component {
       <WebView
         ref={r => (this.webref = r as any)}
         originWhitelist={["*"]}
-        source={{ html: HTML }}
+        source={{ uri: "https://jsfiddle.net/shohey1226/ja2yzd3k/show" }}
         onLoadEnd={this.onLoadEnd.bind(this)}
         onMessage={this.onMessage.bind(this)}
       />
@@ -130,63 +131,3 @@ class WVInput extends Component {
 }
 
 export default WVInput;
-
-const HTML = `
-<div id="container">
-  <input type="text" id="search">
-  <div id="output"></div>
-</div>
-<style>
-input[type="text"] {
-  border: 1px solid red;
-  border-radius:10px;
-}
-input[type="text"]:focus {
-  outline: none
-}
-#container {
-}
-#search{
-  padding: 10px 0;
-  border: none;
-  font-size: 20px;
-  line-height: 20px;
-  width: 100%;
-}
-#output {
-  font-size: 10px;
-}
-</style>
-<script>
-
-var map = {};
-
-function keydown(e) {
-  document.getElementById("output").innerText += e.key + " " + e.type + " " + e.keyCode + "|";  
-  map[e.key] = true;
-}
-
-function keyup(e) {
-  document.getElementById("output").innerText += e.key + " " + e.type + " " + e.keyCode + "|";  
-  sendKeys();  
-  map[e.key] = false;
-}
-
-function sendKeys() {
-  var pressedKeys = Object.keys(map).filter(k => map[k] === true);
-  window.ReactNativeWebView.postMessage(JSON.stringify({keys: pressedKeys, postFor: "pressedKeys"}));
-}
-
-var inputField = document.getElementById('search')
-inputField.setAttribute('autocorrection', false);
-inputField.setAttribute('spellcheck', 'false');
-inputField.setAttribute('autocomplete', 'off');
-inputField.setAttribute('autocorrect', 'off');
-inputField.setAttribute('autocapitalize', 'none');
-inputField.addEventListener('keydown', keydown, false);
-inputField.addEventListener('keyup', keyup, false);
-
-true;
-
-</script>
-`;
