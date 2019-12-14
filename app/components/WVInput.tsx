@@ -125,6 +125,13 @@ class WVInput extends Component {
         source={{ uri: "https://jsfiddle.net/shohey1226/ja2yzd3k/show" }}
         onLoadEnd={this.onLoadEnd.bind(this)}
         onMessage={this.onMessage.bind(this)}
+        keyboardDisplayRequiresUserAction={false}
+        sharedCookiesEnabled={true}
+        useWebKit={true}
+        hideKeyboardAccessoryView={true}
+        allowsBackForwardNavigationGestures={true}
+        decelerationRate="fast"
+        userAgent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.1 Safari/605.1.15"
       />
     );
   }
