@@ -21,6 +21,7 @@ import {
 } from "native-base";
 import MCIcon from "react-native-vector-icons/MaterialCommunityIcons";
 import Favicon from "../components/Favicon";
+import WVInput from "../components/WVInput";
 import { selectBrowserKeymap, selectModifiers } from "../selectors/keymap";
 import {
   selectActiveUrl,
@@ -51,6 +52,7 @@ interface IState {
   selectedItemIndex: number | null;
   result: Array<any>;
   selectMode: boolean;
+  capsLockOn: boolean;
 }
 
 interface Props {
@@ -87,14 +89,16 @@ class Search extends Component<Props, IState, any> {
       selectionEnd: 0,
       selectedItemIndex: null,
       result: [],
-      selectMode: false
+      selectMode: false,
+      capsLockOn: false,
+      action: ""
     };
   }
 
   componentDidMount() {
     const { activeSite, activeUrl, history } = this.props;
     this.subscriptions.push(
-      DAVKeyManagerEmitter.addListener("RNKeyEvent", this.typing),
+      //DAVKeyManagerEmitter.addListener("RNKeyEvent", this.typing),
       DAVKeyManagerEmitter.addListener("RNBrowserKeyEvent", this.handleActions)
     );
     this.props.searchIsFocused === true &&
@@ -619,7 +623,13 @@ class Search extends Component<Props, IState, any> {
   }
 
   render() {
-    const { searchEngine, orientation, keyMode } = this.props;
+    const {
+      searchEngine,
+      orientation,
+      keyMode,
+      browserKeymap,
+      modifiers
+    } = this.props;
     if (
       orientation === "LANDSCAPE" &&
       DeviceInfo.getDeviceType() === "Handset"
@@ -634,23 +644,14 @@ class Search extends Component<Props, IState, any> {
       >
         <Item>
           <Icon name="ios-search" style={{ paddingLeft: 10 }} />
-          <Input
-            ref={r => (this.searchRef = r as any)}
-            placeholder={`URL or Search with ${searchEngine}`}
-            onChangeText={text =>
-              this.setState({
-                text: text,
-                selectionStart: text.length,
-                selectionEnd: text.length
-              })
-            }
-            value={this.state.text}
-            autoCorrect={false}
-            onEndEditing={this.onEndEditing.bind(this)}
-            textContentType="URL"
-            autoCapitalize="none"
-            style={{ fontSize: 16 }}
+          <WVInput
+            keyup={v => this.setState({ text: v })}
+            updateCapsLockState={s => this.setState({ capsLockOn: s })}
+            updateAction={a => this.setState({ action: a })}
+            modifiers={modifiers}
+            browserKeymap={browserKeymap}
           />
+          <Text>action: {this.state.action}</Text>
           <Button
             dark
             transparent
@@ -685,11 +686,15 @@ function mapStateToProps(state, ownProps) {
     activePaneId,
     "activeTabIndex"
   ]);
+  const modifiers = selectModifiers(state);
+  const browserKeymap = selectBrowserKeymap(state);
 
   return {
     history,
     sites,
-    activeTabIndex
+    activeTabIndex,
+    modifiers,
+    browserKeymap
   };
 }
 

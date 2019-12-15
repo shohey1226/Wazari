@@ -127,7 +127,7 @@ class NavBar extends Component<Props, IState, any> {
 
     if (prevProp.focusedPane !== focusedPane) {
       if (focusedPane === "search") {
-        dispatch(updateMode(KeyMode.Search));
+        dispatch(updateMode(KeyMode.Browser));
         this.setState({ previousKeyMode: keyMode });
       } else if (focusedPane === "browser") {
         dispatch(updateMode(this.state.previousKeyMode));
