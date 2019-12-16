@@ -622,6 +622,10 @@ class Search extends Component<Props, IState, any> {
     this.props.closeSearch();
   }
 
+  performAction(name) {
+    console.log(name);
+  }
+
   render() {
     const {
       searchEngine,
@@ -650,8 +654,9 @@ class Search extends Component<Props, IState, any> {
             updateAction={a => this.setState({ action: a })}
             modifiers={modifiers}
             browserKeymap={browserKeymap}
+            performAction={this.performAction.bind(this)}
           />
-          <Text>action: {this.state.action}</Text>
+
           <Button
             dark
             transparent
@@ -671,6 +676,8 @@ class Search extends Component<Props, IState, any> {
             <Icon name="ios-close" style={{ paddingLeft: 0, fontSize: 30 }} />
           </Button>
         </Item>
+        <Text>capslock: {this.state.capsLockOn}</Text>
+        <Text>action: {this.state.action}</Text>
         <List>{this.renderCandidates()}</List>
       </Content>
     );
