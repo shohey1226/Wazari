@@ -36,6 +36,8 @@
 		7202FE2998824513BBD4882B /* MaterialIcons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3ABB6265583340F1A3AE53CB /* MaterialIcons.ttf */; };
 		73A0E1F7FA18E2AA7844FCCD /* libPods-Wazari.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5F3A161D7B4976592FD071EF /* libPods-Wazari.a */; };
 		8F72D7778A6D4E938FFA1268 /* Octicons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 123686AEF9A24C04A4571B77 /* Octicons.ttf */; };
+		94641A9123A9B93400AAA70F /* input.js in Resources */ = {isa = PBXBuildFile; fileRef = 94641A9023A9B93400AAA70F /* input.js */; };
+		94641A9323A9B93C00AAA70F /* search.html in Resources */ = {isa = PBXBuildFile; fileRef = 94641A9223A9B93C00AAA70F /* search.html */; };
 		9E9D64251895F8A5D4411408 /* libPods-Wazari-tvOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0C1867FC4800480F0DE3EB41 /* libPods-Wazari-tvOS.a */; };
 		A405765856BF4E4DB0399BD3 /* Ionicons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8EFC8B023C1046A9ABB098AD /* Ionicons.ttf */; };
 		B7A6948FA90B4FA98BFEEE89 /* SimpleLineIcons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = DDECFBD44F5C493C9EC3A45F /* SimpleLineIcons.ttf */; };
@@ -100,6 +102,8 @@
 		82C6B94B674B2C3DB9DF048A /* Pods-Wazari-tvOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Wazari-tvOS.debug.xcconfig"; path = "Target Support Files/Pods-Wazari-tvOS/Pods-Wazari-tvOS.debug.xcconfig"; sourceTree = "<group>"; };
 		8863D9FF38AC9BBEA797AE5C /* libPods-Wazari-tvOSTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Wazari-tvOSTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		8EFC8B023C1046A9ABB098AD /* Ionicons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Ionicons.ttf; path = "../node_modules/native-base/Fonts/Ionicons.ttf"; sourceTree = "<group>"; };
+		94641A9023A9B93400AAA70F /* input.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = input.js; path = ../app/assets/input.js; sourceTree = "<group>"; };
+		94641A9223A9B93C00AAA70F /* search.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; name = search.html; path = ../app/assets/search.html; sourceTree = "<group>"; };
 		AEA91A04A5089DF2B8F062FA /* Pods-Wazari.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Wazari.debug.xcconfig"; path = "Target Support Files/Pods-Wazari/Pods-Wazari.debug.xcconfig"; sourceTree = "<group>"; };
 		B3E743CAF4FA4D85A978A03C /* FontAwesome5_Solid.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome5_Solid.ttf; path = "../node_modules/native-base/Fonts/FontAwesome5_Solid.ttf"; sourceTree = "<group>"; };
 		C7C286843B3B43FDAF20DA83 /* Feather.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Feather.ttf; path = "../node_modules/native-base/Fonts/Feather.ttf"; sourceTree = "<group>"; };
@@ -227,6 +231,8 @@
 		60E6F6AE22DB009300814118 /* web */ = {
 			isa = PBXGroup;
 			children = (
+				94641A9223A9B93C00AAA70F /* search.html */,
+				94641A9023A9B93400AAA70F /* input.js */,
 				60E6F6AF22DB00A400814118 /* sVimHint.js */,
 				60E6F6B222DB74CA00814118 /* sVimHelper.js */,
 				60E6F6B122DB74CA00814118 /* sVimTab.js */,
@@ -437,9 +443,11 @@
 				2A0560CF4B1E453DAAA575A6 /* FontAwesome.ttf in Resources */,
 				6F56E19F222D452BA59ADC34 /* FontAwesome5_Brands.ttf in Resources */,
 				EE6D839B4AE943C7979EB2B8 /* FontAwesome5_Regular.ttf in Resources */,
+				94641A9323A9B93C00AAA70F /* search.html in Resources */,
 				396F0F758E814214B42317AF /* FontAwesome5_Solid.ttf in Resources */,
 				28900144FFE144F1826E3F4D /* Foundation.ttf in Resources */,
 				A405765856BF4E4DB0399BD3 /* Ionicons.ttf in Resources */,
+				94641A9123A9B93400AAA70F /* input.js in Resources */,
 				66E2CC6E16364864BCBD04FC /* MaterialCommunityIcons.ttf in Resources */,
 				7202FE2998824513BBD4882B /* MaterialIcons.ttf in Resources */,
 				8F72D7778A6D4E938FFA1268 /* Octicons.ttf in Resources */,

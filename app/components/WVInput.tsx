@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { WebView } from "react-native-webview";
+import RNFS from "react-native-fs";
 
 // Use webview input
 class WVInput extends Component {
@@ -7,7 +8,6 @@ class WVInput extends Component {
 
   componentDidMount() {
     const { modifiers, browserKeymap } = this.props;
-    //this.setupKeymap(modifiers, browserKeymap);
   }
   componentWillUnmount() {
     this.webref &&
@@ -115,6 +115,12 @@ class WVInput extends Component {
   }
 
   onLoadEnd() {
+    const { modifiers, browserKeymap } = this.props;
+    const keymapStr = JSON.stringify({
+      modifiers: modifiers,
+      keymap: browserKeymap
+    });
+    this.webref && this.webref.injectJavaScript(`loadKeymaps('${keymapStr}')`);
     this.webref &&
       this.webref.injectJavaScript(`document.getElementById('search').focus()`);
   }
@@ -124,7 +130,7 @@ class WVInput extends Component {
       <WebView
         ref={r => (this.webref = r as any)}
         originWhitelist={["*"]}
-        source={{ html: HTML }}
+        source={{ uri: `file://${RNFS.MainBundlePath}/search.html` }}
         onLoadEnd={this.onLoadEnd.bind(this)}
         onMessage={this.onMessage.bind(this)}
       />
@@ -133,113 +139,3 @@ class WVInput extends Component {
 }
 
 export default WVInput;
-
-const HTML = `
-<div id="container">
-  <input type="text" id="search">
-  <div id="output"></div>
-</div>
-<style>
-input[type="text"] {
-  border: 1px solid red;
-  border-radius:10px;
-}
-input[type="text"]:focus {
-  outline: none
-}
-#container {
-}
-#search{
-  padding: 10px 0;
-  border: none;
-  font-size: 20px;
-  line-height: 20px;
-  width: 100%;
-}
-#output {
-  font-size: 10px;
-}
-</style>
-<script>
-
-var down = new Set(); // For simultaneous key press
-var IsCapsLockOn = false;
-var output = document.getElementById("output");
-
-function setUpCapsLock(isCapsLockOn){
-  IsCapsLockOn = isCapsLockOn;
-}
-
-function onKeydown(e) {
-  output.innerText += e.key + " " + e.type + " " + e.keyCode + "|";
-  down.add(e.key);
-  if(e.key === "CapsLock"){
-    handleCapsLock(e);
-  }else if(e.key === "Enter"){
-    window.ReactNativeWebView.postMessage(JSON.stringify({name: "DoneEdit", postFor: "actions"}));
-  }else if(e.key === "Escape"){
-    window.ReactNativeWebView.postMessage(JSON.stringify({name: "Close", postFor: "actions"}));    
-  }else{    
-    sendKeys();
-  }
-}
-
-function onKeyup(e) {
-  down.delete(e.key);
-  output.innerText += e.key + " " + e.type + " " + e.keyCode + "|";  
-  output.innerText += JSON.stringify(Array.from(down));
-  if(e.key === "CapsLock"){
-    handleCapsLock(e);
-  }  
-}
-
-function handleCapsLock(e){
-  down.delete("CapsLock");
-  window.ReactNativeWebView.postMessage(JSON.stringify({isCapsLockOn: !IsCapsLockOn, postFor: "capsLockState"}));
-  Array.from(down).filter(k => /^\\S$/.test(k)).map(k =>{
-    let pressedKeys = {
-      key: k,
-      modifiers: {
-        ctrlKey: down.has("Control"),
-        altKey: down.has("Alt"),
-        shiftKey: down.has("Shift"),
-        capslockKey: true,
-        metaKey: down.has("Meta")
-      }
-    }
-    window.ReactNativeWebView.postMessage(JSON.stringify({keys: pressedKeys, postFor: "pressedKeys"}));
-  });
-}
-
-function sendKeys() {
-  if(down.size > 1){
-    Array.from(down).filter(k => /^\\S$/.test(k)).map(k =>{
-      let pressedKeys = {
-        key: k,
-        modifiers: {
-          ctrlKey: down.has("Control"),
-          altKey: down.has("Alt"),
-          shiftKey: down.has("Shift"),
-          capslockKey: false,
-          metaKey: down.has("Meta")
-        }
-      }
-      window.ReactNativeWebView.postMessage(JSON.stringify({keys: pressedKeys, postFor: "pressedKeys"}));
-    })
-    down.clear();
-  }
-}
-
-var inputField = document.getElementById('search')
-inputField.setAttribute('autocorrection', false);
-inputField.setAttribute('spellcheck', 'false');
-inputField.setAttribute('autocomplete', 'off');
-inputField.setAttribute('autocorrect', 'off');
-inputField.setAttribute('autocapitalize', 'none');
-inputField.addEventListener('keydown', onKeydown, false);
-inputField.addEventListener('keyup', onKeyup, false);
-
-true;
-
-</script>
-`;
