@@ -5,30 +5,62 @@ var output = document.getElementById("output");
 var modifiers = {};
 var keymap = {};
 
+// https://github.com/blinksh/blink/blob/847298f9a1bc99848989fbbf5d3afd7cef51449f/KB/JS/src/UIKeyModifierFlags.ts
+const UIKeyModifierAlphaShift = 1 << 16; // This bit indicates CapsLock
+const UIKeyModifierShift = 1 << 17;
+const UIKeyModifierControl = 1 << 18;
+const UIKeyModifierAlternate = 1 << 19;
+const UIKeyModifierCommand = 1 << 20;
+const UIKeyModifierNumericPad = 1 << 21;
+
+function toUIKitFlags(e) {
+  let res = 0;
+  if (e.shiftKey) {
+    res |= UIKeyModifierShift;
+  }
+  if (e.ctrlKey) {
+    res |= UIKeyModifierControl;
+  }
+  if (e.altKey) {
+    res |= UIKeyModifierAlternate;
+  }
+  if (e.metaKey) {
+    res |= UIKeyModifierCommand;
+  }
+  res |= UIKeyModifierAlphaShift;
+  return res;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+function log(obj) {
+  output.innerText = JSON.stringify(obj);
+}
+
 function loadKeymaps(keymapStr) {
-  console.log(keymapStr);
   let obj = JSON.parse(keymapStr);
   modifiers = obj.modifiers;
   keymap = obj.keymap;
+  console.log(modifiers);
+  console.log(keymap);
 }
 
-// function toUIKitFlags(e){
-
-// }
-
-// // https://github.com/blinksh/blink/blob/847298f9a1bc99848989fbbf5d3afd7cef51449f/KB/JS/src/Keyboard.ts#L267
-// function _updateUIKitModsIfNeeded(e){
-//   let code = e.code;
-//   if (modifiers['capsLockKey'] !== "capsLockKey") {
-//     let mods = 0;
-//     if (e.type == 'keyup' && code == 'CapsLock') {
-//       mods = 0;
-//     } else {
-//       mods = toUIKitFlags(e);
-//     }
-//   }
-//   window.ReactNativeWebView.postMessage(JSON.stringify({mods: mods, postFor: "capslock"}));
-// }
+// https://github.com/blinksh/blink/blob/847298f9a1bc99848989fbbf5d3afd7cef51449f/KB/JS/src/Keyboard.ts#L267
+function handleCapsLock(e) {
+  let code = e.code;
+  // capslock is remapped
+  if (modifiers["capslockKey"] !== "capslockKey") {
+    let mods = 0;
+    if (e.type == "keyup" && code == "CapsLock") {
+      mods = 0;
+    } else {
+      mods = toUIKitFlags(e);
+    }
+    window.ReactNativeWebView.postMessage(
+      JSON.stringify({ mods: mods, postFor: "capslock" })
+    );
+  }
+}
 
 function onKeydown(e) {
   output.innerText += e.key + " " + e.type + " " + e.keyCode + "|";
@@ -57,34 +89,11 @@ function onKeyup(e) {
   }
 }
 
-function handleCapsLock(e) {
-  down.delete("CapsLock");
-  window.ReactNativeWebView.postMessage(
-    JSON.stringify({ isCapsLockOn: !IsCapsLockOn, postFor: "capsLockState" })
-  );
-  Array.from(down)
-    .filter(k => /^\\S$/.test(k))
-    .map(k => {
-      let pressedKeys = {
-        key: k,
-        modifiers: {
-          ctrlKey: down.has("Control"),
-          altKey: down.has("Alt"),
-          shiftKey: down.has("Shift"),
-          capslockKey: true,
-          metaKey: down.has("Meta")
-        }
-      };
-      window.ReactNativeWebView.postMessage(
-        JSON.stringify({ keys: pressedKeys, postFor: "pressedKeys" })
-      );
-    });
-}
-
 function sendKeys() {
   if (down.size > 1) {
     Array.from(down)
-      .filter(k => /^\\S$/.test(k))
+      // https://tools.m-bsys.com/data/charlist_ascii.php - ascii
+      .filter(k => /^[!-~]$/.test(k))
       .map(k => {
         let pressedKeys = {
           key: k,
@@ -92,7 +101,7 @@ function sendKeys() {
             ctrlKey: down.has("Control"),
             altKey: down.has("Alt"),
             shiftKey: down.has("Shift"),
-            capslockKey: false,
+            capslockKey: down.has("CapsLock"),
             metaKey: down.has("Meta")
           }
         };
@@ -100,7 +109,6 @@ function sendKeys() {
           JSON.stringify({ keys: pressedKeys, postFor: "pressedKeys" })
         );
       });
-    down.clear();
   }
 }
 
