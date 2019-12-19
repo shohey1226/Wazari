@@ -38,12 +38,14 @@ KeyCommand *_activeModsCommand;
 {
   NSLog(@"init DVAApplication now");
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(activeModeReceived:) name:@"activeMode" object:nil];
-  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(appKeymapReceived:) name:@"appKeymap" object:nil];
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(browserKeymapReceived:) name:@"browserKeymap" object:nil];
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(inputKeymapReceived:) name:@"inputKeymap" object:nil];
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(turnOnKeymapReceived:) name:@"turnOnKeymap" object:nil];
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(turnOffKeymapReceived:) name:@"turnOffKeymap" object:nil];
+  
+  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(appKeymapReceived:) name:@"appKeymap" object:nil];
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(capslockReceived:) name:@"capslock" object:nil];
+  
   self = [super init];
   return self;
 }
@@ -53,6 +55,9 @@ KeyCommand *_activeModsCommand;
   return @[@"activeMode", @"appKeymap", @"browserKeymap", @"capslock"];
 }
 
+///////////////////////////////////////////////////////////////////
+// Capslock handling
+///////////////////////////////////////////////////////////////////
 
 - (void)capslockReceived:(NSNotification *)notification
 {
@@ -86,14 +91,65 @@ KeyCommand *_activeModsCommand;
   [[NSNotificationCenter defaultCenter] postNotificationName:@"capslockPressed" object:self userInfo:userInfo];
 }
 
+///////////////////////////////////////////////////////////////////
+// App keymap
+///////////////////////////////////////////////////////////////////
+
+- (void)appKeymapReceived:(NSNotification *)notification
+{
+  NSLog(@"Notification - You recieved appKeymap!");
+  _appKeymap = notification.userInfo[@"appKeymap"];
+  [self _rebuildKeyCommands];
+}
+
+// Get action from keymap(_appKeymap) and pass it to RN through DAVKeyManager
+- (void)handleAppCommand:(UIKeyCommand *)command {
+  
+    NSLog(@"handle App command!!");
+    UIKeyModifierFlags modifierFlags = command.modifierFlags;
+    NSString *input = command.input;
+    NSDictionary *_keymap = _appKeymap;
+  
+    for (NSString* keyMod in [_keymap allKeys]) {
+      NSArray *keyModArray = [keyMod componentsSeparatedByString:@":*:"];
+      NSString* key = keyModArray[0];
+      NSString* modStr = keyModArray[1];
+      NSInteger intMod = [[modStr stringByTrimmingCharactersInSet:[[NSCharacterSet decimalDigitCharacterSet] invertedSet]] intValue];
+      if(intMod == modifierFlags && input == key){
+        NSString *action = [ _keymap objectForKey:keyMod];
+        NSLog(@"action: %@", action);
+        NSDictionary *userInfo = @{@"action": action};
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"AppKeyEvent" object:self userInfo:userInfo];
+        break;
+      }
+    }
+}
+
+
+// Rebuild key commands
 - (void)_rebuildKeyCommands {
   NSMutableArray *cmds = [[NSMutableArray alloc] init];
+  
+  // Add capslock handling
   if (_activeModsCommand) {
     [cmds addObject:_activeModsCommand];
   }
+  
+  // app keys are used all the time
+  NSDictionary* _keymap = _appKeymap;
+  for (NSString* keyMod in [_keymap allKeys]) {
+    NSArray *keyModArray = [keyMod componentsSeparatedByString:@":*:"];
+    NSString* key = keyModArray[0];
+    NSString* modStr = keyModArray[1];
+    NSInteger intMod = [[modStr stringByTrimmingCharactersInSet:[[NSCharacterSet decimalDigitCharacterSet] invertedSet]] intValue];
+    [cmds addObject:[UIKeyCommand keyCommandWithInput:key modifierFlags:intMod action:@selector(handleAppCommand:)]];
+  }
+  
   _keyCommands = cmds;
 }
 
+
+/////////////////////////////////////////////////////
 
 
 - (void)activeModeReceived:(NSNotification *)notification
@@ -103,11 +159,7 @@ KeyCommand *_activeModsCommand;
   NSLog(@"mode: %@", _currentMode);
 }
 
-- (void)appKeymapReceived:(NSNotification *)notification
-{
-  NSLog(@"Notification - You recieved appKeymap!");
-  _appKeymap = notification.userInfo[@"appKeymap"];
-}
+
 
 - (void)browserKeymapReceived:(NSNotification *)notification
 {
@@ -325,10 +377,6 @@ Input Mode - App + Input
 
 }
 
-- (void)handleAppCommand:(UIKeyCommand *)command {
-  NSLog(@"handleAppCommand!!");
-  [self _handleDACommand:command :@"app"];
-}
 
 - (void)handleBrowserCommand:(UIKeyCommand *)command {
   NSLog(@"handleBrowserCommand!!");
