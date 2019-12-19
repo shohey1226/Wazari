@@ -33,7 +33,6 @@
 
 NSArray<UIKeyCommand *> *_keyCommands;
 KeyCommand *_activeModsCommand;
-DAVKeyManager *dm;
 
 - (id)init
 {
@@ -45,7 +44,6 @@ DAVKeyManager *dm;
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(turnOnKeymapReceived:) name:@"turnOnKeymap" object:nil];
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(turnOffKeymapReceived:) name:@"turnOffKeymap" object:nil];
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(capslockReceived:) name:@"capslock" object:nil];
-  dm = [[DAVKeyManager alloc] init];
   self = [super init];
   return self;
 }
@@ -78,13 +76,14 @@ DAVKeyManager *dm;
 - (void)_keyDown:(KeyCommand *)cmd {
   //[self report:@"mods-down" arg:@(cmd.modifierFlags)];
   NSLog(@"mods-down");
-  [dm capslockKeyPress:@"mods-down"];
+  NSDictionary *userInfo = @{@"action": @"mods-down"};
+  [[NSNotificationCenter defaultCenter] postNotificationName:@"capslockPressed" object:self userInfo:userInfo];
 }
 
 - (void)_keyUp:(KeyCommand *)cmd {
   //[self report:@"mods-up" arg:@(cmd.modifierFlags)];
-  NSLog(@"mods-up");
-  [dm capslockKeyPress:@"mods-up"];
+  NSDictionary *userInfo = @{@"action": @"mods-up"};
+  [[NSNotificationCenter defaultCenter] postNotificationName:@"capslockPressed" object:self userInfo:userInfo];
 }
 
 - (void)_rebuildKeyCommands {

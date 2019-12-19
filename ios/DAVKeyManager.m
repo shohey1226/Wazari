@@ -22,6 +22,7 @@ RCT_EXPORT_MODULE();
 {
   NSLog(@"init now");
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyEventReceived:) name:@"KeyEvent" object:nil];
+  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(capslockKeyPress:) name:@"capslockPressed" object:nil];
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(appKeyEventReceived:) name:@"AppKeyEvent" object:nil];
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(browserKeyEventReceived:) name:@"BrowserKeyEvent" object:nil];
   _modifiers = @{@"metaKey": @"metaKey", @"capslockKey": @"capslockKey", @"altKey": @"altKey", @"ctrlKey": @"ctrlKey"}; // set default modifiers
@@ -112,10 +113,10 @@ RCT_EXPORT_METHOD(setCapslock:(NSString *)flag)
   [[NSNotificationCenter defaultCenter] postNotificationName:@"capslock" object:self userInfo:mods];
 }
 
-- (void)capslockKeyPress:(NSString *)action
+- (void)capslockKeyPress:(NSNotification *)notification
 {
   if (hasListeners){
-    NSLog(@"Capslock keypressed: %@", action);
+    NSString *action = notification.userInfo[@"action"];
     [self sendEventWithName:@"capslockKeyPress" body:@{ @"name": action }];
   }
 }
