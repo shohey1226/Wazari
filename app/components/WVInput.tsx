@@ -8,19 +8,23 @@ const DAVKeyManagerEmitter = new NativeEventEmitter(DAVKeyManager);
 // Use webview input
 class WVInput extends Component {
   webref: WebView | null = null;
+  constructor(props) {
+    super(props);
+    sub = null;
+  }
 
   componentDidMount() {
     const { modifiers, browserKeymap } = this.props;
+    console.log(DAVKeyManagerEmitter);
 
-    this.subscription = DAVKeyManagerEmitter.addListener(
-      "capslockKeyPress",
-      data => {
-        console.log(data);
-        this.webref && this.webref.injectJavaScript(`onKB("${data.name}")`);
-      }
-    );
+    this.sub = DAVKeyManagerEmitter.addListener("capslockKeyPress", data => {
+      console.log(data);
+      this.webref && this.webref.injectJavaScript(`onKB("${data.name}")`);
+    });
+    console.log(this.sub);
   }
   componentWillUnmount() {
+    this.sub.remove();
     this.webref &&
       this.webref.injectJavaScript(`document.getElementById('search').blur()`);
   }

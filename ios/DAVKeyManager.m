@@ -107,13 +107,15 @@ RCT_EXPORT_MODULE();
 
 RCT_EXPORT_METHOD(setCapslock:(NSString *)flag)
 {
+  NSLog(@"Setting capslock");
   NSDictionary *mods = @{@"mods": flag};
   [[NSNotificationCenter defaultCenter] postNotificationName:@"capslock" object:self userInfo:mods];
 }
 
 - (void)capslockKeyPress:(NSString *)action
 {
-  if (hasListeners) {
+  if (hasListeners){
+    NSLog(@"Capslock keypressed: %@", action);
     [self sendEventWithName:@"capslockKeyPress" body:@{ @"name": action }];
   }
 }

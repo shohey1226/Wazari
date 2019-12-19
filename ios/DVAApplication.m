@@ -58,7 +58,7 @@ DAVKeyManager *dm;
 
 - (void)capslockReceived:(NSNotification *)notification
 {
-  NSLog(@"Notification - You recieved capslock");
+  NSLog(@"Notification - You recieved capslock in DVAApplication");
   NSNumber *mods = notification.userInfo[@"mods"];
   int _trackingModifierFlags = (UIKeyModifierFlags)mods.integerValue;
   if (_trackingModifierFlags == 0) {
@@ -77,11 +77,13 @@ DAVKeyManager *dm;
 
 - (void)_keyDown:(KeyCommand *)cmd {
   //[self report:@"mods-down" arg:@(cmd.modifierFlags)];
+  NSLog(@"mods-down");
   [dm capslockKeyPress:@"mods-down"];
 }
 
 - (void)_keyUp:(KeyCommand *)cmd {
   //[self report:@"mods-up" arg:@(cmd.modifierFlags)];
+  NSLog(@"mods-up");
   [dm capslockKeyPress:@"mods-up"];
 }
 
@@ -175,6 +177,8 @@ Browser Mode = App + Browser + Input
 Input Mode - App + Input
 =============================================================================================================== */
 - (NSArray *)keyCommands {
+  
+  return _keyCommands;
 
   //_keymapEnabled: boolean to turn on/off keymapping
   if(_keymapEnabled == NO){
