@@ -8,8 +8,32 @@
 
 #import <Foundation/Foundation.h>
 #import "DVAApplication.h"
+#import "DAVKeyManager.h"
+
+
+@interface KeyCommand: UIKeyCommand
+@end
+
+@implementation KeyCommand {
+  SEL _up;
+}
+
+- (void)setUp:(SEL) action {
+  _up = action;
+}
+
+- (SEL)upAction {
+  return _up;
+}
+
+@end
+
 
 @implementation DVAApplication
+
+NSArray<UIKeyCommand *> *_keyCommands;
+KeyCommand *_activeModsCommand;
+DAVKeyManager *dm;
 
 - (id)init
 {
@@ -20,14 +44,56 @@
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(inputKeymapReceived:) name:@"inputKeymap" object:nil];
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(turnOnKeymapReceived:) name:@"turnOnKeymap" object:nil];
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(turnOffKeymapReceived:) name:@"turnOffKeymap" object:nil];
+  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(capslockReceived:) name:@"capslock" object:nil];
+  dm = [[DAVKeyManager alloc] init];
   self = [super init];
   return self;
 }
 
 - (NSArray<NSString *> *)supportedEvents
 {
-  return @[@"activeMode", @"appKeymap", @"browserKeymap"];
+  return @[@"activeMode", @"appKeymap", @"browserKeymap", @"capslock"];
 }
+
+
+- (void)capslockReceived:(NSNotification *)notification
+{
+  NSLog(@"Notification - You recieved capslock");
+  NSNumber *mods = notification.userInfo[@"mods"];
+  int _trackingModifierFlags = (UIKeyModifierFlags)mods.integerValue;
+  if (_trackingModifierFlags == 0) {
+    _activeModsCommand = nil;
+  } else {
+    _activeModsCommand = [self _modifiersCommand:_trackingModifierFlags];
+  }
+  [self _rebuildKeyCommands];
+}
+
+- (KeyCommand *)_modifiersCommand:(UIKeyModifierFlags) flags {
+  KeyCommand *cmd = [KeyCommand keyCommandWithInput:@"" modifierFlags:flags action:@selector(_keyDown:)];
+  [cmd setUp: @selector(_keyUp:)];
+  return cmd;
+}
+
+- (void)_keyDown:(KeyCommand *)cmd {
+  //[self report:@"mods-down" arg:@(cmd.modifierFlags)];
+  [dm capslockKeyPress:@"mods-down"];
+}
+
+- (void)_keyUp:(KeyCommand *)cmd {
+  //[self report:@"mods-up" arg:@(cmd.modifierFlags)];
+  [dm capslockKeyPress:@"mods-up"];
+}
+
+- (void)_rebuildKeyCommands {
+  NSMutableArray *cmds = [[NSMutableArray alloc] init];
+  if (_activeModsCommand) {
+    [cmds addObject:_activeModsCommand];
+  }
+  _keyCommands = cmds;
+}
+
+
 
 - (void)activeModeReceived:(NSNotification *)notification
 {

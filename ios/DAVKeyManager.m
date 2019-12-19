@@ -31,7 +31,7 @@ RCT_EXPORT_MODULE();
 
 - (NSArray<NSString *> *)supportedEvents
 {
-  return @[@"RNKeyEvent", @"RNAppKeyEvent", @"RNBrowserKeyEvent"];
+  return @[@"RNKeyEvent", @"RNAppKeyEvent", @"RNBrowserKeyEvent", @"capslockKeyPress"];
 }
 
 // Will be called when this module's first listener is added.
@@ -102,6 +102,19 @@ RCT_EXPORT_MODULE();
   
   if (hasListeners) { // Only send events if anyone is listening
     [self sendEventWithName:@"RNKeyEvent" body:@{@"key": key, @"modifiers": newModifierDict}];
+  }
+}
+
+RCT_EXPORT_METHOD(setCapslock:(NSString *)flag)
+{
+  NSDictionary *mods = @{@"mods": flag};
+  [[NSNotificationCenter defaultCenter] postNotificationName:@"capslock" object:self userInfo:mods];
+}
+
+- (void)capslockKeyPress:(NSString *)action
+{
+  if (hasListeners) {
+    [self sendEventWithName:@"capslockKeyPress" body:@{ @"name": action }];
   }
 }
 

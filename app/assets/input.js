@@ -48,6 +48,7 @@ function loadKeymaps(keymapStr) {
 // https://github.com/blinksh/blink/blob/847298f9a1bc99848989fbbf5d3afd7cef51449f/KB/JS/src/Keyboard.ts#L267
 function handleCapsLock(e) {
   let code = e.code;
+  console.log(code);
   // capslock is remapped
   if (modifiers["capslockKey"] !== "capslockKey") {
     let mods = 0;
@@ -56,6 +57,7 @@ function handleCapsLock(e) {
     } else {
       mods = toUIKitFlags(e);
     }
+    console.log(mods);
     window.ReactNativeWebView.postMessage(
       JSON.stringify({ mods: mods, postFor: "capslock" })
     );
@@ -87,6 +89,27 @@ function onKeyup(e) {
   if (e.key === "CapsLock") {
     handleCapsLock(e);
   }
+}
+
+function onKB(cmd) {
+  switch (cmd) {
+    case "mods-down":
+      _handleCapsLockDown(true);
+      break;
+    case "mods-up":
+      _handleCapsLockDown(false);
+      break;
+  }
+}
+
+function _handleCapsLockDown(isDown) {
+  let mod = this._modsMap["CapsLock"];
+  if (isDown) {
+    down.add("CapsLock");
+  } else {
+    down.delete("CapsLock");
+  }
+  sendKeys();
 }
 
 function sendKeys() {

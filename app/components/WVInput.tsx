@@ -1,6 +1,9 @@
 import React, { Component } from "react";
+import { NativeModules, NativeEventEmitter } from "react-native";
 import { WebView } from "react-native-webview";
 import RNFS from "react-native-fs";
+const { DAVKeyManager } = NativeModules;
+const DAVKeyManagerEmitter = new NativeEventEmitter(DAVKeyManager);
 
 // Use webview input
 class WVInput extends Component {
@@ -8,6 +11,14 @@ class WVInput extends Component {
 
   componentDidMount() {
     const { modifiers, browserKeymap } = this.props;
+
+    this.subscription = DAVKeyManagerEmitter.addListener(
+      "capslockKeyPress",
+      data => {
+        console.log(data);
+        this.webref && this.webref.injectJavaScript(`onKB("${data.name}")`);
+      }
+    );
   }
   componentWillUnmount() {
     this.webref &&
@@ -105,8 +116,8 @@ class WVInput extends Component {
       case "pressedKeys":
         this.props.updateAction(JSON.stringify(data.keys));
         break;
-      case "capsLockState":
-        this.props.updateCapsLockState(data.isCapsLockOn);
+      case "capslock":
+        DAVKeyManager.setCapslock(data.mods);
         break;
       case "actions":
         this.props.performAction(data.name);
