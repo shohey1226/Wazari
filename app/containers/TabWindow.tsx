@@ -85,9 +85,9 @@ class TabWindow extends Component<Props, State, any> {
       ),
       DAVKeyManagerEmitter.addListener("RNKeyEvent", data => {
         if (this.props.keyMode === KeyMode.Terminal) {
-          this.typing(data);
+          //this.typing(data);
         } else if (this.props.keyMode === KeyMode.Text) {
-          this.textTyping(data);
+          //this.textTyping(data);
         }
       })
     );
@@ -811,23 +811,6 @@ function findInPage(text){
 }
 
 var termSelectionHandler = null;
-setTimeout(function(){
-  if(window.term && !termSelectionHandler){
-    termSelectionHandler = window.term.onSelectionChange(function(){
-      var selectedText = window.term.getSelection()
-      window.ReactNativeWebView.postMessage(JSON.stringify({selection: selectedText, postFor: "copy"}));
-    })
-  }
-
-  // testing
-  if(widnow.term){
-    document.addEventListener("keydown", onKeyDown, false);
-    document.addEventListener("keypress", onKeyPress, false);
-  }
-
-}, 800);
-
-window.ReactNativeWebView.postMessage(JSON.stringify({isLoading: false, postFor: "jsloading"}))
 
 
 var modifiers = {};
@@ -837,23 +820,41 @@ function loadModifers(modifiersStr){
 
 function onKeyDown(e){
   e.preventDefault();
-  e.stopPropagation();  
+  //e.stopPropagation();  
   var event = new KeyboardEvent("keydown", e);
   for (var i in modifiers) {
-    event[i] = modifiers[i];
+    event[modifiers[i]] = e[i];
   }
   window.term.textarea.dispatchEvent(event);
 }
 
 function onKeyPress(e){
   e.preventDefault();
-  e.stopPropagation();  
+  e.stopPropagation();
   var event = new KeyboardEvent("keypress", e);
   for (var i in modifiers) {
-    event[i] = modifiers[i];
+    event[modifiers[i]] = e[i];
   }  
   window.term.textarea.dispatchEvent(event);
 }
+
+setTimeout(function(){
+  if(window.term && !termSelectionHandler){
+    termSelectionHandler = window.term.onSelectionChange(function(){
+      var selectedText = window.term.getSelection()
+      window.ReactNativeWebView.postMessage(JSON.stringify({selection: selectedText, postFor: "copy"}));
+    })
+  }
+
+  // testing
+  if(window.term){
+    document.addEventListener("keydown", onKeyDown, false);
+    document.addEventListener("keypress", onKeyPress, false);
+  }
+
+}, 800);
+
+window.ReactNativeWebView.postMessage(JSON.stringify({isLoading: false, postFor: "jsloading"}))
 
 true;
 `;
