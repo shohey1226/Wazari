@@ -397,7 +397,8 @@ class TabWindow extends Component<Props, State, any> {
       tabNumber,
       activeTabIndex,
       paneId,
-      isActive
+      isActive,
+      modifiers
     } = this.props;
     if (isActive) {
       dispatch(
@@ -412,6 +413,10 @@ class TabWindow extends Component<Props, State, any> {
       );
       this.focusWindow();
       dispatch(addHistory(nativeEvent.url, nativeEvent.title));
+      console.log(JSON.stringify(modifiers));
+      this.webref.injectJavaScript(
+        `loadModifers(${JSON.stringify(modifiers)})`
+      );
     }
   }
 
@@ -813,9 +818,42 @@ setTimeout(function(){
       window.ReactNativeWebView.postMessage(JSON.stringify({selection: selectedText, postFor: "copy"}));
     })
   }
+
+  // testing
+  if(widnow.term){
+    document.addEventListener("keydown", onKeyDown, false);
+    document.addEventListener("keypress", onKeyPress, false);
+  }
+
 }, 800);
 
 window.ReactNativeWebView.postMessage(JSON.stringify({isLoading: false, postFor: "jsloading"}))
+
+
+var modifiers = {};
+function loadModifers(modifiersStr){
+  modifiers = JSON.parse(modifiersStr);
+}
+
+function onKeyDown(e){
+  e.preventDefault();
+  e.stopPropagation();  
+  var event = new KeyboardEvent("keydown", e);
+  for (var i in modifiers) {
+    event[i] = modifiers[i];
+  }
+  window.term.textarea.dispatchEvent(event);
+}
+
+function onKeyPress(e){
+  e.preventDefault();
+  e.stopPropagation();  
+  var event = new KeyboardEvent("keypress", e);
+  for (var i in modifiers) {
+    event[i] = modifiers[i];
+  }  
+  window.term.textarea.dispatchEvent(event);
+}
 
 true;
 `;
