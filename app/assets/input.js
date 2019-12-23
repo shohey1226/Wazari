@@ -65,30 +65,55 @@ function handleCapsLock(e) {
 }
 
 function onKeydown(e) {
-  output.innerText += e.key + " " + e.type + " " + e.keyCode + "|";
-  down.add(e.key);
-  if (e.key === "CapsLock") {
-    handleCapsLock(e);
-  } else if (e.key === "Enter") {
-    window.ReactNativeWebView.postMessage(
-      JSON.stringify({ name: "DoneEdit", postFor: "actions" })
-    );
-  } else if (e.key === "Escape") {
-    window.ReactNativeWebView.postMessage(
-      JSON.stringify({ name: "Close", postFor: "actions" })
-    );
-  } else {
-    sendKeys();
-  }
+  window.ReactNativeWebView.postMessage(
+    JSON.stringify({
+      keyEvent: {
+        key: e.key,
+        shiftKey: e.shiftKey,
+        metaKey: e.metaKey,
+        altKey: e.altKey,
+        ctrlKey: e.ctrlKey
+      },
+      postFor: e.type
+    })
+  );
+
+  // output.innerText += e.key + " " + e.type + " " + e.keyCode + "|";
+  // down.add(e.key);
+  // if (e.key === "CapsLock") {
+  //   handleCapsLock(e);
+  // } else if (e.key === "Enter") {
+  //   window.ReactNativeWebView.postMessage(
+  //     JSON.stringify({ name: "DoneEdit", postFor: "actions" })
+  //   );
+  // } else if (e.key === "Escape") {
+  //   window.ReactNativeWebView.postMessage(
+  //     JSON.stringify({ name: "Close", postFor: "actions" })
+  //   );
+  // } else {
+  //   sendKeys();
+  // }
 }
 
 function onKeyup(e) {
-  down.delete(e.key);
-  output.innerText += e.key + " " + e.type + " " + e.keyCode + "|";
-  output.innerText += JSON.stringify(Array.from(down));
-  if (e.key === "CapsLock") {
-    handleCapsLock(e);
-  }
+  window.ReactNativeWebView.postMessage(
+    JSON.stringify({
+      keyEvent: {
+        key: e.key,
+        shiftKey: e.shiftKey,
+        metaKey: e.metaKey,
+        altKey: e.altKey,
+        ctrlKey: e.ctrlKey
+      },
+      postFor: e.type
+    })
+  );
+  // down.delete(e.key);
+  // output.innerText += e.key + " " + e.type + " " + e.keyCode + "|";
+  // output.innerText += JSON.stringify(Array.from(down));
+  // if (e.key === "CapsLock") {
+  //   handleCapsLock(e);
+  // }
 }
 
 function onKB(cmd) {
@@ -143,5 +168,4 @@ inputField.setAttribute("autocorrect", "off");
 inputField.setAttribute("autocapitalize", "none");
 inputField.addEventListener("keydown", onKeydown, false);
 inputField.addEventListener("keyup", onKeyup, false);
-
 true;

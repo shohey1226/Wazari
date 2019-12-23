@@ -651,6 +651,7 @@ class Search extends Component<Props, IState, any> {
           <WVInput
             keyup={v => this.setState({ text: v })}
             updateCapsLockState={s => this.setState({ capsLockOn: s })}
+            isCapsLockOn={this.state.capsLockOn}
             updateAction={a => this.setState({ action: a })}
             modifiers={modifiers}
             browserKeymap={browserKeymap}
@@ -676,7 +677,7 @@ class Search extends Component<Props, IState, any> {
             <Icon name="ios-close" style={{ paddingLeft: 0, fontSize: 30 }} />
           </Button>
         </Item>
-        <Text>capslock: {this.state.capsLockOn}</Text>
+        <Text>capslock: {this.state.capsLockOn === true ? "ON" : "OFF"}</Text>
         <Text>action: {this.state.action}</Text>
         <List>{this.renderCandidates()}</List>
       </Content>
