@@ -158,12 +158,23 @@ class WVInput extends Component<Props, IState, any> {
   handleKeys() {
     const { browserKeymap } = this.props;
     const { modifiers, key } = this.state;
+    console.log("modifiers and key in state", modifiers, key);
     Object.keys(browserKeymap).forEach(action => {
       if (
-        (browserKeymap.action.key =
-          key && isEqual(browserKeymap.action.modifiers, modifiers))
+        browserKeymap[action].key === key &&
+        isEqual(browserKeymap.action.modifiers, modifiers)
       ) {
         this.props.updateAction(action);
+      }
+    });
+    this.setState({
+      key: null,
+      modifiers: {
+        shiftKey: false,
+        metaKey: false,
+        altKey: false,
+        ctrlKey: false,
+        capslockKey: false
       }
     });
   }
@@ -228,17 +239,16 @@ class WVInput extends Component<Props, IState, any> {
     let _down;
     switch (data.postFor) {
       case "keydown":
+        if (data.keyEvent.key === "CapsLock") {
+          this.handleCapsLock("keydown", data.keyEvent);
+        }
         let _modifiers = Object.assign({}, this.state.modifiers);
         _modifiers[modifiers.altKey] = data.keyEvent.altKey;
         _modifiers[modifiers.shiftKey] = data.keyEvent.shiftKey;
         _modifiers[modifiers.metaKey] = data.keyEvent.metaKey;
         _modifiers[modifiers.ctrlKey] = data.keyEvent.ctrlKey;
         this.setState({ modifiers: _modifiers, key: data.keyEvent.key });
-        if (data.keyEvent.key === "CapsLock") {
-          this.handleCapsLock("keydown", data.keyEvent);
-        } else {
-          this.handleKeys();
-        }
+        this.handleKeys();
         this.handleSoftwareCapsLock(data.keyEvent);
         break;
       case "keyup":
