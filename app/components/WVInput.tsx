@@ -20,6 +20,8 @@ interface Props {
 // Use webview input
 class WVInput extends Component<Props, IState, any> {
   webref: WebView | null = null;
+  down: any = {};
+
   constructor(props) {
     super(props);
     this.state = {
@@ -36,10 +38,10 @@ class WVInput extends Component<Props, IState, any> {
       console.log("CapslockFromNative", data);
       switch (data.name) {
         case "mods-down":
-          _handleCapsLockDown(false);
+          this._handleCapsLockDown(true);
           break;
         case "mods-up":
-          _handleCapsLockDown(false);
+          this._handleCapsLockDown(false);
           break;
       }
 
@@ -134,67 +136,44 @@ class WVInput extends Component<Props, IState, any> {
   // }
 
   _handleCapsLockDown(isDown) {
-    let _down = Object.assign({}, this.state.downKeys);
     if (isDown) {
-      _down["CapsLoack"] = true;
-      this.setState({ downKeys: _down });
+      this.down["CapsLoack"] = true;
       this.handleKeys();
     } else {
-      delete _down["CapsLock"];
-      this.setState({ downKeys: _down });
+      this.down["CapsLock"] && delete this.down["CapsLock"];
     }
   }
 
   handleKeys() {
     const { modifiers, browserKeymap } = this.props;
-    console.log("modifiers", modifiers);
-
-    let pressedKeys = Object.keys(this.state.downKeys).filter(
-      k => this.state.downKeys[k] === true
-    );
-    console.log(pressedKeys);
-    this.props.updateAction(pressedKeys.join(","));
-    let _modifiers = {
-      shiftKey: false,
-      ctrlKey: false,
+    const pressedKeys = Object.keys(this.down);
+    let m = {
       capslockKey: false,
-      altKey: false,
-      metakey: false
+      shiftKey: false,
+      altKey: true,
+      ctrlKey: false,
+      metaKey: false
     };
-    Object.keys(modifiers).forEach(m => {
-      let name = "";
-      switch (m) {
-        case "ctrlKey":
-          name = "Control";
-          break;
-        case "capslockKey":
-          name = "CapsLock";
-          break;
-        case "shiftKey":
-          name = "Shift";
-        case "altKey":
-          name = "Alt";
-          break;
-        case "metaKey":
-          name = "Meta";
-          break;
-      }
-      _modifiers[modifiers[m]] = pressedKeys.indexOf(name) !== -1;
-    });
 
-    console.log("new mods", _modifiers);
+    m[modifiers.shiftKey] = pressedKeys.indexOf("Shift") !== -1;
+    m[modifiers.metaKey] = pressedKeys.indexOf("Meta") !== -1;
+    m[modifiers.altKey] = pressedKeys.indexOf("Alt") !== -1;
+    m[modifiers.ctrlKey] = pressedKeys.indexOf("Control") !== -1;
+    m[modifiers.capslockKey] = pressedKeys.indexOf("CapsLock") !== -1;
+
+    this.props.updateAction(JSON.stringify(this.down));
+
     pressedKeys
       .filter(k => k.length === 1)
-      .forEach(k => {
+      .forEach(key => {
         Object.keys(browserKeymap).forEach(action => {
-          if (
-            isEqual(browserKeymap[action], {
-              key: k,
-              modifiers: _modifiers
-            })
-          ) {
-            console.log(action);
-            this.props.updateAction(action + ": " + pressedKeys.join(","));
+          const keymap = browserKeymap[action];
+          if (isEqual(keymap.modifiers, m) && keymap.key === key) {
+            this.props.updateAction(
+              `action: ${action} - ${JSON.stringfiy(this.down)}`
+            );
+            // once it's executed then clear it
+            this.down = {};
           }
         });
       });
@@ -209,23 +188,21 @@ class WVInput extends Component<Props, IState, any> {
     const UIKeyModifierCommand = 1 << 20;
     const UIKeyModifierNumericPad = 1 << 21;
 
-    function toUIKitFlags(e) {
-      let res = 0;
-      if (e.shiftKey) {
-        res |= UIKeyModifierShift;
-      }
-      if (e.ctrlKey) {
-        res |= UIKeyModifierControl;
-      }
-      if (e.altKey) {
-        res |= UIKeyModifierAlternate;
-      }
-      if (e.metaKey) {
-        res |= UIKeyModifierCommand;
-      }
-      res |= UIKeyModifierAlphaShift;
-      return res;
+    let res = 0;
+    if (e.shiftKey) {
+      res |= UIKeyModifierShift;
     }
+    if (e.ctrlKey) {
+      res |= UIKeyModifierControl;
+    }
+    if (e.altKey) {
+      res |= UIKeyModifierAlternate;
+    }
+    if (e.metaKey) {
+      res |= UIKeyModifierCommand;
+    }
+    res |= UIKeyModifierAlphaShift;
+    return res;
   }
 
   handleCapsLock(type, keyEvent) {
@@ -235,7 +212,7 @@ class WVInput extends Component<Props, IState, any> {
       if (type == "keyup") {
         mods = 0;
       } else {
-        mods = toUIKitFlags(keyEvent);
+        mods = this.toUIKitFlags(keyEvent);
       }
       console.log("mods", mods);
       DAVKeyManager.setCapslock(mods);
@@ -260,27 +237,27 @@ class WVInput extends Component<Props, IState, any> {
     let _down;
     switch (data.postFor) {
       case "keydown":
-        _down = Object.assign({}, this.state.downKeys);
-        _down[data.keyEvent.key] = true;
-        this.setState({ downKeys: _down });
-        console.log("keydown", _down);
+        this.down[data.keyEvent.key] = true;
+        console.log("keydown", this.down);
         if (data.keyEvent.key === "CapsLock") {
           this.handleCapsLock("keydown", data.keyEvent);
         } else {
           this.handleKeys();
         }
-
         this.handleSoftwareCapsLock(data.keyEvent);
         break;
+
       case "keyup":
         if (data.keyEvent.key === "CapsLock") {
           this.handleCapsLock("keyup", data.keyEvent);
+        } else if (data.keyEvent.key === "Meta") {
+          // Meta+key doesn't fire key up event..
+          this.down = {};
         }
-        _down = Object.assign({}, this.state.downKeys);
-        delete _down[data.keyEvent.key];
-        this.setState({ downKeys: _down });
-        console.log("keyup", _down);
+        this.down[data.keyEvent.key] && delete this.down[data.keyEvent.key];
+        console.log("keyup", this.down);
         break;
+
       case "pressedKeys":
         this.props.updateAction(JSON.stringify(data.keys));
         break;
