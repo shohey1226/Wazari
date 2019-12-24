@@ -137,7 +137,7 @@ class WVInput extends Component<Props, IState, any> {
 
   _handleCapsLockDown(isDown) {
     if (isDown) {
-      this.down["CapsLoack"] = true;
+      this.down["CapsLock"] = true;
       this.handleKeys();
     } else {
       this.down["CapsLock"] && delete this.down["CapsLock"];
