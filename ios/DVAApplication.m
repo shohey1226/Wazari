@@ -44,7 +44,7 @@ KeyCommand *_activeModsCommand;
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(turnOffKeymapReceived:) name:@"turnOffKeymap" object:nil];
   
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(appKeymapReceived:) name:@"appKeymap" object:nil];
-  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(capslockReceived:) name:@"capslock" object:nil];
+  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(modsReceived:) name:@"mods" object:nil];
   
   self = [super init];
   return self;
@@ -52,16 +52,16 @@ KeyCommand *_activeModsCommand;
 
 - (NSArray<NSString *> *)supportedEvents
 {
-  return @[@"activeMode", @"appKeymap", @"browserKeymap", @"capslock"];
+  return @[@"activeMode", @"appKeymap", @"browserKeymap", @"mods"];
 }
 
 ///////////////////////////////////////////////////////////////////
 // Capslock handling
 ///////////////////////////////////////////////////////////////////
 
-- (void)capslockReceived:(NSNotification *)notification
+- (void)modsReceived:(NSNotification *)notification
 {
-  NSLog(@"Notification - You recieved capslock in DVAApplication");
+  NSLog(@"Notification - You recieved mod key in DVAApplication");
   NSNumber *mods = notification.userInfo[@"mods"];
   int _trackingModifierFlags = (UIKeyModifierFlags)mods.integerValue;
   if (_trackingModifierFlags == 0) {
@@ -82,13 +82,13 @@ KeyCommand *_activeModsCommand;
   //[self report:@"mods-down" arg:@(cmd.modifierFlags)];
   NSLog(@"mods-down");
   NSDictionary *userInfo = @{@"action": @"mods-down", @"flags": @(cmd.modifierFlags)};
-  [[NSNotificationCenter defaultCenter] postNotificationName:@"capslockPressed" object:self userInfo:userInfo];
+  [[NSNotificationCenter defaultCenter] postNotificationName:@"modPressed" object:self userInfo:userInfo];
 }
 
 - (void)_keyUp:(KeyCommand *)cmd {
   //[self report:@"mods-up" arg:@(cmd.modifierFlags)];
   NSDictionary *userInfo = @{@"action": @"mods-up",  @"flags": @(cmd.modifierFlags)};
-  [[NSNotificationCenter defaultCenter] postNotificationName:@"capslockPressed" object:self userInfo:userInfo];
+  [[NSNotificationCenter defaultCenter] postNotificationName:@"modPressed" object:self userInfo:userInfo];
 }
 
 ///////////////////////////////////////////////////////////////////
@@ -145,6 +145,7 @@ KeyCommand *_activeModsCommand;
     [cmds addObject:[UIKeyCommand keyCommandWithInput:key modifierFlags:intMod action:@selector(handleAppCommand:)]];
   }
   
+  // Control can't be detected when keycommands are override. No root cause can be found. Dec 26, 2019
   [cmds addObject:[UIKeyCommand keyCommandWithInput:@"" modifierFlags:UIKeyModifierControl action:@selector(_keyDown:)]];
   
   _keyCommands = cmds;

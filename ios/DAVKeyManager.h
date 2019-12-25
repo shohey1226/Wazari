@@ -9,5 +9,5 @@
 #import <React/RCTEventEmitter.h>
 
 @interface DAVKeyManager : RCTEventEmitter <RCTBridgeModule>
-- (void)capslockKeyPress: (NSString*)action;
+- (void)modKeyPress: (NSString*)action;
 @end

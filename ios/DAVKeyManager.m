@@ -22,7 +22,7 @@ RCT_EXPORT_MODULE();
 {
   NSLog(@"init now");
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyEventReceived:) name:@"KeyEvent" object:nil];
-  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(capslockKeyPress:) name:@"capslockPressed" object:nil];
+  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(modKeyPress:) name:@"modPressed" object:nil];
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(appKeyEventReceived:) name:@"AppKeyEvent" object:nil];
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(browserKeyEventReceived:) name:@"BrowserKeyEvent" object:nil];
   _modifiers = @{@"metaKey": @"metaKey", @"capslockKey": @"capslockKey", @"altKey": @"altKey", @"ctrlKey": @"ctrlKey"}; // set default modifiers
@@ -32,7 +32,7 @@ RCT_EXPORT_MODULE();
 
 - (NSArray<NSString *> *)supportedEvents
 {
-  return @[@"RNKeyEvent", @"RNAppKeyEvent", @"RNBrowserKeyEvent", @"capslockKeyPress"];
+  return @[@"RNKeyEvent", @"RNAppKeyEvent", @"RNBrowserKeyEvent", @"modKeyPress"];
 }
 
 // Will be called when this module's first listener is added.
@@ -106,19 +106,19 @@ RCT_EXPORT_MODULE();
   }
 }
 
-RCT_EXPORT_METHOD(setCapslock:(NSString *)flag)
+RCT_EXPORT_METHOD(setMods:(NSString *)flag)
 {
-  NSLog(@"Setting capslock");
+  NSLog(@"Setting mods");
   NSDictionary *mods = @{@"mods": flag};
-  [[NSNotificationCenter defaultCenter] postNotificationName:@"capslock" object:self userInfo:mods];
+  [[NSNotificationCenter defaultCenter] postNotificationName:@"mods" object:self userInfo:mods];
 }
 
-- (void)capslockKeyPress:(NSNotification *)notification
+- (void)modKeyPress:(NSNotification *)notification
 {
   if (hasListeners){
     NSString *action = notification.userInfo[@"action"];
     NSString *flags = notification.userInfo[@"flags"];
-    [self sendEventWithName:@"capslockKeyPress" body:@{ @"name": action, @"flags": flags }];
+    [self sendEventWithName:@"modKeyPress" body:@{ @"name": action, @"flags": flags }];
   }
 }
 

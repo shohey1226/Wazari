@@ -34,8 +34,8 @@ class WVInput extends Component<Props, IState, any> {
   componentDidMount() {
     const { modifiers, browserKeymap } = this.props;
     console.log(DAVKeyManagerEmitter);
-    this.sub = DAVKeyManagerEmitter.addListener("capslockKeyPress", data => {
-      console.log("CapslockFromNative", data);
+    this.sub = DAVKeyManagerEmitter.addListener("modKeyPress", data => {
+      console.log("ModsFromNative", data);
       switch (data.name) {
         case "mods-down":
           if (data.flags === 262144) {
@@ -226,7 +226,7 @@ class WVInput extends Component<Props, IState, any> {
         mods = this.toUIKitFlags(keyEvent);
       }
       console.log("mods", mods);
-      DAVKeyManager.setCapslock(mods);
+      DAVKeyManager.setMods(mods);
     }
   }
 
