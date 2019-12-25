@@ -140,6 +140,7 @@ class WVInput extends Component<Props, IState, any> {
   //   }
   // }
 
+  // RN JS(Webview) -> RN -> Native(iOS) -> RN handling both keydown/up
   _handleCapsLockDown(isDown) {
     if (isDown) {
       this.down["CapsLock"] = true;
@@ -149,10 +150,14 @@ class WVInput extends Component<Props, IState, any> {
     }
   }
 
+  // UIKeycommand(Native) to RN and use down object to detect simaltanous keys.
   _handleControl() {
     this.down["Control"] = true;
     this.handleKeys();
-    //delete this.down["Control"];
+    setTimeout(() => {
+      console.log("simulate Control keyup with setTimout");
+      this.down["Control"] && delete this.down["Control"];
+    }, 300);
   }
 
   handleKeys() {
@@ -161,16 +166,19 @@ class WVInput extends Component<Props, IState, any> {
     let m = {
       capslockKey: false,
       shiftKey: false,
-      altKey: true,
+      altKey: false,
       ctrlKey: false,
       metaKey: false
     };
 
-    m[modifiers.shiftKey] = pressedKeys.indexOf("Shift") !== -1;
-    m[modifiers.metaKey] = pressedKeys.indexOf("Meta") !== -1;
+    m[modifiers.capslockKey] = pressedKeys.indexOf("CapsLock") !== -1;
+    m["shiftKey"] = pressedKeys.indexOf("Shift") !== -1;
     m[modifiers.altKey] = pressedKeys.indexOf("Alt") !== -1;
     m[modifiers.ctrlKey] = pressedKeys.indexOf("Control") !== -1;
-    m[modifiers.capslockKey] = pressedKeys.indexOf("CapsLock") !== -1;
+    m[modifiers.metaKey] = pressedKeys.indexOf("Meta") !== -1;
+
+    console.log("modifiers in handleKeys()", modifiers);
+    console.log("mods in handleKeys()", m);
 
     this.props.updateAction(JSON.stringify(this.down));
 
@@ -181,7 +189,7 @@ class WVInput extends Component<Props, IState, any> {
           const keymap = browserKeymap[action];
           if (isEqual(keymap.modifiers, m) && keymap.key === key) {
             this.props.updateAction(
-              `action: ${action} - ${JSON.stringfiy(this.down)}`
+              `action: ${action} - ${JSON.stringify(this.down)}`
             );
             // once it's executed then clear it
             this.down = {};
