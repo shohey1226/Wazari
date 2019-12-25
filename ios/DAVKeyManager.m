@@ -117,7 +117,8 @@ RCT_EXPORT_METHOD(setCapslock:(NSString *)flag)
 {
   if (hasListeners){
     NSString *action = notification.userInfo[@"action"];
-    [self sendEventWithName:@"capslockKeyPress" body:@{ @"name": action }];
+    NSString *flags = notification.userInfo[@"flags"];
+    [self sendEventWithName:@"capslockKeyPress" body:@{ @"name": action, @"flags": flags }];
   }
 }
 

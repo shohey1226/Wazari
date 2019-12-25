@@ -81,13 +81,13 @@ KeyCommand *_activeModsCommand;
 - (void)_keyDown:(KeyCommand *)cmd {
   //[self report:@"mods-down" arg:@(cmd.modifierFlags)];
   NSLog(@"mods-down");
-  NSDictionary *userInfo = @{@"action": @"mods-down"};
+  NSDictionary *userInfo = @{@"action": @"mods-down", @"flags": @(cmd.modifierFlags)};
   [[NSNotificationCenter defaultCenter] postNotificationName:@"capslockPressed" object:self userInfo:userInfo];
 }
 
 - (void)_keyUp:(KeyCommand *)cmd {
   //[self report:@"mods-up" arg:@(cmd.modifierFlags)];
-  NSDictionary *userInfo = @{@"action": @"mods-up"};
+  NSDictionary *userInfo = @{@"action": @"mods-up",  @"flags": @(cmd.modifierFlags)};
   [[NSNotificationCenter defaultCenter] postNotificationName:@"capslockPressed" object:self userInfo:userInfo];
 }
 
@@ -144,6 +144,8 @@ KeyCommand *_activeModsCommand;
     NSInteger intMod = [[modStr stringByTrimmingCharactersInSet:[[NSCharacterSet decimalDigitCharacterSet] invertedSet]] intValue];
     [cmds addObject:[UIKeyCommand keyCommandWithInput:key modifierFlags:intMod action:@selector(handleAppCommand:)]];
   }
+  
+  [cmds addObject:[UIKeyCommand keyCommandWithInput:@"" modifierFlags:UIKeyModifierControl action:@selector(_keyDown:)]];
   
   _keyCommands = cmds;
 }

@@ -38,7 +38,12 @@ class WVInput extends Component<Props, IState, any> {
       console.log("CapslockFromNative", data);
       switch (data.name) {
         case "mods-down":
-          this._handleCapsLockDown(true);
+          if (data.flags === 262144) {
+            console.log("--- mods-down");
+            this._handleControl();
+          } else {
+            this._handleCapsLockDown(true);
+          }
           break;
         case "mods-up":
           this._handleCapsLockDown(false);
@@ -142,6 +147,12 @@ class WVInput extends Component<Props, IState, any> {
     } else {
       this.down["CapsLock"] && delete this.down["CapsLock"];
     }
+  }
+
+  _handleControl() {
+    this.down["Control"] = true;
+    this.handleKeys();
+    //delete this.down["Control"];
   }
 
   handleKeys() {
