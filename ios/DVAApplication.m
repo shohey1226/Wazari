@@ -145,7 +145,8 @@ KeyCommand *_activeModsCommand;
     [cmds addObject:[UIKeyCommand keyCommandWithInput:key modifierFlags:intMod action:@selector(handleAppCommand:)]];
   }
   
-  // Control can't be detected when keycommands are override. No root cause can be found. Dec 26, 2019
+  // Control can't be detected when keycommands are override. No root cause can be found on Dec 26, 2019
+  // Interestingly, keyup of Control starts to work after this.
   [cmds addObject:[UIKeyCommand keyCommandWithInput:@"" modifierFlags:UIKeyModifierControl action:@selector(_keyDown:)]];
   
   _keyCommands = cmds;
