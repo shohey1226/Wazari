@@ -99,26 +99,26 @@ class WVInput extends Component<Props, IState, any> {
       metaKey: pressedKeys.indexOf("Meta") !== -1
     };
 
-    //console.log("before", m);
-
+    console.log("before", m);
+    let _m = {}; // m should not be modified during transformation
     Object.keys(m).forEach(inputKey => {
       //console.log("inputKey:", inputKey, "input mods:", m[inputKey]);
       let targetMods = Object.keys(modifiers).filter(
         k => modifiers[k] === inputKey
       );
-      //console.log("targetMods", targetMods);
+      console.log("targetMods", targetMods);
       if (targetMods.length === 0) {
-        m[inputKey] = false;
+        _m[inputKey] = false;
       } else {
         let result = false;
         targetMods.forEach(k => {
           result = result || m[k];
         });
-        m[inputKey] = result;
+        _m[inputKey] = result;
       }
     });
-
-    //console.log("after", m);
+    m = _m;
+    console.log("after", m);
 
     // let m = {
     //   capslockKey: false,
@@ -194,6 +194,7 @@ class WVInput extends Component<Props, IState, any> {
         mods = 0;
       } else {
         mods = this.toUIKitFlags(keyEvent);
+        this.handleKeys();
       }
       console.log("mods", mods);
       DAVKeyManager.setMods(mods);
