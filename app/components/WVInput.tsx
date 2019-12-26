@@ -90,19 +90,49 @@ class WVInput extends Component<Props, IState, any> {
       return;
     }
 
+    // modifiers from input
     let m = {
-      capslockKey: false,
-      shiftKey: false,
-      altKey: false,
-      ctrlKey: false,
-      metaKey: false
+      capslockKey: pressedKeys.indexOf("CapsLock") !== -1,
+      shiftKey: pressedKeys.indexOf("Shift") !== -1,
+      altKey: pressedKeys.indexOf("Alt") !== -1,
+      ctrlKey: pressedKeys.indexOf("Control") !== -1,
+      metaKey: pressedKeys.indexOf("Meta") !== -1
     };
 
-    m[modifiers.capslockKey] = pressedKeys.indexOf("CapsLock") !== -1;
-    m["shiftKey"] = pressedKeys.indexOf("Shift") !== -1;
-    m[modifiers.altKey] = pressedKeys.indexOf("Alt") !== -1;
-    m[modifiers.ctrlKey] = pressedKeys.indexOf("Control") !== -1;
-    m[modifiers.metaKey] = pressedKeys.indexOf("Meta") !== -1;
+    console.log("before", m);
+
+    Object.keys(m).forEach(inputKey => {
+      console.log("inputKey:", inputKey, "input mods:", m[inputKey]);
+      let targetMods = Object.keys(modifiers).filter(
+        k => modifiers[k] === inputKey
+      );
+      console.log("targetMods", targetMods);
+      if (targetMods.length === 0) {
+        m[inputKey] = false;
+      } else {
+        let result = false;
+        targetMods.forEach(k => {
+          result = result || m[k];
+        });
+        m[inputKey] = result;
+      }
+    });
+
+    console.log("after", m);
+
+    // let m = {
+    //   capslockKey: false,
+    //   shiftKey: false,
+    //   altKey: false,
+    //   ctrlKey: false,
+    //   metaKey: false
+    // };
+
+    // m[modifiers.capslockKey] = pressedKeys.indexOf("CapsLock") !== -1;
+    // m["shiftKey"] = pressedKeys.indexOf("Shift") !== -1;
+    // m[modifiers.altKey] = pressedKeys.indexOf("Alt") !== -1;
+    // m[modifiers.ctrlKey] = pressedKeys.indexOf("Control") !== -1;
+    // m[modifiers.metaKey] = pressedKeys.indexOf("Meta") !== -1;
 
     console.log("modifiers in handleKeys()", modifiers);
     console.log("mods in handleKeys()", m);
