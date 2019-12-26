@@ -76,6 +76,15 @@ class WVInput extends Component<Props, IState, any> {
     }, 300);
   }
 
+  _removeAccents(str) {
+    let res = str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    let tmp = res.replace(/^[\u02c6\u00a8\u00b4\u02dc\u0060]/, "");
+    if (tmp) {
+      res = tmp;
+    }
+    return res;
+  }
+
   handleKeys() {
     const { modifiers, browserKeymap } = this.props;
     const pressedKeys = Object.keys(this.down);
@@ -103,10 +112,15 @@ class WVInput extends Component<Props, IState, any> {
       .forEach(key => {
         Object.keys(browserKeymap).forEach(action => {
           const keymap = browserKeymap[action];
-          if (isEqual(keymap.modifiers, m) && keymap.key === key) {
+          // always comparing to lowercase of the input key
+          if (
+            isEqual(keymap.modifiers, m) &&
+            keymap.key === key.toLowerCase()
+          ) {
             this.props.updateAction(
               `action: ${action} - ${JSON.stringify(this.down)}`
             );
+            this.handleAction(action);
             // once it's executed then clear it
             this.down = {};
           }
@@ -164,6 +178,29 @@ class WVInput extends Component<Props, IState, any> {
           this.setState({ isCapsLockOn: !this.state.isCapsLockOn });
         }
       });
+  }
+
+  handleAction(action) {
+    switch (action) {
+      case "home":
+        this.webref.injectJavaScript(`cursorToBeginning()`);
+        break;
+      case "end":
+        this.webref.injectJavaScript(`cursorToEnd()`);
+        break;
+      case "deletePreviousChar":
+        this.webref.injectJavaScript(`deletePreviousChar()`);
+        break;
+      case "deleteNextChar":
+        this.webref.injectJavaScript(`deleteNextChar()`);
+        break;
+      case "moveBackOneChar":
+        this.webref.injectJavaScript(`moveBackOneChar()`);
+        break;
+      case "moveForwardOneChar":
+        this.webref.injectJavaScript(`moveForwardOneChar()`);
+        break;
+    }
   }
 
   onMessage(event) {
