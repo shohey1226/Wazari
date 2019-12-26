@@ -78,15 +78,6 @@ class WVInput extends Component<Props, IState, any> {
       }, 300);
   }
 
-  _removeAccents(str) {
-    let res = str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    let tmp = res.replace(/^[\u02c6\u00a8\u00b4\u02dc\u0060]/, "");
-    if (tmp) {
-      res = tmp;
-    }
-    return res;
-  }
-
   handleKeys() {
     const { modifiers, browserKeymap } = this.props;
     const pressedKeys = Object.keys(this.down);
