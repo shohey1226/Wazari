@@ -202,6 +202,12 @@ class WVInput extends Component<Props, IState, any> {
       case "moveForwardOneChar":
         this.webref.injectJavaScript(`moveForwardOneChar()`);
         break;
+      case "moveDownOneLine":
+        this.props.nextHistoryItem();
+        break;
+      case "moveUpOneLine":
+        this.props.previousHistoryItem();
+        break;
     }
   }
 
