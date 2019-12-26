@@ -70,10 +70,12 @@ class WVInput extends Component<Props, IState, any> {
   _handleControl() {
     this.down["Control"] = true;
     this.handleKeys();
-    setTimeout(() => {
-      console.log("simulate Control keyup with setTimout");
-      this.down["Control"] && delete this.down["Control"];
-    }, 300);
+    // looks like Control up is called on physical device
+    __DEV__ === true &&
+      setTimeout(() => {
+        console.log("simulate Control keyup with setTimout");
+        this.down["Control"] && delete this.down["Control"];
+      }, 300);
   }
 
   _removeAccents(str) {
@@ -88,6 +90,15 @@ class WVInput extends Component<Props, IState, any> {
   handleKeys() {
     const { modifiers, browserKeymap } = this.props;
     const pressedKeys = Object.keys(this.down);
+
+    // handle Enter and Esc
+    if (pressedKeys.indexOf("Escape") !== -1) {
+      this.props.closeSearch();
+      return;
+    } else if (pressedKeys.indexOf("Enter") !== -1) {
+      return;
+    }
+
     let m = {
       capslockKey: false,
       shiftKey: false,

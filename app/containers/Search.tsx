@@ -656,6 +656,7 @@ class Search extends Component<Props, IState, any> {
             modifiers={modifiers}
             browserKeymap={browserKeymap}
             performAction={this.performAction.bind(this)}
+            {...this.props}
           />
 
           <Button

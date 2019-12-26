@@ -2,6 +2,7 @@ var IsCapsLockOn = false;
 
 function onKeyPress(e) {
   let key = e.key;
+  // Handle alt-code. RN only needs to know the code but not key, like ©,å,,,.
   if (e.altKey) {
     // the both which and keyCode are deprecated but it's handy.
     let code = event.which || event.keyCode;
@@ -14,7 +15,8 @@ function onKeyPress(e) {
         shiftKey: e.shiftKey,
         metaKey: e.metaKey,
         altKey: e.altKey,
-        ctrlKey: e.ctrlKey
+        ctrlKey: e.ctrlKey,
+        repeat: e.repeat
       },
       postFor: e.type
     })
