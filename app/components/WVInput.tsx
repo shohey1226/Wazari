@@ -71,11 +71,11 @@ class WVInput extends Component<Props, IState, any> {
     this.down["Control"] = true;
     this.handleKeys();
     // looks like Control up is called on physical device
-    __DEV__ === true &&
-      setTimeout(() => {
-        console.log("simulate Control keyup with setTimout");
-        this.down["Control"] && delete this.down["Control"];
-      }, 300);
+    // __DEV__ === true &&
+    //   setTimeout(() => {
+    //     console.log("simulate Control keyup with setTimout");
+    //     this.down["Control"] && delete this.down["Control"];
+    //   }, 300);
   }
 
   handleKeys() {
@@ -99,14 +99,14 @@ class WVInput extends Component<Props, IState, any> {
       metaKey: pressedKeys.indexOf("Meta") !== -1
     };
 
-    console.log("before", m);
+    //console.log("before", m);
 
     Object.keys(m).forEach(inputKey => {
-      console.log("inputKey:", inputKey, "input mods:", m[inputKey]);
+      //console.log("inputKey:", inputKey, "input mods:", m[inputKey]);
       let targetMods = Object.keys(modifiers).filter(
         k => modifiers[k] === inputKey
       );
-      console.log("targetMods", targetMods);
+      //console.log("targetMods", targetMods);
       if (targetMods.length === 0) {
         m[inputKey] = false;
       } else {
@@ -118,7 +118,7 @@ class WVInput extends Component<Props, IState, any> {
       }
     });
 
-    console.log("after", m);
+    //console.log("after", m);
 
     // let m = {
     //   capslockKey: false,
@@ -154,7 +154,7 @@ class WVInput extends Component<Props, IState, any> {
             );
             this.handleAction(action);
             // once it's executed then clear it
-            this.down = {};
+            //this.down = {};
           }
         });
       });
