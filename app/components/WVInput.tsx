@@ -282,8 +282,13 @@ class WVInput extends Component<Props, IState, any> {
   }
 
   onLoadEnd() {
-    this.webref &&
-      this.webref.injectJavaScript(`document.getElementById('search').focus()`);
+    const { modifiers } = this.props;
+    this.webref.injectJavaScript(`document.getElementById('search').focus()`);
+    let initStr = JSON.stringify({
+      isCapsLockRemapped: modifiers["capslockKey"] !== "capslockKey"
+    });
+    console.log(initStr);
+    this.webref.injectJavaScript(`init('${initStr}')`);
   }
 
   render() {

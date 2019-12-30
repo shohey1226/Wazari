@@ -1,4 +1,11 @@
 var IsCapsLockOn = false;
+var isCapsLockRemapped = false;
+var down = false;
+
+function init(initStr) {
+  let initObj = JSON.parse(initStr);
+  isCapsLockRemapped = initObj.isCapsLockRemapped;
+}
 
 function onKeyPress(e) {
   let key = e.key;
@@ -21,6 +28,17 @@ function onKeyPress(e) {
       postFor: e.type
     })
   );
+
+  if (isCapsLockRemapped) {
+    if (e.type === "keydown") {
+      down[e.key] = new Date().getTime();
+    } else if (e.type == "keyup") {
+      down[e.key] && delete down[e.key];
+    }
+
+    e.preventDefault();
+    e.stopPropagation();
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
