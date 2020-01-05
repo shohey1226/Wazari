@@ -38,14 +38,13 @@ class WVInput extends Component<Props, IState, any> {
       switch (data.name) {
         case "mods-down":
           if (data.flags === 262144) {
-            console.log("--- mods-down");
             this._handleControl();
           } else {
             this._handleCapsLockDown(true);
           }
           break;
         case "mods-up":
-          this._handleCapsLockDown(false);
+          //this._handleCapsLockDown(false);
           break;
       }
     });
@@ -194,6 +193,7 @@ class WVInput extends Component<Props, IState, any> {
         mods = 0;
       } else {
         mods = this.toUIKitFlags(keyEvent);
+        this.capsKeyup();
         this.handleKeys();
       }
       console.log("mods", mods);
@@ -211,6 +211,13 @@ class WVInput extends Component<Props, IState, any> {
           this.setState({ isCapsLockOn: !this.state.isCapsLockOn });
         }
       });
+  }
+
+  capsKeyup() {
+    setTimeout(() => {
+      this.webref.injectJavaScript(`capslockKeyUp()`);
+      this.down["CapsLock"] && delete this.down["CapsLock"];
+    }, 300);
   }
 
   handleAction(action) {

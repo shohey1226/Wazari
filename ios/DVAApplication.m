@@ -74,7 +74,7 @@ KeyCommand *_activeModsCommand;
 
 - (KeyCommand *)_modifiersCommand:(UIKeyModifierFlags) flags {
   KeyCommand *cmd = [KeyCommand keyCommandWithInput:@"" modifierFlags:flags action:@selector(_keyDown:)];
-  [cmd setUp: @selector(_keyUp:)];
+  //[cmd setUp: @selector(_keyUp:)];
   return cmd;
 }
 
