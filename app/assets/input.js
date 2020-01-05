@@ -1,4 +1,4 @@
-var IsCapsLockOn = false;
+var isCapsLockOn = false;
 var isCapsLockRemapped = false;
 var down = false;
 
@@ -15,29 +15,51 @@ function onKeyPress(e) {
     let code = event.which || event.keyCode;
     key = String.fromCharCode(code);
   }
-  window.ReactNativeWebView.postMessage(
-    JSON.stringify({
-      keyEvent: {
-        key: key,
-        shiftKey: e.shiftKey,
-        metaKey: e.metaKey,
-        altKey: e.altKey,
-        ctrlKey: e.ctrlKey,
-        repeat: e.repeat
-      },
-      postFor: e.type
-    })
-  );
+  window.ReactNativeWebView &&
+    window.ReactNativeWebView.postMessage(
+      JSON.stringify({
+        keyEvent: {
+          key: key,
+          shiftKey: e.shiftKey,
+          metaKey: e.metaKey,
+          altKey: e.altKey,
+          ctrlKey: e.ctrlKey,
+          repeat: e.repeat
+        },
+        postFor: e.type
+      })
+    );
 
   if (isCapsLockRemapped) {
     if (e.type === "keydown") {
       down[e.key] = new Date().getTime();
+
+      // Need to handle input depending on software capslock
+      if (/^[A-Za-z]$/.test(key)) {
+        e.preventDefault();
+        e.stopPropagation();
+        let inputKey =
+          isCapsLockOn === true ? key.toUpperCase() : key.toLowerCase();
+        updateInputValue(inputKey);
+      }
     } else if (e.type == "keyup") {
       down[e.key] && delete down[e.key];
     }
+  }
+}
 
-    e.preventDefault();
-    e.stopPropagation();
+function updateInputValue(key) {
+  var el = document.activeElement;
+  var startPosition = el.selectionStart;
+  var value = el.value;
+
+  el.value = value.slice(0, startPosition) + key + value.slice(startPosition);
+  if (el.createTextRange) {
+    var part = el.createTextRange();
+    part.move("character", startPosition + 1);
+    part.select();
+  } else if (el.setSelectionRange) {
+    el.setSelectionRange(startPosition + 1, startPosition + 1);
   }
 }
 

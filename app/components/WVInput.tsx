@@ -34,7 +34,7 @@ class WVInput extends Component<Props, IState, any> {
   componentDidMount() {
     const { modifiers, browserKeymap } = this.props;
     this.sub = DAVKeyManagerEmitter.addListener("modKeyPress", data => {
-      console.log("ModsFromNative", data);
+      console.log("RN: ModsFromNative", data);
       switch (data.name) {
         case "mods-down":
           if (data.flags === 262144) {
@@ -80,6 +80,7 @@ class WVInput extends Component<Props, IState, any> {
   handleKeys() {
     const { modifiers, browserKeymap } = this.props;
     const pressedKeys = Object.keys(this.down);
+    console.log(`RN: pressedKeys: ${pressedKeys.join(",")}`);
 
     // handle Enter and Esc
     if (pressedKeys.indexOf("Escape") !== -1) {
@@ -98,14 +99,14 @@ class WVInput extends Component<Props, IState, any> {
       metaKey: pressedKeys.indexOf("Meta") !== -1
     };
 
-    console.log("before", m);
+    console.log("Modifiers: before applying remap", m);
     let _m = {}; // m should not be modified during transformation
     Object.keys(m).forEach(inputKey => {
       //console.log("inputKey:", inputKey, "input mods:", m[inputKey]);
       let targetMods = Object.keys(modifiers).filter(
         k => modifiers[k] === inputKey
       );
-      console.log("targetMods", targetMods);
+      //console.log("targetMods", targetMods);
       if (targetMods.length === 0) {
         _m[inputKey] = false;
       } else {
@@ -117,7 +118,7 @@ class WVInput extends Component<Props, IState, any> {
       }
     });
     m = _m;
-    console.log("after", m);
+    console.log("Modifiers: after applyed remap", m);
 
     // let m = {
     //   capslockKey: false,
@@ -132,9 +133,6 @@ class WVInput extends Component<Props, IState, any> {
     // m[modifiers.altKey] = pressedKeys.indexOf("Alt") !== -1;
     // m[modifiers.ctrlKey] = pressedKeys.indexOf("Control") !== -1;
     // m[modifiers.metaKey] = pressedKeys.indexOf("Meta") !== -1;
-
-    console.log("modifiers in handleKeys()", modifiers);
-    console.log("mods in handleKeys()", m);
 
     this.props.updateAction(JSON.stringify(this.down));
 
@@ -196,7 +194,9 @@ class WVInput extends Component<Props, IState, any> {
         this.capsKeyup();
         this.handleKeys();
       }
-      console.log("mods", mods);
+      console.log(
+        `RN: capslock is remapped and setMods - type: ${type} mods: ${mods}`
+      );
       DAVKeyManager.setMods(mods);
     }
   }
@@ -215,6 +215,7 @@ class WVInput extends Component<Props, IState, any> {
 
   capsKeyup() {
     setTimeout(() => {
+      console.log("RN: Simulate keyup from capsLockKeydown with setTimout");
       this.webref.injectJavaScript(`capslockKeyUp()`);
       this.down["CapsLock"] && delete this.down["CapsLock"];
     }, 300);

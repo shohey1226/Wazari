@@ -64,6 +64,7 @@ KeyCommand *_activeModsCommand;
   NSLog(@"Notification - You recieved mod key in DVAApplication");
   NSNumber *mods = notification.userInfo[@"mods"];
   int _trackingModifierFlags = (UIKeyModifierFlags)mods.integerValue;
+  NSLog(@"ModifierFlag: %d", _trackingModifierFlags);
   if (_trackingModifierFlags == 0) {
     _activeModsCommand = nil;
   } else {
