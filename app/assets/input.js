@@ -20,6 +20,7 @@ function onKeyPress(e) {
       JSON.stringify({
         keyEvent: {
           key: key,
+          type: e.type,
           shiftKey: e.shiftKey,
           metaKey: e.metaKey,
           altKey: e.altKey,
@@ -31,19 +32,12 @@ function onKeyPress(e) {
     );
 
   if (isCapsLockRemapped) {
-    if (e.type === "keydown") {
-      down[e.key] = new Date().getTime();
+    down[e.key] = new Date().getTime();
 
-      // Need to handle input depending on software capslock
-      if (/^[A-Za-z]$/.test(key)) {
-        e.preventDefault();
-        e.stopPropagation();
-        let inputKey =
-          isCapsLockOn === true ? key.toUpperCase() : key.toLowerCase();
-        updateInputValue(inputKey);
-      }
-    } else if (e.type == "keyup") {
-      down[e.key] && delete down[e.key];
+    // Need to handle input depending on software capslock
+    if (/^[A-Za-z]$/.test(key)) {
+      e.preventDefault();
+      e.stopPropagation();
     }
   }
 }

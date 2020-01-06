@@ -59,7 +59,7 @@ class WVInput extends Component<Props, IState, any> {
   _handleCapsLockDown(isDown) {
     if (isDown) {
       this.down["CapsLock"] = true;
-      this.handleKeys();
+      //this.handleKeys(null);
     } else {
       this.down["CapsLock"] && delete this.down["CapsLock"];
     }
@@ -68,7 +68,7 @@ class WVInput extends Component<Props, IState, any> {
   // UIKeycommand(Native) to RN and use down object to detect simaltanous keys.
   _handleControl() {
     this.down["Control"] = true;
-    this.handleKeys();
+    //this.handleKeys();
     // looks like Control up is called on physical device
     // __DEV__ === true &&
     //   setTimeout(() => {
@@ -77,7 +77,7 @@ class WVInput extends Component<Props, IState, any> {
     //   }, 300);
   }
 
-  handleKeys() {
+  handleKeys(keyEvent) {
     const { modifiers, browserKeymap } = this.props;
     const pressedKeys = Object.keys(this.down);
     console.log(`RN: pressedKeys: ${pressedKeys.join(",")}`);
@@ -136,6 +136,7 @@ class WVInput extends Component<Props, IState, any> {
 
     this.props.updateAction(JSON.stringify(this.down));
 
+    let hasAction = false;
     pressedKeys
       .filter(k => k.length === 1)
       .forEach(key => {
@@ -150,11 +151,23 @@ class WVInput extends Component<Props, IState, any> {
               `action: ${action} - ${JSON.stringify(this.down)}`
             );
             this.handleAction(action);
+            hasAction = true;
             // once it's executed then clear it
             //this.down = {};
           }
         });
       });
+
+    if (!hasAction) {
+      if (/^[A-Za-z]$/.test(keyEvent.key) && keyEvent.type === "keydown") {
+        let inputKey =
+          this.state.isCapsLockOn === true
+            ? keyEvent.key.toUpperCase()
+            : keyEvent.key.toLowerCase();
+
+        this.webref.injectJavaScript(`updateInputValue("${inputKey}")`);
+      }
+    }
   }
 
   toUIKitFlags(e) {
@@ -185,19 +198,24 @@ class WVInput extends Component<Props, IState, any> {
 
   handleCapsLock(type, keyEvent) {
     const { modifiers } = this.props;
+    // if capslock is remapped
     if (modifiers["capslockKey"] !== "capslockKey") {
-      let mods = 0;
-      if (type == "keyup") {
-        mods = 0;
-      } else {
-        mods = this.toUIKitFlags(keyEvent);
-        this.capsKeyup();
-        this.handleKeys();
-      }
-      console.log(
-        `RN: capslock is remapped and setMods - type: ${type} mods: ${mods}`
-      );
-      DAVKeyManager.setMods(mods);
+      this.down["CapsLock"] = true;
+      this.handleKeys(keyEvent);
+      this.capsKeyup();
+
+      // let mods = 0;
+      // if (type == "keyup") {
+      //   mods = 0;
+      // } else {
+      //   mods = this.toUIKitFlags(keyEvent);
+      //   this.capsKeyup();
+      //   this.handleKeys();
+      // }
+      // console.log(
+      //   `RN: capslock is remapped and setMods - type: ${type} mods: ${mods}`
+      // );
+      // DAVKeyManager.setMods(mods);
     }
   }
 
@@ -218,7 +236,7 @@ class WVInput extends Component<Props, IState, any> {
       console.log("RN: Simulate keyup from capsLockKeydown with setTimout");
       this.webref.injectJavaScript(`capslockKeyUp()`);
       this.down["CapsLock"] && delete this.down["CapsLock"];
-    }, 300);
+    }, 600);
   }
 
   handleAction(action) {
@@ -261,7 +279,7 @@ class WVInput extends Component<Props, IState, any> {
         if (data.keyEvent.key === "CapsLock") {
           this.handleCapsLock("keydown", data.keyEvent);
         } else {
-          this.handleKeys();
+          this.handleKeys(data.keyEvent);
         }
         this.handleSoftwareCapsLock(data.keyEvent);
         break;
@@ -269,6 +287,8 @@ class WVInput extends Component<Props, IState, any> {
       case "keyup":
         if (data.keyEvent.key === "CapsLock") {
           this.handleCapsLock("keyup", data.keyEvent);
+          console.log("capslock - keyup for keydown", this.down);
+          break;
         } else if (data.keyEvent.key === "Meta") {
           // Meta+key doesn't fire key up event..
           this.down = {};
