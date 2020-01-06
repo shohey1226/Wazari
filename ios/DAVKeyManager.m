@@ -106,13 +106,7 @@ RCT_EXPORT_MODULE();
   }
 }
 
-RCT_EXPORT_METHOD(setMods:(NSString *)flag)
-{
-  NSLog(@"Setting mods");
-  NSDictionary *mods = @{@"mods": flag};
-  [[NSNotificationCenter defaultCenter] postNotificationName:@"mods" object:self userInfo:mods];
-}
-
+// Keydown or keyup from DAVApplication. Currently it's only for Control keydown
 - (void)modKeyPress:(NSNotification *)notification
 {
   if (hasListeners){
