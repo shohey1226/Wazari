@@ -178,6 +178,28 @@ function moveForwardOneChar() {
   }
 }
 
+function deleteLine() {
+  var el = document.activeElement;
+  if (!el.value) {
+    return;
+  }
+  var endPos = el.value.indexOf("\\n", el.selectionStart);
+  if (endPos === -1) {
+    endPos = el.value.length;
+  }
+  var caretPos = el.selectionStart;
+  var content = el.value;
+  var words = content.substring(caretPos, endPos);
+  if (words) {
+    window.ReactNativeWebView.postMessage(
+      JSON.stringify({ selection: words, postFor: "copy" })
+    );
+  }
+  el.value =
+    content.substring(0, caretPos) + content.substring(endPos, content.length);
+  el.setSelectionRange(caretPos, caretPos);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Main (or setup)
 ///////////////////////////////////////////////////////////////////////////////

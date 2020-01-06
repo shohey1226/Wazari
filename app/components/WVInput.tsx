@@ -9,6 +9,7 @@ const DAVKeyManagerEmitter = new NativeEventEmitter(DAVKeyManager);
 interface IState {
   downKeys: any;
   isCapsLockOn: boolean;
+  clearId: number | null;
 }
 
 interface Props {
@@ -26,7 +27,8 @@ class WVInput extends Component<Props, IState, any> {
     super(props);
     this.state = {
       downKeys: {},
-      isCapsLockOn: props.isCapsLockOn
+      isCapsLockOn: props.isCapsLockOn,
+      clearId: null
     };
     sub = null;
   }
@@ -152,8 +154,13 @@ class WVInput extends Component<Props, IState, any> {
             );
             this.handleAction(action);
             hasAction = true;
-            // once it's executed then clear it
-            //this.down = {};
+
+            // simulate key repeat
+            // extends capslock keyup - clear and set again
+            if (this.state.clearId !== null) {
+              clearTimeout(this.state.clearId);
+              this.capsKeyup();
+            }
           }
         });
       });
@@ -232,11 +239,13 @@ class WVInput extends Component<Props, IState, any> {
   }
 
   capsKeyup() {
-    setTimeout(() => {
+    let clearId = setTimeout(() => {
       console.log("RN: Simulate keyup from capsLockKeydown with setTimout");
       this.webref.injectJavaScript(`capslockKeyUp()`);
       this.down["CapsLock"] && delete this.down["CapsLock"];
-    }, 600);
+      this.setState({ clearId: null });
+    }, 700);
+    this.setState({ clearId: clearId });
   }
 
   handleAction(action) {
@@ -261,6 +270,9 @@ class WVInput extends Component<Props, IState, any> {
         break;
       case "moveDownOneLine":
         this.props.nextHistoryItem();
+        break;
+      case "deleteLine":
+        this.webref.injectJavaScript(`deleteLine()`);
         break;
       case "moveUpOneLine":
         this.props.previousHistoryItem();
