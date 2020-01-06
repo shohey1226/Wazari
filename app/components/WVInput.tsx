@@ -21,7 +21,8 @@ interface Props {
 // Use webview input
 class WVInput extends Component<Props, IState, any> {
   webref: WebView | null = null;
-  down: any = {};
+  down: any = {}; // to detect simaltanous keys.
+  sub: any;
 
   constructor(props) {
     super(props);
@@ -30,7 +31,7 @@ class WVInput extends Component<Props, IState, any> {
       isCapsLockOn: props.isCapsLockOn,
       clearId: null
     };
-    sub = null;
+    this.sub = null;
   }
 
   componentDidMount() {
@@ -39,14 +40,13 @@ class WVInput extends Component<Props, IState, any> {
       console.log("RN: ModsFromNative", data);
       switch (data.name) {
         case "mods-down":
+          // keydown key of control is not firing.
+          // Use UIKeycommand to simulate the keydown.
           if (data.flags === 262144) {
-            this._handleControl();
-          } else {
-            this._handleCapsLockDown(true);
+            this.down["Control"] = true;
           }
           break;
         case "mods-up":
-          //this._handleCapsLockDown(false);
           break;
       }
     });
@@ -55,28 +55,6 @@ class WVInput extends Component<Props, IState, any> {
     this.sub.remove();
     this.webref &&
       this.webref.injectJavaScript(`document.getElementById('search').blur()`);
-  }
-
-  // RN JS(Webview) -> RN -> Native(iOS) -> RN handling both keydown/up
-  _handleCapsLockDown(isDown) {
-    if (isDown) {
-      this.down["CapsLock"] = true;
-      //this.handleKeys(null);
-    } else {
-      this.down["CapsLock"] && delete this.down["CapsLock"];
-    }
-  }
-
-  // UIKeycommand(Native) to RN and use down object to detect simaltanous keys.
-  _handleControl() {
-    this.down["Control"] = true;
-    //this.handleKeys();
-    // looks like Control up is called on physical device
-    // __DEV__ === true &&
-    //   setTimeout(() => {
-    //     console.log("simulate Control keyup with setTimout");
-    //     this.down["Control"] && delete this.down["Control"];
-    //   }, 300);
   }
 
   handleKeys(keyEvent) {
@@ -122,20 +100,6 @@ class WVInput extends Component<Props, IState, any> {
     m = _m;
     console.log("Modifiers: after applyed remap", m);
 
-    // let m = {
-    //   capslockKey: false,
-    //   shiftKey: false,
-    //   altKey: false,
-    //   ctrlKey: false,
-    //   metaKey: false
-    // };
-
-    // m[modifiers.capslockKey] = pressedKeys.indexOf("CapsLock") !== -1;
-    // m["shiftKey"] = pressedKeys.indexOf("Shift") !== -1;
-    // m[modifiers.altKey] = pressedKeys.indexOf("Alt") !== -1;
-    // m[modifiers.ctrlKey] = pressedKeys.indexOf("Control") !== -1;
-    // m[modifiers.metaKey] = pressedKeys.indexOf("Meta") !== -1;
-
     this.props.updateAction(JSON.stringify(this.down));
 
     let hasAction = false;
@@ -177,32 +141,6 @@ class WVInput extends Component<Props, IState, any> {
     }
   }
 
-  toUIKitFlags(e) {
-    // https://github.com/blinksh/blink/blob/847298f9a1bc99848989fbbf5d3afd7cef51449f/KB/JS/src/UIKeyModifierFlags.ts
-    const UIKeyModifierAlphaShift = 1 << 16; // This bit indicates CapsLock
-    const UIKeyModifierShift = 1 << 17;
-    const UIKeyModifierControl = 1 << 18;
-    const UIKeyModifierAlternate = 1 << 19;
-    const UIKeyModifierCommand = 1 << 20;
-    const UIKeyModifierNumericPad = 1 << 21;
-
-    let res = 0;
-    if (e.shiftKey) {
-      res |= UIKeyModifierShift;
-    }
-    if (e.ctrlKey) {
-      res |= UIKeyModifierControl;
-    }
-    if (e.altKey) {
-      res |= UIKeyModifierAlternate;
-    }
-    if (e.metaKey) {
-      res |= UIKeyModifierCommand;
-    }
-    res |= UIKeyModifierAlphaShift;
-    return res;
-  }
-
   handleCapsLock(type, keyEvent) {
     const { modifiers } = this.props;
     // if capslock is remapped
@@ -210,19 +148,6 @@ class WVInput extends Component<Props, IState, any> {
       this.down["CapsLock"] = true;
       this.handleKeys(keyEvent);
       this.capsKeyup();
-
-      // let mods = 0;
-      // if (type == "keyup") {
-      //   mods = 0;
-      // } else {
-      //   mods = this.toUIKitFlags(keyEvent);
-      //   this.capsKeyup();
-      //   this.handleKeys();
-      // }
-      // console.log(
-      //   `RN: capslock is remapped and setMods - type: ${type} mods: ${mods}`
-      // );
-      // DAVKeyManager.setMods(mods);
     }
   }
 
@@ -238,6 +163,14 @@ class WVInput extends Component<Props, IState, any> {
       });
   }
 
+  /* 
+    CapsLock behavies the below. 
+    Simulate key release and key repeat with setTimeout
+    1. capslock press - keydown 
+    2. caplock release - no event 
+    3. capslock press - keyup 
+    4. capslock release - no event
+  */
   capsKeyup() {
     let clearId = setTimeout(() => {
       console.log("RN: Simulate keyup from capsLockKeydown with setTimout");
@@ -323,12 +256,14 @@ class WVInput extends Component<Props, IState, any> {
 
   onLoadEnd() {
     const { modifiers } = this.props;
-    this.webref.injectJavaScript(`document.getElementById('search').focus()`);
-    let initStr = JSON.stringify({
-      isCapsLockRemapped: modifiers["capslockKey"] !== "capslockKey"
-    });
-    console.log(initStr);
-    this.webref.injectJavaScript(`init('${initStr}')`);
+    if (this.webref) {
+      this.webref.injectJavaScript(`document.getElementById('search').focus()`);
+      let initStr = JSON.stringify({
+        isCapsLockRemapped: modifiers["capslockKey"] !== "capslockKey"
+      });
+      console.log(initStr);
+      this.webref.injectJavaScript(`init('${initStr}')`);
+    }
   }
 
   render() {
