@@ -10,9 +10,29 @@
 #import "DVAApplication.h"
 #import "DAVKeyManager.h"
 
+
+@interface KeyCommand: UIKeyCommand
+@end
+
+@implementation KeyCommand {
+  SEL _up;
+}
+
+- (void)setUp:(SEL) action {
+  _up = action;
+}
+
+- (SEL)upAction {
+  return _up;
+}
+
+@end
+
+
 @implementation DVAApplication
 
 NSArray<UIKeyCommand *> *_keyCommands;
+KeyCommand *_activeModsCommand;
 
 - (id)init
 {
@@ -24,6 +44,7 @@ NSArray<UIKeyCommand *> *_keyCommands;
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(turnOffKeymapReceived:) name:@"turnOffKeymap" object:nil];
   
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(appKeymapReceived:) name:@"appKeymap" object:nil];
+  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(modsReceived:) name:@"mods" object:nil];
   
   self = [super init];
   return self;
@@ -34,9 +55,40 @@ NSArray<UIKeyCommand *> *_keyCommands;
   return @[@"activeMode", @"appKeymap", @"browserKeymap", @"mods"];
 }
 
-- (void)_keyDown:(UIKeyCommand *)cmd {
+///////////////////////////////////////////////////////////////////
+// Capslock handling
+///////////////////////////////////////////////////////////////////
+
+- (void)modsReceived:(NSNotification *)notification
+{
+  NSLog(@"Notification - You recieved mod key in DVAApplication");
+  NSNumber *mods = notification.userInfo[@"mods"];
+  int _trackingModifierFlags = (UIKeyModifierFlags)mods.integerValue;
+  NSLog(@"ModifierFlag: %d", _trackingModifierFlags);
+  if (_trackingModifierFlags == 0) {
+    _activeModsCommand = nil;
+  } else {
+    _activeModsCommand = [self _modifiersCommand:_trackingModifierFlags];
+  }
+  [self _rebuildKeyCommands];
+}
+
+- (KeyCommand *)_modifiersCommand:(UIKeyModifierFlags) flags {
+  KeyCommand *cmd = [KeyCommand keyCommandWithInput:@"" modifierFlags:flags action:@selector(_keyDown:)];
+  //[cmd setUp: @selector(_keyUp:)];
+  return cmd;
+}
+
+- (void)_keyDown:(KeyCommand *)cmd {
+  //[self report:@"mods-down" arg:@(cmd.modifierFlags)];
   NSLog(@"mods-down");
   NSDictionary *userInfo = @{@"action": @"mods-down", @"flags": @(cmd.modifierFlags)};
+  [[NSNotificationCenter defaultCenter] postNotificationName:@"modPressed" object:self userInfo:userInfo];
+}
+
+- (void)_keyUp:(KeyCommand *)cmd {
+  //[self report:@"mods-up" arg:@(cmd.modifierFlags)];
+  NSDictionary *userInfo = @{@"action": @"mods-up",  @"flags": @(cmd.modifierFlags)};
   [[NSNotificationCenter defaultCenter] postNotificationName:@"modPressed" object:self userInfo:userInfo];
 }
 
@@ -78,7 +130,12 @@ NSArray<UIKeyCommand *> *_keyCommands;
 // Rebuild key commands
 - (void)_rebuildKeyCommands {
   NSMutableArray *cmds = [[NSMutableArray alloc] init];
-    
+  
+  // Add capslock handling
+  if (_activeModsCommand) {
+    [cmds addObject:_activeModsCommand];
+  }
+  
   // app keys are used all the time
   NSDictionary* _keymap = _appKeymap;
   for (NSString* keyMod in [_keymap allKeys]) {
