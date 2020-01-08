@@ -10,6 +10,7 @@ interface IState {
   downKeys: any;
   isCapsLockOn: boolean;
   clearId: number | null;
+  isCapsLockRemapped: boolean;
 }
 
 interface Props {
@@ -28,7 +29,8 @@ class WVInput extends Component<Props, IState, any> {
     this.state = {
       downKeys: {},
       isCapsLockOn: props.isCapsLockOn,
-      clearId: null
+      clearId: null,
+      isCapsLockRemapped: props.modifiers["capslockKey"] !== "capslockKey"
     };
     sub = null;
   }
@@ -165,10 +167,11 @@ class WVInput extends Component<Props, IState, any> {
         });
       });
 
-    if (!hasAction) {
+    if (!hasAction && this.state.isCapsLockRemapped) {
       if (/^[A-Za-z]$/.test(keyEvent.key) && keyEvent.type === "keydown") {
         let inputKey =
-          this.state.isCapsLockOn === true
+          this.state.isCapsLockOn === true ||
+          pressedKeys.indexOf("Shift") !== -1
             ? keyEvent.key.toUpperCase()
             : keyEvent.key.toLowerCase();
 
@@ -322,7 +325,7 @@ class WVInput extends Component<Props, IState, any> {
     const { modifiers } = this.props;
     this.webref.injectJavaScript(`document.getElementById('search').focus()`);
     let initStr = JSON.stringify({
-      isCapsLockRemapped: modifiers["capslockKey"] !== "capslockKey"
+      isCapsLockRemapped: this.state.isCapsLockRemapped
     });
     console.log(initStr);
     this.webref.injectJavaScript(`init('${initStr}')`);

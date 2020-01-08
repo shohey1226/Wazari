@@ -8,6 +8,11 @@ function init(initStr) {
 }
 
 function onKeyPress(e) {
+  // don't touch if IME is used
+  if (e.isComposing) {
+    return;
+  }
+
   let key = e.key;
   // Handle alt-code. RN only needs to know the code but not key, like ©,å,,,.
   if (e.altKey) {
