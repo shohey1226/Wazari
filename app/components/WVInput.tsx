@@ -42,11 +42,11 @@ class WVInput extends Component<Props, IState, any> {
           if (data.flags === 262144) {
             this._handleControl();
           } else {
-            this._handleCapsLockDown(true);
+            this.handleCapsLockFromNative(true);
           }
           break;
         case "mods-up":
-          //this._handleCapsLockDown(false);
+          //this.handleCapsLockFromNative(false);
           break;
       }
     });
@@ -58,10 +58,10 @@ class WVInput extends Component<Props, IState, any> {
   }
 
   // RN JS(Webview) -> RN -> Native(iOS) -> RN handling both keydown/up
-  _handleCapsLockDown(isDown) {
+  handleCapsLockFromNative(isDown) {
     if (isDown) {
       this.down["CapsLock"] = true;
-      //this.handleKeys(null);
+      this.handleKeys({ key: "CapsLock", type: "keydown", isFromNative: true });
     } else {
       this.down["CapsLock"] && delete this.down["CapsLock"];
     }
@@ -157,7 +157,7 @@ class WVInput extends Component<Props, IState, any> {
 
             // simulate key repeat
             // extends capslock keyup - clear and set again
-            if (this.state.clearId !== null) {
+            if (this.state.clearId !== null && keyEvent.isFromNative !== true) {
               clearTimeout(this.state.clearId);
               this.capsKeyup();
             }
@@ -203,26 +203,23 @@ class WVInput extends Component<Props, IState, any> {
     return res;
   }
 
-  handleCapsLock(type, keyEvent) {
+  // handle capslock comes from JS
+  handleCapsLockFromJS(type, keyEvent) {
     const { modifiers } = this.props;
     // if capslock is remapped
     if (modifiers["capslockKey"] !== "capslockKey") {
-      this.down["CapsLock"] = true;
-      this.handleKeys(keyEvent);
-      this.capsKeyup();
-
-      // let mods = 0;
-      // if (type == "keyup") {
-      //   mods = 0;
-      // } else {
-      //   mods = this.toUIKitFlags(keyEvent);
-      //   this.capsKeyup();
-      //   this.handleKeys();
-      // }
-      // console.log(
-      //   `RN: capslock is remapped and setMods - type: ${type} mods: ${mods}`
-      // );
-      // DAVKeyManager.setMods(mods);
+      let mods = 0;
+      if (type === "keyup") {
+        mods = 0;
+      } else {
+        mods = this.toUIKitFlags(keyEvent);
+        this.capsKeyup();
+        this.handleKeys(keyEvent);
+      }
+      DAVKeyManager.setMods(mods);
+      console.log(
+        `RN: capslock is remapped and setMods - type: ${type} mods: ${mods}`
+      );
     }
   }
 
@@ -244,7 +241,7 @@ class WVInput extends Component<Props, IState, any> {
       this.webref.injectJavaScript(`capslockKeyUp()`);
       this.down["CapsLock"] && delete this.down["CapsLock"];
       this.setState({ clearId: null });
-    }, 700);
+    }, 750);
     this.setState({ clearId: clearId });
   }
 
@@ -283,13 +280,14 @@ class WVInput extends Component<Props, IState, any> {
   onMessage(event) {
     const data = JSON.parse(event.nativeEvent.data);
     console.log(data);
+    this.props.debug(JSON.stringify(data));
     let _down;
     switch (data.postFor) {
       case "keydown":
         this.down[data.keyEvent.key] = true;
         console.log("keydown", this.down);
         if (data.keyEvent.key === "CapsLock") {
-          this.handleCapsLock("keydown", data.keyEvent);
+          this.handleCapsLockFromJS("keydown", data.keyEvent);
         } else {
           this.handleKeys(data.keyEvent);
         }
@@ -298,9 +296,8 @@ class WVInput extends Component<Props, IState, any> {
 
       case "keyup":
         if (data.keyEvent.key === "CapsLock") {
-          this.handleCapsLock("keyup", data.keyEvent);
+          this.handleCapsLockFromJS("keyup", data.keyEvent);
           console.log("capslock - keyup for keydown", this.down);
-          break;
         } else if (data.keyEvent.key === "Meta") {
           // Meta+key doesn't fire key up event..
           this.down = {};

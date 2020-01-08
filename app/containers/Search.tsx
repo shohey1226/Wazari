@@ -91,7 +91,8 @@ class Search extends Component<Props, IState, any> {
       result: [],
       selectMode: false,
       capsLockOn: false,
-      action: ""
+      action: "",
+      debug: ""
     };
   }
 
@@ -653,6 +654,7 @@ class Search extends Component<Props, IState, any> {
             updateCapsLockState={s => this.setState({ capsLockOn: s })}
             isCapsLockOn={this.state.capsLockOn}
             updateAction={a => this.setState({ action: a })}
+            debug={a => this.setState({ debug: a })}
             modifiers={modifiers}
             browserKeymap={browserKeymap}
             performAction={this.performAction.bind(this)}
@@ -682,6 +684,7 @@ class Search extends Component<Props, IState, any> {
         </Item>
         <Text>capslock: {this.state.capsLockOn === true ? "ON" : "OFF"}</Text>
         <Text>action: {this.state.action}</Text>
+        <Text>debug: {this.state.debug}</Text>
         <List>{this.renderCandidates()}</List>
       </Content>
     );
