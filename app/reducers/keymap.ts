@@ -29,6 +29,76 @@ const defaultKeymap = {
     //     metaKey: true
     //   }
     // },
+    hitAHint: {
+      key: "i",
+      modifiers: {
+        capslockKey: false,
+        shiftKey: false,
+        altKey: false,
+        ctrlKey: false,
+        metaKey: true
+      }
+    },
+    hitAHintOpeningNewTab: {
+      key: "i",
+      modifiers: {
+        capslockKey: false,
+        shiftKey: true,
+        altKey: false,
+        ctrlKey: false,
+        metaKey: true
+      }
+    },
+    reload: {
+      key: "r",
+      modifiers: {
+        capslockKey: false,
+        shiftKey: false,
+        altKey: false,
+        ctrlKey: false,
+        metaKey: true
+      }
+    },
+    goBack: {
+      key: "[",
+      modifiers: {
+        capslockKey: false,
+        shiftKey: false,
+        altKey: false,
+        ctrlKey: false,
+        metaKey: true
+      }
+    },
+    goForward: {
+      key: "]",
+      modifiers: {
+        capslockKey: false,
+        shiftKey: false,
+        altKey: false,
+        ctrlKey: false,
+        metaKey: true
+      }
+    },
+    zoomIn: {
+      key: "=",
+      modifiers: {
+        capslockKey: false,
+        shiftKey: true,
+        altKey: false,
+        ctrlKey: false,
+        metaKey: true
+      }
+    },
+    zoomOut: {
+      key: "_",
+      modifiers: {
+        capslockKey: false,
+        shiftKey: false,
+        altKey: false,
+        ctrlKey: false,
+        metaKey: true
+      }
+    },
     focusOnSearch: {
       key: "i",
       modifiers: {
@@ -181,16 +251,6 @@ const defaultKeymap = {
         metaKey: true
       }
     },
-    // help: {
-    //   key: "1",
-    //   modifiers: {
-    //     capslockKey: false,
-    //     shiftKey: false,
-    //     altKey: true,
-    //     ctrlKey: false,
-    //     metaKey: false
-    //   }
-    // },
     home: {
       key: "a",
       modifiers: {
@@ -251,36 +311,6 @@ const defaultKeymap = {
         metaKey: false
       }
     },
-    goBack: {
-      key: "[",
-      modifiers: {
-        capslockKey: false,
-        shiftKey: false,
-        altKey: false,
-        ctrlKey: false,
-        metaKey: true
-      }
-    },
-    goForward: {
-      key: "]",
-      modifiers: {
-        capslockKey: false,
-        shiftKey: false,
-        altKey: false,
-        ctrlKey: false,
-        metaKey: true
-      }
-    },
-    reload: {
-      key: "r",
-      modifiers: {
-        capslockKey: false,
-        shiftKey: false,
-        altKey: false,
-        ctrlKey: false,
-        metaKey: true
-      }
-    },
     moveDownOneLine: {
       key: "n",
       modifiers: {
@@ -299,46 +329,6 @@ const defaultKeymap = {
         altKey: false,
         ctrlKey: true,
         metaKey: false
-      }
-    },
-    hitAHint: {
-      key: "i",
-      modifiers: {
-        capslockKey: false,
-        shiftKey: false,
-        altKey: false,
-        ctrlKey: true,
-        metaKey: false
-      }
-    },
-    hitAHintOpeningNewTab: {
-      key: "i",
-      modifiers: {
-        capslockKey: false,
-        shiftKey: true,
-        altKey: false,
-        ctrlKey: true,
-        metaKey: false
-      }
-    },
-    zoomIn: {
-      key: "=",
-      modifiers: {
-        capslockKey: false,
-        shiftKey: true,
-        altKey: false,
-        ctrlKey: false,
-        metaKey: true
-      }
-    },
-    zoomOut: {
-      key: "_",
-      modifiers: {
-        capslockKey: false,
-        shiftKey: false,
-        altKey: false,
-        ctrlKey: false,
-        metaKey: true
       }
     },
     // find: {

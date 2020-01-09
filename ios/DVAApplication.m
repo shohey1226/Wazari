@@ -136,14 +136,26 @@ KeyCommand *_activeModsCommand;
     [cmds addObject:_activeModsCommand];
   }
   
+  
+  
   // app keys are used all the time
   NSDictionary* _keymap = _appKeymap;
-  for (NSString* keyMod in [_keymap allKeys]) {
+  NSArray *keys = [_keymap allKeys];
+  // Sort with value of dictionary
+  // https://stackoverflow.com/questions/11554780/objective-c-sort-keys-of-nsdictionary-based-on-dictionary-entries
+  NSArray *sortedKeys = [keys sortedArrayUsingComparator:^NSComparisonResult(id a, id b) {
+      NSString *first = [_keymap objectForKey:a];
+      NSString *second = [_keymap objectForKey:b];
+      return [first compare:second];
+  }];
+    
+  for (NSString* keyMod in sortedKeys) {
     NSArray *keyModArray = [keyMod componentsSeparatedByString:@":*:"];
     NSString* key = keyModArray[0];
     NSString* modStr = keyModArray[1];
+    NSString* title = keyModArray[2];
     NSInteger intMod = [[modStr stringByTrimmingCharactersInSet:[[NSCharacterSet decimalDigitCharacterSet] invertedSet]] intValue];
-    [cmds addObject:[UIKeyCommand keyCommandWithInput:key modifierFlags:intMod action:@selector(handleAppCommand:)]];
+    [cmds addObject:[UIKeyCommand keyCommandWithInput:key modifierFlags:intMod action:@selector(handleAppCommand:) discoverabilityTitle:title]];
   }
   
   // Control can't be detected when keycommands are override. No root cause can be found on Dec 26, 2019

@@ -4,6 +4,14 @@ const UIKeyModifierControl = 1 << 18;
 const UIKeyModifierAlternate = 1 << 19;
 const UIKeyModifierCommand = 1 << 20;
 
+function _toCapitalizedWords(name: string) {
+  var words = name.match(/[A-Za-z][a-z]*/g);
+  return words.map(_capitalize).join(" ");
+}
+function _capitalize(word: string) {
+  return word.charAt(0).toUpperCase() + word.substring(1);
+}
+
 module.exports = {
   convertToNativeFormat(keymap, modifiers) {
     /*
@@ -102,7 +110,9 @@ module.exports = {
               break;
           }
         }
-        keyObj[`${key}:*:${bitModifier}`] = action;
+        keyObj[
+          `${key}:*:${bitModifier}:*:${_toCapitalizedWords(action)}`
+        ] = action;
       }
     }
 
