@@ -12,6 +12,7 @@ import { Button, Text, Container, Header, Icon } from "native-base";
 import ScrollableTabView from "react-native-scrollable-tab-view";
 import TabBar from "react-native-underline-tabbar";
 import Favicon from "../components/Favicon";
+import WVTerm from "../components/WVTerm";
 import DeviceInfo from "react-native-device-info";
 import TabWindow from "./TabWindow";
 import { selectSites } from "../selectors/ui";
@@ -51,6 +52,7 @@ class Browser extends Component<Props, State> {
   keyboardDidShowListener: any;
   keyboardDidHideListener: any;
   subscriptions: Array<any> = [];
+  // tabViews are used for cache purpose to avoid loading when tab is changed.
   tabViews: Array<any> = [];
 
   constructor(props) {
@@ -179,6 +181,10 @@ class Browser extends Component<Props, State> {
     if (prevProp.activePaneId !== activePaneId) {
       this.setState({ isActivePane: paneId === activePaneId });
     }
+
+    if (sites.length !== prevProp.sites.length) {
+      this.tabViews = [];
+    }
   }
 
   handleAppActions = async event => {
@@ -260,28 +266,48 @@ class Browser extends Component<Props, State> {
   renderTabs() {
     const { sites, keyMode, activeTabIndex, paneId } = this.props;
     let tabs = [];
-    for (let i = 0; i < sites.length; i++) {
-      const tabTitle = sites[i].title
-        ? this._truncate(sites[i].title)
-        : this._truncate(sites[i].url);
+    if (this.tabViews.length > 0) {
+      return this.tabViews;
+    } else {
+      for (let i = 0; i < sites.length; i++) {
+        const tabTitle = sites[i].title
+          ? this._truncate(sites[i].title)
+          : this._truncate(sites[i].url);
 
-      tabs.push(
-        <TabWindow
-          tabLabel={{
-            label: tabTitle,
-            onPressButton: () => this.pressCloseTab(i),
-            url: sites[i].url
-          }}
-          url={sites[i].url}
-          tabNumber={i}
-          keyMode={keyMode}
-          isActive={activeTabIndex === i && this.state.isActivePane}
-          activeTabIndex={activeTabIndex}
-          {...this.props}
-        />
-      );
+        if (keyMode === KeyMode.Terminal) {
+          tabs.push(
+            <WVTerm
+              url={sites[i].url}
+              tabLabel={{
+                label: tabTitle,
+                onPressButton: () => this.pressCloseTab(i),
+                url: sites[i].url
+              }}
+              {...this.props}
+            />
+          );
+        } else {
+          tabs.push(
+            <TabWindow
+              tabLabel={{
+                label: tabTitle,
+                onPressButton: () => this.pressCloseTab(i),
+                url: sites[i].url
+              }}
+              url={sites[i].url}
+              tabNumber={i}
+              keyMode={keyMode}
+              isActive={activeTabIndex === i && this.state.isActivePane}
+              activeTabIndex={activeTabIndex}
+              {...this.props}
+            />
+          );
+        }
+      }
+
+      this.tabViews = tabs;
+      return tabs;
     }
-    return tabs;
   }
 
   render() {
