@@ -327,9 +327,9 @@ class WVTerm extends Component<Props, IState, any> {
 
   renderDebugInfo() {
     return (
-      <View style={{ flex: 0.5 }}>
+      <View style={{ height: 150 }}>
         {this.state.debugLines.slice(0, 10).map(l => (
-          <Text>{l}</Text>
+          <Text style={{ fontSize: 10 }}>{l}</Text>
         ))}
       </View>
     );
