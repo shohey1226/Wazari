@@ -11,6 +11,7 @@ import { connect } from "react-redux";
 import { Button, Text, Container, Header, Icon } from "native-base";
 import ScrollableTabView from "react-native-scrollable-tab-view";
 import TabBar from "react-native-underline-tabbar";
+import { isEqual } from "lodash";
 import Favicon from "../components/Favicon";
 import WVTerm from "../components/WVTerm";
 import DeviceInfo from "react-native-device-info";
@@ -53,13 +54,15 @@ class Browser extends Component<Props, State> {
   keyboardDidHideListener: any;
   subscriptions: Array<any> = [];
   // tabViews are used for cache purpose to avoid loading when tab is changed.
-  tabViews: Array<any> = [];
+  tabViews: any = {};
 
   constructor(props) {
     super(props);
     this.state = {
       activeIndex: props.activeTabIndex,
-      isActivePane: props.paneId === props.activePaneId
+      isActivePane: props.paneId === props.activePaneId,
+      siteIds: [],
+      siteTitles: {}
     };
     //this.onPressTab = this.onPressTab.bind(this);
   }
@@ -109,6 +112,7 @@ class Browser extends Component<Props, State> {
         this.tabsRef.goToPage(activeTabIndex);
       }, 50);
     }
+    this.setSites();
   }
 
   componentWillUnmount() {
@@ -182,9 +186,39 @@ class Browser extends Component<Props, State> {
       this.setState({ isActivePane: paneId === activePaneId });
     }
 
-    if (sites.length !== prevProp.sites.length) {
-      this.tabViews = [];
+    if (!isEqual(sites, prevProp.sites)) {
+      let siteTitles = {};
+      sites.forEach(s => {
+        const tabTitle = s.title
+          ? this._truncate(s.title)
+          : this._truncate(s.url);
+        return (siteTitles[s.id] = tabTitle);
+      });
+      this.setState({
+        siteTitles: siteTitles
+      });
     }
+  }
+
+  setSites() {
+    const { sites } = this.props;
+    const siteIds = sites.map(s => s.id);
+    let siteTitles = {};
+    sites.forEach(s => {
+      const tabTitle = s.title
+        ? this._truncate(s.title)
+        : this._truncate(s.url);
+      return (siteTitles[s.id] = tabTitle);
+    });
+    this.setState(
+      {
+        siteIds: siteIds,
+        siteTitles: siteTitles
+      },
+      () => {
+        this.buildTabs();
+      }
+    );
   }
 
   handleAppActions = async event => {
@@ -263,51 +297,48 @@ class Browser extends Component<Props, State> {
     this.setState({ activeIndex: tab.i });
   }
 
-  renderTabs() {
+  buildTabs() {
     const { sites, keyMode, activeTabIndex, paneId } = this.props;
-    let tabs = [];
-    if (this.tabViews.length > 0) {
-      return this.tabViews;
-    } else {
-      for (let i = 0; i < sites.length; i++) {
-        const tabTitle = sites[i].title
-          ? this._truncate(sites[i].title)
-          : this._truncate(sites[i].url);
-
-        if (keyMode === KeyMode.Terminal) {
-          tabs.push(
-            <WVTerm
-              url={sites[i].url}
-              tabLabel={{
-                label: tabTitle,
-                onPressButton: () => this.pressCloseTab(i),
-                url: sites[i].url
-              }}
-              {...this.props}
-            />
-          );
-        } else {
-          tabs.push(
-            <TabWindow
-              tabLabel={{
-                label: tabTitle,
-                onPressButton: () => this.pressCloseTab(i),
-                url: sites[i].url
-              }}
-              url={sites[i].url}
-              tabNumber={i}
-              keyMode={keyMode}
-              isActive={activeTabIndex === i && this.state.isActivePane}
-              activeTabIndex={activeTabIndex}
-              {...this.props}
-            />
-          );
-        }
+    for (let i = 0; i < sites.length; i++) {
+      let view: any = null;
+      if (keyMode === KeyMode.Terminal) {
+        view = (
+          <WVTerm
+            url={sites[i].url}
+            tabLabel={{
+              label: this.state.siteTitles[sites[i].id],
+              onPressButton: () => this.pressCloseTab(i),
+              url: sites[i].url
+            }}
+            {...this.props}
+          />
+        );
+      } else {
+        view = (
+          <TabWindow
+            tabLabel={{
+              label: this.state.siteTitles[sites[i].id],
+              id: sites[i].id,
+              onPressButton: () => this.pressCloseTab(i),
+              url: sites[i].url
+            }}
+            url={sites[i].url}
+            tabNumber={i}
+            keyMode={keyMode}
+            isActive={activeTabIndex === i && this.state.isActivePane}
+            activeTabIndex={activeTabIndex}
+            {...this.props}
+          />
+        );
       }
-
-      this.tabViews = tabs;
-      return tabs;
+      this.tabViews[sites[i].id] = view;
     }
+  }
+
+  renderTabs() {
+    return this.state.siteIds.map(id => {
+      return this.tabViews[id];
+    });
   }
 
   render() {
@@ -346,6 +377,7 @@ class Browser extends Component<Props, State> {
                 isTabActive={isTabActive}
                 onPressHandler={onPressHandler}
                 onTabLayout={onTabLayout}
+                tabTitles={this.state.siteTitles}
               />
             )}
           />
@@ -366,9 +398,10 @@ const Tab = ({
   isTabActive,
   onPressHandler,
   onTabLayout,
-  styles
+  styles,
+  tabTitles
 }) => {
-  const { label, url, onPressButton } = tab;
+  const { label, url, onPressButton, id } = tab;
   const style = {
     marginHorizontal: 1,
     paddingVertical: 0.5
@@ -388,6 +421,7 @@ const Tab = ({
     marginRight: 10,
     color: "white"
   };
+  console.log(tabTitles);
   return (
     <TouchableOpacity
       style={style}
@@ -397,7 +431,7 @@ const Tab = ({
     >
       <View style={containerStyle}>
         <Favicon url={url} />
-        <Text style={textStyle}>{label}</Text>
+        <Text style={textStyle}>{tabTitles[id]}</Text>
         <Button
           style={{ height: 37.5 }}
           transparent

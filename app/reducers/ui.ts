@@ -77,7 +77,7 @@ export default function ui(state = initialState, action) {
         ["panes", action.paneId, "sites"],
         state
           .getIn(["panes", action.paneId, "sites"])
-          .push(Map({ url: action.url }))
+          .push(Map({ url: action.url, id: new Date().getTime() }))
       );
 
     case SELECT_TAB:
