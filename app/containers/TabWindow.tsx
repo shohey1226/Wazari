@@ -42,7 +42,6 @@ interface State {
 interface Props {
   dispatch: (any) => void;
   activeTabIndex: number;
-  tabNumber: number;
   keyMode: KeyMode;
   backToggled: boolean;
   forwardToggled: boolean;
@@ -394,7 +393,6 @@ class TabWindow extends Component<Props, State, any> {
     const { nativeEvent } = syntheticEvent;
     const {
       dispatch,
-      tabNumber,
       activeTabIndex,
       paneId,
       isActive,
@@ -517,6 +515,17 @@ function mapStateToProps(state, ownProps) {
   const keySwitchOn = state.ui.get("keySwitchOn");
   const excludedPatterns = state.user.get("excludedPatterns").toArray();
   const wordsForPageFind = state.ui.get("wordsForPageFind");
+  const sites = selectSites(state, ownProps.paneId);
+  const activeTabIndex = state.ui.getIn([
+    "panes",
+    ownProps.paneId,
+    "activeTabIndex"
+  ]);
+  const _isActivePane = activePaneId === ownProps.paneId;
+  console.log(sites, activeTabIndex);
+  const isActive = sites[activeTabIndex].id === ownProps.tabId && _isActivePane;
+  console.log(ownProps.tabId, isActive);
+
   return {
     backToggled,
     forwardToggled,
@@ -528,7 +537,9 @@ function mapStateToProps(state, ownProps) {
     activeUrl,
     keySwitchOn,
     activePaneId,
-    wordsForPageFind
+    wordsForPageFind,
+    isActive,
+    activeTabIndex
   };
 }
 

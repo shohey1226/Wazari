@@ -21,6 +21,7 @@ import { selectAppKeymap, selectModifiers } from "../selectors/keymap";
 import { addNewTab, selectTab, closeTab } from "../actions/ui";
 import keymapper from "../utils/Keymapper";
 import { KeyMode } from "../types/index.d";
+import Tab from "./Tab";
 
 const { DAVKeyManager } = NativeModules;
 const DAVKeyManagerEmitter = new NativeEventEmitter(DAVKeyManager);
@@ -45,6 +46,17 @@ interface Props {
   orientation: string;
   homeUrl: string;
   keySwitchOn: boolean;
+  paneId: any;
+}
+
+// https://qiita.com/hirocueki2/items/137400e236189a0a6b3e
+function _truncate(str) {
+  let len = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff66-\uff9f]/.test(
+    str
+  )
+    ? 9
+    : 16;
+  return str.length <= len ? str : str.substr(0, len) + "...";
 }
 
 /* Browser is whole browser controls each windows(tabs) */
@@ -189,9 +201,7 @@ class Browser extends Component<Props, State> {
     if (!isEqual(sites, prevProp.sites)) {
       let siteTitles = {};
       sites.forEach(s => {
-        const tabTitle = s.title
-          ? this._truncate(s.title)
-          : this._truncate(s.url);
+        const tabTitle = s.title ? _truncate(s.title) : _truncate(s.url);
         return (siteTitles[s.id] = tabTitle);
       });
       this.setState({
@@ -205,9 +215,7 @@ class Browser extends Component<Props, State> {
     const siteIds = sites.map(s => s.id);
     let siteTitles = {};
     sites.forEach(s => {
-      const tabTitle = s.title
-        ? this._truncate(s.title)
-        : this._truncate(s.url);
+      const tabTitle = s.title ? _truncate(s.title) : _truncate(s.url);
       return (siteTitles[s.id] = tabTitle);
     });
     this.setState(
@@ -261,16 +269,6 @@ class Browser extends Component<Props, State> {
     }
   };
 
-  // https://qiita.com/hirocueki2/items/137400e236189a0a6b3e
-  _truncate(str) {
-    let len = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff66-\uff9f]/.test(
-      str
-    )
-      ? 9
-      : 16;
-    return str.length <= len ? str : str.substr(0, len) + "...";
-  }
-
   pressCloseTab(i) {
     const { dispatch, sites, activeTabIndex, paneId } = this.props;
     dispatch(closeTab(i, paneId));
@@ -291,6 +289,7 @@ class Browser extends Component<Props, State> {
   // }
   onChangeTab(tab) {
     const { dispatch, activeTabIndex } = this.props;
+    console.log(tab, activeTabIndex);
     if (activeTabIndex !== tab.i) {
       dispatch(selectTab(tab.i));
     }
@@ -304,6 +303,7 @@ class Browser extends Component<Props, State> {
       if (keyMode === KeyMode.Terminal) {
         view = (
           <WVTerm
+            key={`tab-${sites[i].id}`}
             url={sites[i].url}
             tabLabel={{
               label: this.state.siteTitles[sites[i].id],
@@ -316,17 +316,17 @@ class Browser extends Component<Props, State> {
       } else {
         view = (
           <TabWindow
+            key={`tab-${sites[i].id}`}
             tabLabel={{
-              label: this.state.siteTitles[sites[i].id],
+              label: "",
               id: sites[i].id,
               onPressButton: () => this.pressCloseTab(i),
               url: sites[i].url
             }}
             url={sites[i].url}
-            tabNumber={i}
+            tabId={sites[i].id}
             keyMode={keyMode}
-            isActive={activeTabIndex === i && this.state.isActivePane}
-            activeTabIndex={activeTabIndex}
+            paneId={paneId}
             {...this.props}
           />
         );
@@ -371,13 +371,13 @@ class Browser extends Component<Props, State> {
               onTabLayout
             ) => (
               <Tab
+                paneId={paneId}
                 key={page}
                 tab={tab}
                 page={page}
                 isTabActive={isTabActive}
                 onPressHandler={onPressHandler}
                 onTabLayout={onTabLayout}
-                tabTitles={this.state.siteTitles}
               />
             )}
           />
@@ -391,66 +391,6 @@ class Browser extends Component<Props, State> {
     );
   }
 }
-
-const Tab = ({
-  tab,
-  page,
-  isTabActive,
-  onPressHandler,
-  onTabLayout,
-  styles,
-  tabTitles
-}) => {
-  const { label, url, onPressButton, id } = tab;
-  const style = {
-    marginHorizontal: 1,
-    paddingVertical: 0.5
-  };
-  const containerStyle = {
-    paddingRight: 0,
-    paddingLeft: 12.5,
-    paddingVertical: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    height: 37.5
-  };
-  const textStyle = {
-    fontWeight: "600",
-    fontSize: 12,
-    marginLeft: 10,
-    marginRight: 10,
-    color: "white"
-  };
-  console.log(tabTitles);
-  return (
-    <TouchableOpacity
-      style={style}
-      onPress={onPressHandler}
-      onLayout={onTabLayout}
-      key={page}
-    >
-      <View style={containerStyle}>
-        <Favicon url={url} />
-        <Text style={textStyle}>{tabTitles[id]}</Text>
-        <Button
-          style={{ height: 37.5 }}
-          transparent
-          dark
-          onPress={() => onPressButton()}
-        >
-          <Icon
-            name="md-close"
-            style={{
-              paddingRight: 5,
-              fontSize: 13,
-              color: "#fff"
-            }}
-          />
-        </Button>
-      </View>
-    </TouchableOpacity>
-  );
-};
 
 function mapStateToProps(state, ownProps) {
   const keymap = selectAppKeymap(state);
