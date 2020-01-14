@@ -13,7 +13,6 @@ import ScrollableTabView from "react-native-scrollable-tab-view";
 import TabBar from "react-native-underline-tabbar";
 import { isEqual } from "lodash";
 import Favicon from "../components/Favicon";
-import WVTerm from "../components/WVTerm";
 import DeviceInfo from "react-native-device-info";
 import TabWindow from "./TabWindow";
 import { selectSites } from "../selectors/ui";
@@ -29,11 +28,13 @@ const DAVKeyManagerEmitter = new NativeEventEmitter(DAVKeyManager);
 interface State {
   activeIndex: number;
   isActivePane: boolean;
+  siteIds: Array<number>;
 }
 
 type Site = {
   url: string;
   title: string;
+  id: number;
 };
 
 interface Props {
@@ -47,16 +48,6 @@ interface Props {
   homeUrl: string;
   keySwitchOn: boolean;
   paneId: any;
-}
-
-// https://qiita.com/hirocueki2/items/137400e236189a0a6b3e
-function _truncate(str) {
-  let len = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff66-\uff9f]/.test(
-    str
-  )
-    ? 9
-    : 16;
-  return str.length <= len ? str : str.substr(0, len) + "...";
 }
 
 /* Browser is whole browser controls each windows(tabs) */
@@ -73,8 +64,7 @@ class Browser extends Component<Props, State> {
     this.state = {
       activeIndex: props.activeTabIndex,
       isActivePane: props.paneId === props.activePaneId,
-      siteIds: [],
-      siteTitles: {}
+      siteIds: []
     };
     //this.onPressTab = this.onPressTab.bind(this);
   }
@@ -104,32 +94,14 @@ class Browser extends Component<Props, State> {
       DAVKeyManagerEmitter.addListener("RNAppKeyEvent", this.handleAppActions)
     );
 
-    // virtual keyboard is used
-    // this.keyboardDidShowListener = Keyboard.addListener(
-    //   "keyboardDidShow",
-    //   () => {
-    //     const { keyMode } = this.props;
-    //     keyMode !== KeyMode.Direct && dispatch(updateMode(KeyMode.Direct));
-    //   }
-    // );
-    // this.keyboardDidHideListener = Keyboard.addListener(
-    //   "keyboardDidHide",
-    //   () => {
-    //     const { keyMode } = this.props;
-    //     keyMode !== KeyMode.Direct && dispatch(updateMode(KeyMode.Text));
-    //   }
-    // );
+    this.buildTabs();
+
     if (activeTabIndex) {
-      setTimeout(() => {
-        this.tabsRef.goToPage(activeTabIndex);
-      }, 50);
+      this.tabsRef.goToPage(activeTabIndex);
     }
-    this.setSites();
   }
 
   componentWillUnmount() {
-    // this.keyboardDidShowListener.remove();
-    // this.keyboardDidHideListener.remove();
     this.subscriptions.forEach(subscription => {
       subscription.remove();
     });
@@ -198,35 +170,47 @@ class Browser extends Component<Props, State> {
       this.setState({ isActivePane: paneId === activePaneId });
     }
 
+    // Manage tabViews with site.id
     if (!isEqual(sites, prevProp.sites)) {
-      let siteTitles = {};
-      sites.forEach(s => {
-        const tabTitle = s.title ? _truncate(s.title) : _truncate(s.url);
-        return (siteTitles[s.id] = tabTitle);
-      });
-      this.setState({
-        siteTitles: siteTitles
-      });
+      if (sites.length > prevProp.sites.length) {
+        const prevSiteIds = prevProp.sites.map(ps => ps.id);
+        sites
+          .filter(s => !prevSiteIds.includes(s.id))
+          .forEach(s => this.addTabView(s));
+      } else if (sites.length < prevProp.sites.length) {
+        const siteIds = sites.map(ps => ps.id);
+        prevProp.sites
+          .filter(ps => !siteIds.includes(ps.id))
+          .forEach(ps => this.removeTabView(ps));
+      }
     }
   }
 
-  setSites() {
-    const { sites } = this.props;
-    const siteIds = sites.map(s => s.id);
-    let siteTitles = {};
-    sites.forEach(s => {
-      const tabTitle = s.title ? _truncate(s.title) : _truncate(s.url);
-      return (siteTitles[s.id] = tabTitle);
-    });
-    this.setState(
-      {
-        siteIds: siteIds,
-        siteTitles: siteTitles
-      },
-      () => {
-        this.buildTabs();
-      }
+  addTabView(s) {
+    this.tabViews[s.id] = (
+      <TabWindow
+        key={`tab-${s.id}`}
+        tabLabel={{
+          label: "",
+          id: s.id,
+          onPressButton: () => this.pressCloseTab(s.id),
+          url: s.url
+        }}
+        url={s.url}
+        tabId={s.id}
+        {...this.props}
+      />
     );
+    let siteIds = this.state.siteIds.slice();
+    siteIds.push(s.id);
+    this.setState({ siteIds: siteIds });
+  }
+
+  removeTabView(s) {
+    this.tabViews[s.id] && delete this.tabViews[s.id];
+    let siteIds = this.state.siteIds.slice();
+    siteIds.splice(siteIds.indexOf(s.id), 1);
+    this.setState({ siteIds: siteIds });
   }
 
   handleAppActions = async event => {
@@ -269,15 +253,22 @@ class Browser extends Component<Props, State> {
     }
   };
 
-  pressCloseTab(i) {
+  pressCloseTab(tabId) {
     const { dispatch, sites, activeTabIndex, paneId } = this.props;
-    dispatch(closeTab(i, paneId));
-    if (i === activeTabIndex) {
-      if (sites.length > i + 1) {
-        dispatch(selectTab(i));
+    let index = 0;
+    for (let i = 0; i < sites.length; i++) {
+      if (sites[i].id === tabId) {
+        index = i;
+        break;
+      }
+    }
+    dispatch(closeTab(index, paneId));
+    if (index === activeTabIndex) {
+      if (sites.length > index + 1) {
+        dispatch(selectTab(index));
       } else {
         setTimeout(() => {
-          dispatch(selectTab(i - 1));
+          dispatch(selectTab(index - 1));
         }, 50);
       }
     }
@@ -297,42 +288,25 @@ class Browser extends Component<Props, State> {
   }
 
   buildTabs() {
-    const { sites, keyMode, activeTabIndex, paneId } = this.props;
+    const { sites, paneId } = this.props;
     for (let i = 0; i < sites.length; i++) {
-      let view: any = null;
-      if (keyMode === KeyMode.Terminal) {
-        view = (
-          <WVTerm
-            key={`tab-${sites[i].id}`}
-            url={sites[i].url}
-            tabLabel={{
-              label: this.state.siteTitles[sites[i].id],
-              onPressButton: () => this.pressCloseTab(i),
-              url: sites[i].url
-            }}
-            {...this.props}
-          />
-        );
-      } else {
-        view = (
-          <TabWindow
-            key={`tab-${sites[i].id}`}
-            tabLabel={{
-              label: "",
-              id: sites[i].id,
-              onPressButton: () => this.pressCloseTab(i),
-              url: sites[i].url
-            }}
-            url={sites[i].url}
-            tabId={sites[i].id}
-            keyMode={keyMode}
-            paneId={paneId}
-            {...this.props}
-          />
-        );
-      }
-      this.tabViews[sites[i].id] = view;
+      this.tabViews[sites[i].id] = (
+        <TabWindow
+          key={`tab-${sites[i].id}`}
+          tabLabel={{
+            label: "",
+            id: sites[i].id,
+            onPressButton: () => this.pressCloseTab(i),
+            url: sites[i].url
+          }}
+          url={sites[i].url}
+          tabId={sites[i].id}
+          paneId={paneId}
+          {...this.props}
+        />
+      );
     }
+    this.setState({ siteIds: sites.map(s => s.id) });
   }
 
   renderTabs() {

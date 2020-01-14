@@ -14,6 +14,7 @@ import DeviceInfo from "react-native-device-info";
 import ProgressBarAnimated from "react-native-progress-bar-animated";
 import Loader from "../components/Loader";
 import Error from "../components/Error";
+import WVTerm from "../components/WVTerm";
 import sVim from "../utils/sVim";
 import { selectBrowserKeymap, selectModifiers } from "../selectors/keymap";
 import {
@@ -452,53 +453,58 @@ class TabWindow extends Component<Props, State, any> {
   }
 
   render() {
-    const { url } = this.props;
+    const { url, keyMode, tabId } = this.props;
     const progressCustomStyles = {
       borderRadius: 0
     };
-    if (this.state.isLoadingSVim) {
-      return <View />;
+    if (keyMode === KeyMode.Terminal) {
+      return <WVTerm {...this.props} />;
     } else {
-      return (
-        <View style={{ flex: 1 }}>
-          {this.state.isLoadingJSInjection ? (
-            <ProgressBarAnimated
-              {...progressCustomStyles}
-              height={3}
-              borderWidth={0}
-              value={this.state.progress}
-              width={this.state.width}
+      if (this.state.isLoadingSVim) {
+        return <View />;
+      } else {
+        return (
+          <View style={{ flex: 1 }}>
+            {this.state.isLoadingJSInjection ? (
+              <ProgressBarAnimated
+                {...progressCustomStyles}
+                height={3}
+                borderWidth={0}
+                value={this.state.progress}
+                width={this.state.width}
+              />
+            ) : null}
+
+            <WebView
+              ref={r => (this.webref = r as any)}
+              source={{ uri: url }}
+              keyboardDisplayRequiresUserAction={false}
+              sharedCookiesEnabled={true}
+              useWebKit={true}
+              hideKeyboardAccessoryView={true}
+              onLoadStart={this.onLoadStart.bind(this)}
+              onLoadEnd={this.onLoadEnd.bind(this)}
+              onLoadProgress={({ nativeEvent }) => {
+                this.setState({ progress: nativeEvent.progress * 100 });
+              }}
+              onNavigationStateChange={this.onNavigationStateChange.bind(this)}
+              onMessage={this.onMessage.bind(this)}
+              renderLoading={() => <Loader />}
+              renderError={errorName => <Error name={errorName} />}
+              startInLoadingState={true}
+              allowsBackForwardNavigationGestures={true}
+              decelerationRate="fast"
+              injectedJavaScript={injectingJs
+                .replace("SVIM_PREDEFINE", sVim.sVimPredefine)
+                .replace("SVIM_GLOBAL", sVim.sVimGlobal)
+                .replace("SVIM_HELPER", sVim.sVimHelper)
+                .replace("SVIM_TAB", sVim.sVimTab)
+                .replace("SVIM_HINT", sVim.sVimHint)}
+              userAgent={this.state.userAgent}
             />
-          ) : null}
-          <WebView
-            ref={r => (this.webref = r as any)}
-            source={{ uri: url }}
-            keyboardDisplayRequiresUserAction={false}
-            sharedCookiesEnabled={true}
-            useWebKit={true}
-            hideKeyboardAccessoryView={true}
-            onLoadStart={this.onLoadStart.bind(this)}
-            onLoadEnd={this.onLoadEnd.bind(this)}
-            onLoadProgress={({ nativeEvent }) => {
-              this.setState({ progress: nativeEvent.progress * 100 });
-            }}
-            onNavigationStateChange={this.onNavigationStateChange.bind(this)}
-            onMessage={this.onMessage.bind(this)}
-            renderLoading={() => <Loader />}
-            renderError={errorName => <Error name={errorName} />}
-            startInLoadingState={true}
-            allowsBackForwardNavigationGestures={true}
-            decelerationRate="fast"
-            injectedJavaScript={injectingJs
-              .replace("SVIM_PREDEFINE", sVim.sVimPredefine)
-              .replace("SVIM_GLOBAL", sVim.sVimGlobal)
-              .replace("SVIM_HELPER", sVim.sVimHelper)
-              .replace("SVIM_TAB", sVim.sVimTab)
-              .replace("SVIM_HINT", sVim.sVimHint)}
-            userAgent={this.state.userAgent}
-          />
-        </View>
-      );
+          </View>
+        );
+      }
     }
   }
 }
@@ -514,6 +520,7 @@ function mapStateToProps(state, ownProps) {
   const reloadToggled = state.ui.get("reloadToggled");
   const keySwitchOn = state.ui.get("keySwitchOn");
   const excludedPatterns = state.user.get("excludedPatterns").toArray();
+  const keyMode = state.ui.get("keyMode");
   const wordsForPageFind = state.ui.get("wordsForPageFind");
   const sites = selectSites(state, ownProps.paneId);
   const activeTabIndex = state.ui.getIn([
@@ -539,7 +546,8 @@ function mapStateToProps(state, ownProps) {
     activePaneId,
     wordsForPageFind,
     isActive,
-    activeTabIndex
+    activeTabIndex,
+    keyMode
   };
 }
 
