@@ -13,6 +13,7 @@ import ScrollableTabView from "react-native-scrollable-tab-view";
 import TabBar from "react-native-underline-tabbar";
 import { isEqual } from "lodash";
 import Favicon from "../components/Favicon";
+import WVTerm from "../components/WVTerm";
 import DeviceInfo from "react-native-device-info";
 import TabWindow from "./TabWindow";
 import { selectSites } from "../selectors/ui";
@@ -187,20 +188,37 @@ class Browser extends Component<Props, State> {
   }
 
   addTabView(s) {
-    this.tabViews[s.id] = (
-      <TabWindow
-        key={`tab-${s.id}`}
-        tabLabel={{
-          label: "",
-          id: s.id,
-          onPressButton: () => this.pressCloseTab(s.id),
-          url: s.url
-        }}
-        url={s.url}
-        tabId={s.id}
-        {...this.props}
-      />
-    );
+    if (/^https:\/\/www\.wazaterm\.com\/terminals\/\S+/.test(s.url)) {
+      this.tabViews[s.id] = (
+        <WVTerm
+          key={`tab-${s.id}`}
+          tabLabel={{
+            label: "",
+            id: s.id,
+            onPressButton: () => this.pressCloseTab(s.id),
+            url: s.url
+          }}
+          url={s.url}
+          tabId={s.id}
+          {...this.props}
+        />
+      );
+    } else {
+      this.tabViews[s.id] = (
+        <TabWindow
+          key={`tab-${s.id}`}
+          tabLabel={{
+            label: "",
+            id: s.id,
+            onPressButton: () => this.pressCloseTab(s.id),
+            url: s.url
+          }}
+          url={s.url}
+          tabId={s.id}
+          {...this.props}
+        />
+      );
+    }
     let siteIds = this.state.siteIds.slice();
     siteIds.push(s.id);
     this.setState({ siteIds: siteIds });
@@ -288,23 +306,41 @@ class Browser extends Component<Props, State> {
   }
 
   buildTabs() {
-    const { sites, paneId } = this.props;
+    const { keyMode, sites, paneId } = this.props;
     for (let i = 0; i < sites.length; i++) {
-      this.tabViews[sites[i].id] = (
-        <TabWindow
-          key={`tab-${sites[i].id}`}
-          tabLabel={{
-            label: "",
-            id: sites[i].id,
-            onPressButton: () => this.pressCloseTab(i),
-            url: sites[i].url
-          }}
-          url={sites[i].url}
-          tabId={sites[i].id}
-          paneId={paneId}
-          {...this.props}
-        />
-      );
+      if (/^https:\/\/www\.wazaterm\.com\/terminals\/\S+/.test(sites[i].url)) {
+        this.tabViews[sites[i].id] = (
+          <WVTerm
+            key={`tab-${sites[i].id}`}
+            tabLabel={{
+              label: "",
+              id: sites[i].id,
+              onPressButton: () => this.pressCloseTab(i),
+              url: sites[i].url
+            }}
+            url={sites[i].url}
+            tabId={sites[i].id}
+            paneId={paneId}
+            {...this.props}
+          />
+        );
+      } else {
+        this.tabViews[sites[i].id] = (
+          <TabWindow
+            key={`tab-${sites[i].id}`}
+            tabLabel={{
+              label: "",
+              id: sites[i].id,
+              onPressButton: () => this.pressCloseTab(i),
+              url: sites[i].url
+            }}
+            url={sites[i].url}
+            tabId={sites[i].id}
+            paneId={paneId}
+            {...this.props}
+          />
+        );
+      }
     }
     this.setState({ siteIds: sites.map(s => s.id) });
   }

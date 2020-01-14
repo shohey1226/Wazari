@@ -54,6 +54,7 @@ class WVTerm extends Component<Props, IState, any> {
           break;
       }
     });
+    console.log("calling wvterm");
   }
   componentWillUnmount() {
     this.sub.remove();

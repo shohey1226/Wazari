@@ -14,7 +14,7 @@ import DeviceInfo from "react-native-device-info";
 import ProgressBarAnimated from "react-native-progress-bar-animated";
 import Loader from "../components/Loader";
 import Error from "../components/Error";
-import WVTerm from "../components/WVTerm";
+//import WVTerm from "../components/WVTerm";
 import sVim from "../utils/sVim";
 import { selectBrowserKeymap, selectModifiers } from "../selectors/keymap";
 import {
@@ -457,54 +457,49 @@ class TabWindow extends Component<Props, State, any> {
     const progressCustomStyles = {
       borderRadius: 0
     };
-    if (keyMode === KeyMode.Terminal) {
-      return <WVTerm {...this.props} />;
+    if (this.state.isLoadingSVim) {
+      return <View />;
     } else {
-      if (this.state.isLoadingSVim) {
-        return <View />;
-      } else {
-        return (
-          <View style={{ flex: 1 }}>
-            {this.state.isLoadingJSInjection ? (
-              <ProgressBarAnimated
-                {...progressCustomStyles}
-                height={3}
-                borderWidth={0}
-                value={this.state.progress}
-                width={this.state.width}
-              />
-            ) : null}
-
-            <WebView
-              ref={r => (this.webref = r as any)}
-              source={{ uri: url }}
-              keyboardDisplayRequiresUserAction={false}
-              sharedCookiesEnabled={true}
-              useWebKit={true}
-              hideKeyboardAccessoryView={true}
-              onLoadStart={this.onLoadStart.bind(this)}
-              onLoadEnd={this.onLoadEnd.bind(this)}
-              onLoadProgress={({ nativeEvent }) => {
-                this.setState({ progress: nativeEvent.progress * 100 });
-              }}
-              onNavigationStateChange={this.onNavigationStateChange.bind(this)}
-              onMessage={this.onMessage.bind(this)}
-              renderLoading={() => <Loader />}
-              renderError={errorName => <Error name={errorName} />}
-              startInLoadingState={true}
-              allowsBackForwardNavigationGestures={true}
-              decelerationRate="fast"
-              injectedJavaScript={injectingJs
-                .replace("SVIM_PREDEFINE", sVim.sVimPredefine)
-                .replace("SVIM_GLOBAL", sVim.sVimGlobal)
-                .replace("SVIM_HELPER", sVim.sVimHelper)
-                .replace("SVIM_TAB", sVim.sVimTab)
-                .replace("SVIM_HINT", sVim.sVimHint)}
-              userAgent={this.state.userAgent}
+      return (
+        <View style={{ flex: 1 }}>
+          {this.state.isLoadingJSInjection ? (
+            <ProgressBarAnimated
+              {...progressCustomStyles}
+              height={3}
+              borderWidth={0}
+              value={this.state.progress}
+              width={this.state.width}
             />
-          </View>
-        );
-      }
+          ) : null}
+          <WebView
+            ref={r => (this.webref = r as any)}
+            source={{ uri: url }}
+            keyboardDisplayRequiresUserAction={false}
+            sharedCookiesEnabled={true}
+            useWebKit={true}
+            hideKeyboardAccessoryView={true}
+            onLoadStart={this.onLoadStart.bind(this)}
+            onLoadEnd={this.onLoadEnd.bind(this)}
+            onLoadProgress={({ nativeEvent }) => {
+              this.setState({ progress: nativeEvent.progress * 100 });
+            }}
+            onNavigationStateChange={this.onNavigationStateChange.bind(this)}
+            onMessage={this.onMessage.bind(this)}
+            renderLoading={() => <Loader />}
+            renderError={errorName => <Error name={errorName} />}
+            startInLoadingState={true}
+            allowsBackForwardNavigationGestures={true}
+            decelerationRate="fast"
+            injectedJavaScript={injectingJs
+              .replace("SVIM_PREDEFINE", sVim.sVimPredefine)
+              .replace("SVIM_GLOBAL", sVim.sVimGlobal)
+              .replace("SVIM_HELPER", sVim.sVimHelper)
+              .replace("SVIM_TAB", sVim.sVimTab)
+              .replace("SVIM_HINT", sVim.sVimHint)}
+            userAgent={this.state.userAgent}
+          />
+        </View>
+      );
     }
   }
 }
