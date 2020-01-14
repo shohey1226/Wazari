@@ -83,6 +83,9 @@ class TabWindow extends Component<Props, State, any> {
         "RNBrowserKeyEvent",
         this.handleBrowserActions
       ),
+
+      DAVKeyManagerEmitter.addListener("RNAppKeyEvent", this.handleAppActions),
+
       DAVKeyManagerEmitter.addListener("RNKeyEvent", data => {
         if (this.props.keyMode === KeyMode.Terminal) {
           //this.typing(data);
@@ -213,6 +216,60 @@ class TabWindow extends Component<Props, State, any> {
         case "moveDownOneLine":
           this.webref.injectJavaScript(`moveDownOneLine()`);
           break;
+        // case "goBack":
+        //   this.webref.goBack();
+        //   break;
+        // case "goForward":
+        //   this.webref.goForward();
+        //   break;
+        // case "reload":
+        //   this.webref.reload();
+        //   break;
+        // case "hitAHint":
+        //   this.webref.injectJavaScript(`sVimHint.start()`);
+        //   this.webref.injectJavaScript(`document.activeElement.blur();`);
+        //   break;
+        // case "hitAHintOpeningNewTab":
+        //   this.webref.injectJavaScript(`hitAHintOpeningNewTab()`);
+        //   this.webref.injectJavaScript(`document.activeElement.blur();`);
+        //   break;
+        case "deleteLine":
+          this.webref.injectJavaScript(`deleteLine()`);
+          break;
+        // case "zoomIn":
+        //   this.webref.injectJavaScript(`sVimTab.commands.zoomPageIn()`);
+        //   break;
+        // case "zoomOut":
+        //   this.webref.injectJavaScript(`sVimTab.commands.zoomPageOut()`);
+        //   break;
+        case "copy":
+          this.webref.injectJavaScript(`copyToRN()`);
+          break;
+        case "paste":
+          let content = await Clipboard.getString();
+          this.webref.injectJavaScript(`pasteFromRN("${content}")`);
+          break;
+      }
+    }
+  };
+
+  handleAppActions = async event => {
+    const { dispatch, keyMode, isActive } = this.props;
+    if (
+      keyMode === KeyMode.Text &&
+      this.webref &&
+      isActive &&
+      this.state.isLoadingJSInjection === false
+    ) {
+      switch (event.action) {
+        case "hitAHint":
+          this.webref.injectJavaScript(`sVimHint.start()`);
+          this.webref.injectJavaScript(`document.activeElement.blur();`);
+          break;
+        case "hitAHintOpeningNewTab":
+          this.webref.injectJavaScript(`hitAHintOpeningNewTab()`);
+          this.webref.injectJavaScript(`document.activeElement.blur();`);
+          break;
         case "goBack":
           this.webref.goBack();
           break;
@@ -222,29 +279,11 @@ class TabWindow extends Component<Props, State, any> {
         case "reload":
           this.webref.reload();
           break;
-        case "hitAHint":
-          this.webref.injectJavaScript(`sVimHint.start()`);
-          this.webref.injectJavaScript(`document.activeElement.blur();`);
-          break;
-        case "hitAHintOpeningNewTab":
-          this.webref.injectJavaScript(`hitAHintOpeningNewTab()`);
-          this.webref.injectJavaScript(`document.activeElement.blur();`);
-          break;
-        case "deleteLine":
-          this.webref.injectJavaScript(`deleteLine()`);
-          break;
         case "zoomIn":
           this.webref.injectJavaScript(`sVimTab.commands.zoomPageIn()`);
           break;
         case "zoomOut":
           this.webref.injectJavaScript(`sVimTab.commands.zoomPageOut()`);
-          break;
-        case "copy":
-          this.webref.injectJavaScript(`copyToRN()`);
-          break;
-        case "paste":
-          let content = await Clipboard.getString();
-          this.webref.injectJavaScript(`pasteFromRN("${content}")`);
           break;
       }
     }
