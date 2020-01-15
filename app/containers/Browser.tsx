@@ -122,14 +122,14 @@ class Browser extends Component<Props, State> {
 
   setIOSMode(keyMode: KeyMode): void {
     switch (keyMode) {
-      case KeyMode.Text:
-        DAVKeyManager.turnOnKeymap();
-        DAVKeyManager.setMode("text");
-        break;
-      case KeyMode.Terminal:
-        DAVKeyManager.turnOnKeymap();
-        DAVKeyManager.setMode("input");
-        break;
+      // case KeyMode.Text:
+      //   DAVKeyManager.turnOnKeymap();
+      //   DAVKeyManager.setMode("text");
+      //   break;
+      // case KeyMode.Terminal:
+      //   DAVKeyManager.turnOnKeymap();
+      //   DAVKeyManager.setMode("input");
+      //   break;
       case KeyMode.Direct:
         DAVKeyManager.turnOffKeymap();
         break;

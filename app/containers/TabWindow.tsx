@@ -84,15 +84,15 @@ class TabWindow extends Component<Props, State, any> {
         this.handleBrowserActions
       ),
 
-      DAVKeyManagerEmitter.addListener("RNAppKeyEvent", this.handleAppActions),
+      DAVKeyManagerEmitter.addListener("RNAppKeyEvent", this.handleAppActions)
 
-      DAVKeyManagerEmitter.addListener("RNKeyEvent", data => {
-        if (this.props.keyMode === KeyMode.Terminal) {
-          //this.typing(data);
-        } else if (this.props.keyMode === KeyMode.Text) {
-          //this.textTyping(data);
-        }
-      })
+      // DAVKeyManagerEmitter.addListener("RNKeyEvent", data => {
+      //   if (this.props.keyMode === KeyMode.Terminal) {
+      //     //this.typing(data);
+      //   } else if (this.props.keyMode === KeyMode.Text) {
+      //     //this.textTyping(data);
+      //   }
+      // })
     );
     AppState.addEventListener("change", this._handleAppStateChange);
   }

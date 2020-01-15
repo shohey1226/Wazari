@@ -329,8 +329,10 @@ class WVTerm extends Component<Props, IState, any> {
   renderDebugInfo() {
     return (
       <View style={{ height: 150 }}>
-        {this.state.debugLines.slice(0, 10).map(l => (
-          <Text style={{ fontSize: 10 }}>{l}</Text>
+        {this.state.debugLines.slice(0, 15).map((l, i) => (
+          <Text key={`debug-line-${i}`} style={{ fontSize: 10 }}>
+            {l}
+          </Text>
         ))}
       </View>
     );
@@ -343,7 +345,7 @@ class WVTerm extends Component<Props, IState, any> {
       isCapsLockRemapped: this.state.isCapsLockRemapped
     });
     console.log(initStr);
-    this.webref.injectJavaScript(`init('${initStr}')`);
+    this.webref.injectJavaScript(`initFromRN('${initStr}')`);
   }
 
   render() {
@@ -392,25 +394,40 @@ function simulateKeyDown(element, keyCode, modifiers) {
   element.dispatchEvent(keyEvent)
 }   
 
-function init(){
+var isCapsLockRemapped = false;
+
+function initFromRN(initStr){
+  
+  var initObj = JSON.parse(initStr);
+  isCapsLockRemapped = initObj.isCapsLockRemapped;
+
   window.term.attachCustomKeyEventHandler((e) => {
-    window.ReactNativeWebView &&
-      window.ReactNativeWebView.postMessage(
-        JSON.stringify({
-          keyEvent: {
-            key: e.key,
-            type: e.type,
-            shiftKey: e.shiftKey,
-            metaKey: e.metaKey,
-            altKey: e.altKey,
-            ctrlKey: e.ctrlKey,
-            repeat: e.repeat
-          },
-          postFor: e.type
-        })
-      );    
-    return true;
+    if(e.isTrusted === false){
+      return false;
+    }
+
+    if(isCapsLockRemapped === true){
+      window.ReactNativeWebView &&
+        window.ReactNativeWebView.postMessage(
+          JSON.stringify({
+            keyEvent: {
+              key: e.key,
+              type: e.type,
+              shiftKey: e.shiftKey,
+              metaKey: e.metaKey,
+              altKey: e.altKey,
+              ctrlKey: e.ctrlKey,
+              repeat: e.repeat,
+              isTrusted: e.isTrusted
+            },
+            postFor: e.type
+          })
+        );    
+      return false;
+   }
+
   });
+
 }
 
 true;
