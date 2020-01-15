@@ -282,41 +282,30 @@ class WVTerm extends Component<Props, IState, any> {
     this._handleDebug(event.nativeEvent.data);
     const data = JSON.parse(event.nativeEvent.data);
     console.log(data);
-    // let _down;
-    // switch (data.postFor) {
-    //   case "keydown":
-    //     this.down[data.keyEvent.key] = true;
-    //     console.log("keydown", this.down);
-    //     if (data.keyEvent.key === "CapsLock") {
-    //       this.handleCapsLockFromJS("keydown", data.keyEvent);
-    //     } else {
-    //       this.handleKeys(data.keyEvent);
-    //     }
-    //     this.handleSoftwareCapsLock(data.keyEvent);
-    //     break;
-
-    //   case "keyup":
-    //     if (data.keyEvent.key === "CapsLock") {
-    //       this.handleCapsLockFromJS("keyup", data.keyEvent);
-    //       console.log("capslock - keyup for keydown", this.down);
-    //     } else if (data.keyEvent.key === "Meta") {
-    //       // Meta+key doesn't fire key up event..
-    //       this.down = {};
-    //     }
-    //     this.down[data.keyEvent.key] && delete this.down[data.keyEvent.key];
-    //     console.log("keyup", this.down);
-    //     break;
-
-    //   case "pressedKeys":
-    //     //this.props.updateAction(JSON.stringify(data.keys));
-    //     break;
-    //   case "capslock":
-    //     DAVKeyManager.setCapslock(data.mods);
-    //     break;
-    //   case "actions":
-    //     this.props.performAction(data.name);
-    //     break;
-    // }
+    switch (data.postFor) {
+      case "keydown":
+        this.webref.injectJavaScript(
+          `simulateKeyDown(window.term.textarea, ${data.keyEvent.charCode}, '{}')`
+        );
+        // if (data.keyEvent.key === "CapsLock") {
+        //   this.handleCapsLockFromJS("keydown", data.keyEvent);
+        // } else {
+        //   this.handleKeys(data.keyEvent);
+        // }
+        // this.handleSoftwareCapsLock(data.keyEvent);
+        break;
+      case "keypress":
+        this.webref.injectJavaScript(
+          `simulateKeyPress(window.term.textarea, ${data.keyEvent.charCode}, '{}')`
+        );
+        break;
+      case "keyup":
+        if (data.keyEvent.key === "CapsLock") {
+          this.handleCapsLockFromJS("keyup", data.keyEvent);
+          console.log("capslock - keyup for keydown", this.down);
+        }
+        break;
+    }
   }
 
   _handleDebug(line: string) {
@@ -377,7 +366,7 @@ function simulateKeyPress(element, charCode, modifiers) {
   event.key = event.char = String.fromCharCode(charCode);
   for (var i in modifierObjects) {
     event[i] = modifierObjects[i];
-  }  
+  }
   var keyEvent = new KeyboardEvent("keypress", event); 
   element.dispatchEvent(keyEvent)
 }   
@@ -403,7 +392,7 @@ function initFromRN(initStr){
 
   window.term.attachCustomKeyEventHandler((e) => {
     if(e.isTrusted === false){
-      return false;
+      return true;
     }
 
     if(isCapsLockRemapped === true){
@@ -418,6 +407,7 @@ function initFromRN(initStr){
               altKey: e.altKey,
               ctrlKey: e.ctrlKey,
               repeat: e.repeat,
+              charCode: e.charCode,
               isTrusted: e.isTrusted
             },
             postFor: e.type
