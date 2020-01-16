@@ -305,12 +305,23 @@ class WVTerm extends Component<Props, IState, any> {
         console.log(data.keyEvent.charCode, modStr);
         if (data.postFor === "keypress") {
           this.webref.injectJavaScript(
-            `simulateKeyPress(window.term.textarea, '${data.keyEvent.key}', ${data.keyEvent.charCode}, '${modStr}')`
+            `simulateKeyPress(window.term.textarea, '${data.keyEvent.key}', ${
+              data.keyEvent.charCode
+            }, '${modStr}')`
           );
         } else if (data.postFor === "keydown") {
-          this.webref.injectJavaScript(
-            `simulateKeyDown(window.term.textarea, '${data.keyEvent.key}', ${data.keyEvent.charCode}, '${modStr}')`
-          );
+          if (
+            (32 < data.keyEvent.charCode && data.keyEvent.charCode >= 128) ||
+            (32 >= data.keyEvent.charCode &&
+              data.keyEvent.charCode < 128 &&
+              (newMods.ctrlKey || newMods.altKey || newMods.metaKey))
+          ) {
+            this.webref.injectJavaScript(
+              `simulateKeyDown(window.term.textarea, '${data.keyEvent.key}', ${
+                data.keyEvent.charCode
+              }, '${modStr}')`
+            );
+          }
         }
 
         // } else {
