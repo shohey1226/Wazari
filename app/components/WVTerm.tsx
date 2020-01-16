@@ -44,7 +44,7 @@ class WVTerm extends Component<Props, IState, any> {
       switch (data.name) {
         case "mods-down":
           if (data.flags === 262144) {
-            this._handleControl();
+            //this._handleControl();
           } else {
             this.handleCapsLockFromNative(true);
           }
@@ -65,8 +65,10 @@ class WVTerm extends Component<Props, IState, any> {
   // RN JS(Webview) -> RN -> Native(iOS) -> RN handling both keydown/up
   handleCapsLockFromNative(isDown) {
     if (isDown) {
-      this.down["CapsLock"] = true;
-      this.handleKeys({ key: "CapsLock", type: "keydown", isFromNative: true });
+      console.log("simulate capslock key");
+      this.webref.injectJavaScript(
+        `simulateKeyDown(window.term.textarea, 20, '{}')`
+      );
     } else {
       this.down["CapsLock"] && delete this.down["CapsLock"];
     }
@@ -208,14 +210,14 @@ class WVTerm extends Component<Props, IState, any> {
   handleCapsLockFromJS(type, keyEvent) {
     const { modifiers } = this.props;
     // if capslock is remapped
-    if (modifiers["capslockKey"] !== "capslockKey") {
+    if (this.state.isCapsLockRemapped) {
       let mods = 0;
       if (type === "keyup") {
         mods = 0;
       } else {
         mods = this.toUIKitFlags(keyEvent);
-        this.capsKeyup();
-        this.handleKeys(keyEvent);
+        //this.capsKeyup();
+        //this.handleKeys(keyEvent);
       }
       DAVKeyManager.setMods(mods);
       console.log(
@@ -236,15 +238,15 @@ class WVTerm extends Component<Props, IState, any> {
       });
   }
 
-  capsKeyup() {
-    let clearId = setTimeout(() => {
-      console.log("RN: Simulate keyup from capsLockKeydown with setTimout");
-      this.webref.injectJavaScript(`capslockKeyUp()`);
-      this.down["CapsLock"] && delete this.down["CapsLock"];
-      this.setState({ clearId: null });
-    }, 750);
-    this.setState({ clearId: clearId });
-  }
+  // capsKeyup() {
+  //   let clearId = setTimeout(() => {
+  //     console.log("RN: Simulate keyup from capsLockKeydown with setTimout");
+  //     this.webref.injectJavaScript(`capslockKeyUp()`);
+  //     this.down["CapsLock"] && delete this.down["CapsLock"];
+  //     this.setState({ clearId: null });
+  //   }, 750);
+  //   this.setState({ clearId: clearId });
+  // }
 
   handleAction(action) {
     switch (action) {
@@ -279,25 +281,46 @@ class WVTerm extends Component<Props, IState, any> {
   }
 
   onMessage(event) {
+    const { modifiers } = this.props;
     this._handleDebug(event.nativeEvent.data);
     const data = JSON.parse(event.nativeEvent.data);
     console.log(data);
     switch (data.postFor) {
+      case "keypress":
       case "keydown":
-        this.webref.injectJavaScript(
-          `simulateKeyDown(window.term.textarea, ${data.keyEvent.charCode}, '{}')`
-        );
-        // if (data.keyEvent.key === "CapsLock") {
-        //   this.handleCapsLockFromJS("keydown", data.keyEvent);
+        const origMods = data.keyEvent.modifiers;
+        let newMods = Object.assign({}, origMods);
+        Object.keys(origMods).forEach(k => {
+          if (modifiers[k]) {
+            newMods[k] = newMods[k] || origMods[modifiers[k]];
+          }
+        });
+        if (data.keyEvent.key === "CapsLock") {
+          if (this.state.isCapsLockRemapped) {
+            newMods[modifiers.capslockKey] = true;
+          }
+          this.handleCapsLockFromJS("keydown", data.keyEvent);
+        }
+        const modStr = JSON.stringify(newMods);
+        console.log(data.keyEvent.charCode, modStr);
+        if (data.postFor === "keypress") {
+          this.webref.injectJavaScript(
+            `simulateKeyPress(window.term.textarea, '${data.keyEvent.key}', ${data.keyEvent.charCode}, '${modStr}')`
+          );
+        } else if (data.postFor === "keydown") {
+          this.webref.injectJavaScript(
+            `simulateKeyDown(window.term.textarea, '${data.keyEvent.key}', ${data.keyEvent.charCode}, '${modStr}')`
+          );
+        }
+
         // } else {
         //   this.handleKeys(data.keyEvent);
         // }
         // this.handleSoftwareCapsLock(data.keyEvent);
-        break;
-      case "keypress":
-        this.webref.injectJavaScript(
-          `simulateKeyPress(window.term.textarea, ${data.keyEvent.charCode}, '{}')`
-        );
+
+        // this.webref.injectJavaScript(
+        //   `simulateKeyPress(window.term.textarea, ${data.keyEvent.charCode}, '{}')`
+        // );
         break;
       case "keyup":
         if (data.keyEvent.key === "CapsLock") {
@@ -359,11 +382,11 @@ export default WVTerm;
 
 const injectingJs: string = `
 
-function simulateKeyPress(element, charCode, modifiers) {
+function simulateKeyPress(element, key, charCode, modifiers) {
   var modifierObjects = JSON.parse(modifiers);
   var event = {};  
   event.charCode = charCode  
-  event.key = event.char = String.fromCharCode(charCode);
+  event.key = key;
   for (var i in modifierObjects) {
     event[i] = modifierObjects[i];
   }
@@ -371,10 +394,10 @@ function simulateKeyPress(element, charCode, modifiers) {
   element.dispatchEvent(keyEvent)
 }   
 
-function simulateKeyDown(element, keyCode, modifiers) {
+function simulateKeyDown(element, key, keyCode, modifiers) {
   var modifierObjects = JSON.parse(modifiers);
   var event = {};
-  event.key = event.char = String.fromCharCode(keyCode);  
+  event.key = key;
   event.keyCode = event.code = event.key.toUpperCase().charCodeAt(0);
   for (var i in modifierObjects) {
     event[i] = modifierObjects[i];
@@ -402,10 +425,12 @@ function initFromRN(initStr){
             keyEvent: {
               key: e.key,
               type: e.type,
-              shiftKey: e.shiftKey,
-              metaKey: e.metaKey,
-              altKey: e.altKey,
-              ctrlKey: e.ctrlKey,
+              modifiers: {
+                shiftKey: e.shiftKey,
+                metaKey: e.metaKey,
+                altKey: e.altKey,
+                ctrlKey: e.ctrlKey
+              },
               repeat: e.repeat,
               charCode: e.charCode,
               isTrusted: e.isTrusted
