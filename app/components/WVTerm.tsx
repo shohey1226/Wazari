@@ -303,23 +303,30 @@ class WVTerm extends Component<Props, IState, any> {
         }
         const modStr = JSON.stringify(newMods);
         console.log(data.keyEvent.charCode, modStr);
+
+        const charCode = data.keyEvent.charCode;
+        const keyCode = data.keyEvent.keyCode;
+        const key = data.keyEvent.key;
+
         if (data.postFor === "keypress") {
           this.webref.injectJavaScript(
-            `simulateKeyPress(window.term.textarea, '${data.keyEvent.key}', ${
-              data.keyEvent.charCode
-            }, '${modStr}')`
+            `simulateKeyPress(window.term.textarea, '${key}', ${charCode}, '${modStr}')`
           );
         } else if (data.postFor === "keydown") {
           if (
-            (32 < data.keyEvent.charCode && data.keyEvent.charCode >= 128) ||
-            (32 >= data.keyEvent.charCode &&
-              data.keyEvent.charCode < 128 &&
-              (newMods.ctrlKey || newMods.altKey || newMods.metaKey))
+            (32 < charCode && charCode >= 128) ||
+            (32 >= charCode &&
+              charCode < 128 &&
+              (newMods.ctrlKey || newMods.altKey || newMods.metaKey)) ||
+            key === "Backspace" ||
+            key === "ArrowLeft" ||
+            key === "ArrowRight" ||
+            key === "ArrowUp" ||
+            key === "ArrayDown"
           ) {
+            console.log(charCode);
             this.webref.injectJavaScript(
-              `simulateKeyDown(window.term.textarea, '${data.keyEvent.key}', ${
-                data.keyEvent.charCode
-              }, '${modStr}')`
+              `simulateKeyDown(window.term.textarea, '${key}', ${keyCode}, '${modStr}')`
             );
           }
         }
@@ -409,7 +416,7 @@ function simulateKeyDown(element, key, keyCode, modifiers) {
   var modifierObjects = JSON.parse(modifiers);
   var event = {};
   event.key = key;
-  event.keyCode = event.code = event.key.toUpperCase().charCodeAt(0);
+  event.keyCode = keyCode;
   for (var i in modifierObjects) {
     event[i] = modifierObjects[i];
   }  
@@ -444,6 +451,7 @@ function initFromRN(initStr){
               },
               repeat: e.repeat,
               charCode: e.charCode,
+              keyCode: e.keyCode,
               isTrusted: e.isTrusted
             },
             postFor: e.type
