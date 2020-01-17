@@ -24,6 +24,7 @@ interface Props {
 class WVTerm extends Component<Props, IState, any> {
   webref: WebView | null = null;
   down: any = {};
+  isCapsLockOn: boolean = false;
 
   constructor(props) {
     super(props);
@@ -64,14 +65,16 @@ class WVTerm extends Component<Props, IState, any> {
 
   // RN JS(Webview) -> RN -> Native(iOS) -> RN handling both keydown/up
   handleCapsLockFromNative(isDown) {
-    if (isDown) {
-      console.log("simulate capslock key");
-      this.webref.injectJavaScript(
-        `simulateKeyDown(window.term.textarea, 20, '{}')`
-      );
-    } else {
-      this.down["CapsLock"] && delete this.down["CapsLock"];
-    }
+    this.isCapsLockOn = true;
+    console.log("1");
+    // if (isDown) {
+    //   console.log("simulate capslock key");
+    //   this.webref.injectJavaScript(
+    //     `simulateKeyDown(window.term.textarea, 20, '{}')`
+    //   );
+    // } else {
+    //   this.down["CapsLock"] && delete this.down["CapsLock"];
+    // }
   }
 
   // UIKeycommand(Native) to RN and use down object to detect simaltanous keys.
@@ -301,7 +304,7 @@ class WVTerm extends Component<Props, IState, any> {
           }
           this.handleCapsLockFromJS("keydown", data.keyEvent);
         }
-        const modStr = JSON.stringify(newMods);
+        let modStr = JSON.stringify(newMods);
         console.log(data.keyEvent.charCode, modStr);
 
         const charCode = data.keyEvent.charCode;
@@ -309,10 +312,21 @@ class WVTerm extends Component<Props, IState, any> {
         const key = data.keyEvent.key;
 
         if (data.postFor === "keypress") {
-          this.webref.injectJavaScript(
-            `simulateKeyPress(window.term.textarea, '${key}', ${charCode}, '${modStr}')`
-          );
+          if (this.isCapsLockOn) {
+            this.isCapsLockOn = false;
+            console.log("3");
+          } else {
+            this.webref.injectJavaScript(
+              `simulateKeyPress(window.term.textarea, '${key}', ${charCode}, '${modStr}')`
+            );
+          }
         } else if (data.postFor === "keydown") {
+          if (this.state.isCapsLockRemapped && this.isCapsLockOn) {
+            newMods[modifiers.capslockKey] = true;
+            modStr = JSON.stringify(newMods);
+            console.log("2");
+          }
+
           if (
             (32 < charCode && charCode >= 128) ||
             (32 >= charCode &&
@@ -322,9 +336,9 @@ class WVTerm extends Component<Props, IState, any> {
             key === "ArrowLeft" ||
             key === "ArrowRight" ||
             key === "ArrowUp" ||
-            key === "ArrayDown"
+            key === "ArrowDown"
           ) {
-            console.log(charCode);
+            console.log(keyCode);
             this.webref.injectJavaScript(
               `simulateKeyDown(window.term.textarea, '${key}', ${keyCode}, '${modStr}')`
             );
@@ -343,7 +357,6 @@ class WVTerm extends Component<Props, IState, any> {
       case "keyup":
         if (data.keyEvent.key === "CapsLock") {
           this.handleCapsLockFromJS("keyup", data.keyEvent);
-          console.log("capslock - keyup for keydown", this.down);
         }
         break;
     }
@@ -460,6 +473,24 @@ function initFromRN(initStr){
       return false;
    }
 
+  });
+
+  window.document.addEventListener("keyup", (e) => {
+    window.ReactNativeWebView &&
+      window.ReactNativeWebView.postMessage(
+        JSON.stringify({
+          keyEvent: {
+            key: e.key,
+            type: e.type,
+            shiftKey: e.shiftKey,
+            metaKey: e.metaKey,
+            altKey: e.altKey,
+            ctrlKey: e.ctrlKey,
+            repeat: e.repeat
+          },
+          postFor: e.type
+        })
+      );    
   });
 
 }
