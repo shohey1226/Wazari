@@ -64,6 +64,13 @@ class WVTerm extends Component<Props, IState, any> {
       this.webref.injectJavaScript(`document.getElementById('search').blur()`);
   }
 
+  componentDidUpdate(prevProp) {
+    const { reloadToggled, isActive } = this.props;
+    if (prevProp.reloadToggled !== reloadToggled && isActive) {
+      this.webref && this.webref.reload();
+    }
+  }
+
   // RN JS(Webview) -> RN -> Native(iOS) -> RN handling both keydown/up
   handleCapsLockFromNative(isDown) {
     this.capsLockPressed = true;
