@@ -160,7 +160,6 @@ class WVInput extends Component<Props, IState, any> {
             // simulate key repeat
             // extends capslock keyup - clear and set again
             if (this.state.clearId !== null && keyEvent.isFromNative !== true) {
-              clearTimeout(this.state.clearId);
               this.capsKeyup();
             }
           }
@@ -239,8 +238,11 @@ class WVInput extends Component<Props, IState, any> {
   }
 
   capsKeyup() {
+    console.log("RN: Simulate keyup from capsLockKeydown with setTimout");
+    if (this.state.clearId) {
+      clearTimeout(this.state.clearId);
+    }
     let clearId = setTimeout(() => {
-      console.log("RN: Simulate keyup from capsLockKeydown with setTimout");
       this.webref.injectJavaScript(`capslockKeyUp()`);
       this.down["CapsLock"] && delete this.down["CapsLock"];
       this.setState({ clearId: null });

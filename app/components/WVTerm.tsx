@@ -24,7 +24,8 @@ interface Props {
 class WVTerm extends Component<Props, IState, any> {
   webref: WebView | null = null;
   down: any = {};
-  isCapsLockOn: boolean = false;
+  capsLockPressed: boolean = false;
+  prevKey: string | null = null;
 
   constructor(props) {
     super(props);
@@ -65,8 +66,7 @@ class WVTerm extends Component<Props, IState, any> {
 
   // RN JS(Webview) -> RN -> Native(iOS) -> RN handling both keydown/up
   handleCapsLockFromNative(isDown) {
-    this.isCapsLockOn = true;
-    console.log("1");
+    this.capsLockPressed = true;
     // if (isDown) {
     //   console.log("simulate capslock key");
     //   this.webref.injectJavaScript(
@@ -241,15 +241,18 @@ class WVTerm extends Component<Props, IState, any> {
       });
   }
 
-  // capsKeyup() {
-  //   let clearId = setTimeout(() => {
-  //     console.log("RN: Simulate keyup from capsLockKeydown with setTimout");
-  //     this.webref.injectJavaScript(`capslockKeyUp()`);
-  //     this.down["CapsLock"] && delete this.down["CapsLock"];
-  //     this.setState({ clearId: null });
-  //   }, 750);
-  //   this.setState({ clearId: clearId });
-  // }
+  capsKeyup() {
+    console.log("RN: Simulate keyup from capsLockKeydown with setTimout");
+    if (this.state.clearId) {
+      clearTimeout(this.state.clearId);
+    }
+    let clearId = setTimeout(() => {
+      this.capsLockPressed = false;
+      this.setState({ clearId: null });
+    }, 750);
+
+    this.setState({ clearId: clearId });
+  }
 
   handleAction(action) {
     switch (action) {
@@ -312,19 +315,26 @@ class WVTerm extends Component<Props, IState, any> {
         const key = data.keyEvent.key;
 
         if (data.postFor === "keypress") {
-          if (this.isCapsLockOn) {
-            this.isCapsLockOn = false;
-            console.log("3");
-          } else {
+          if (!this.capsLockPressed) {
             this.webref.injectJavaScript(
               `simulateKeyPress(window.term.textarea, '${key}', ${charCode}, '${modStr}')`
             );
           }
         } else if (data.postFor === "keydown") {
-          if (this.state.isCapsLockRemapped && this.isCapsLockOn) {
+          if (key === "CapsLock") {
+            this.capsLockPressed = true;
+            this.capsKeyup();
+          }
+
+          // prevKey extends capslock key timeout
+          // in order to simulate some repeated keys, like ctrl-b
+          if (key === this.prevKey) {
+            this.capsKeyup();
+          }
+
+          if (this.state.isCapsLockRemapped && this.capsLockPressed) {
             newMods[modifiers.capslockKey] = true;
             modStr = JSON.stringify(newMods);
-            console.log("2");
           }
 
           if (
@@ -338,25 +348,20 @@ class WVTerm extends Component<Props, IState, any> {
             key === "ArrowUp" ||
             key === "ArrowDown"
           ) {
-            console.log(keyCode);
             this.webref.injectJavaScript(
               `simulateKeyDown(window.term.textarea, '${key}', ${keyCode}, '${modStr}')`
             );
+            this.prevKey = key;
           }
         }
-
-        // } else {
-        //   this.handleKeys(data.keyEvent);
-        // }
-        // this.handleSoftwareCapsLock(data.keyEvent);
-
-        // this.webref.injectJavaScript(
-        //   `simulateKeyPress(window.term.textarea, ${data.keyEvent.charCode}, '{}')`
-        // );
         break;
+
       case "keyup":
         if (data.keyEvent.key === "CapsLock") {
           this.handleCapsLockFromJS("keyup", data.keyEvent);
+          if (this.capsLockPressed) {
+            this.capsLockPressed = false;
+          }
         }
         break;
     }
