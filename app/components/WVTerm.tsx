@@ -25,6 +25,7 @@ class WVTerm extends Component<Props, IState, any> {
   webref: WebView | null = null;
   down: any = {};
   capsLockPressed: boolean = false;
+  down: any = {};
   prevKey: string | null = null;
 
   constructor(props) {
@@ -73,7 +74,8 @@ class WVTerm extends Component<Props, IState, any> {
 
   // RN JS(Webview) -> RN -> Native(iOS) -> RN handling both keydown/up
   handleCapsLockFromNative(isDown) {
-    this.capsLockPressed = true;
+    //this.capsLockPressed = true;
+    this.down["CapsLock"] = true;
     // if (isDown) {
     //   console.log("simulate capslock key");
     //   this.webref.injectJavaScript(
@@ -94,100 +96,6 @@ class WVTerm extends Component<Props, IState, any> {
     //     console.log("simulate Control keyup with setTimout");
     //     this.down["Control"] && delete this.down["Control"];
     //   }, 300);
-  }
-
-  handleKeys(keyEvent) {
-    const { modifiers, browserKeymap } = this.props;
-    const pressedKeys = Object.keys(this.down);
-    console.log(`RN: pressedKeys: ${pressedKeys.join(",")}`);
-
-    // handle Enter and Esc
-    if (pressedKeys.indexOf("Escape") !== -1) {
-      this.props.closeSearch();
-      return;
-    } else if (pressedKeys.indexOf("Enter") !== -1) {
-      return;
-    }
-
-    // modifiers from input
-    let m = {
-      capslockKey: pressedKeys.indexOf("CapsLock") !== -1,
-      shiftKey: pressedKeys.indexOf("Shift") !== -1,
-      altKey: pressedKeys.indexOf("Alt") !== -1,
-      ctrlKey: pressedKeys.indexOf("Control") !== -1,
-      metaKey: pressedKeys.indexOf("Meta") !== -1
-    };
-
-    console.log("Modifiers: before applying remap", m);
-    let _m = {}; // m should not be modified during transformation
-    Object.keys(m).forEach(inputKey => {
-      //console.log("inputKey:", inputKey, "input mods:", m[inputKey]);
-      let targetMods = Object.keys(modifiers).filter(
-        k => modifiers[k] === inputKey
-      );
-      //console.log("targetMods", targetMods);
-      if (targetMods.length === 0) {
-        _m[inputKey] = false;
-      } else {
-        let result = false;
-        targetMods.forEach(k => {
-          result = result || m[k];
-        });
-        _m[inputKey] = result;
-      }
-    });
-    m = _m;
-    console.log("Modifiers: after applyed remap", m);
-
-    // let m = {
-    //   capslockKey: false,
-    //   shiftKey: false,
-    //   altKey: false,
-    //   ctrlKey: false,
-    //   metaKey: false
-    // };
-
-    // m[modifiers.capslockKey] = pressedKeys.indexOf("CapsLock") !== -1;
-    // m["shiftKey"] = pressedKeys.indexOf("Shift") !== -1;
-    // m[modifiers.altKey] = pressedKeys.indexOf("Alt") !== -1;
-    // m[modifiers.ctrlKey] = pressedKeys.indexOf("Control") !== -1;
-    // m[modifiers.metaKey] = pressedKeys.indexOf("Meta") !== -1;
-
-    let hasAction = false;
-    pressedKeys
-      .filter(k => k.length === 1)
-      .forEach(key => {
-        Object.keys(browserKeymap).forEach(action => {
-          const keymap = browserKeymap[action];
-          // always comparing to lowercase of the input key
-          if (
-            isEqual(keymap.modifiers, m) &&
-            keymap.key === key.toLowerCase()
-          ) {
-            this.handleAction(action);
-            hasAction = true;
-
-            // simulate key repeat
-            // extends capslock keyup - clear and set again
-            if (this.state.clearId !== null && keyEvent.isFromNative !== true) {
-              clearTimeout(this.state.clearId);
-              this.capsKeyup();
-            }
-          }
-        });
-      });
-
-    if (!hasAction && this.state.isCapsLockRemapped) {
-      if (/^[A-Za-z]$/.test(keyEvent.key) && keyEvent.type === "keydown") {
-        let inputKey =
-          this.state.isCapsLockOn === true ||
-          pressedKeys.indexOf("Shift") !== -1
-            ? keyEvent.key.toUpperCase()
-            : keyEvent.key.toLowerCase();
-
-        this.webref.injectJavaScript(`updateInputValue("${inputKey}")`);
-      }
-    }
   }
 
   toUIKitFlags(e) {
@@ -254,7 +162,7 @@ class WVTerm extends Component<Props, IState, any> {
       clearTimeout(this.state.clearId);
     }
     let clearId = setTimeout(() => {
-      this.capsLockPressed = false;
+      this.down["CapsLock"] && delete this.down["CapsLock"];
       this.setState({ clearId: null });
     }, 750);
 
@@ -317,29 +225,36 @@ class WVTerm extends Component<Props, IState, any> {
         let modStr = JSON.stringify(newMods);
         console.log(data.keyEvent.charCode, modStr);
 
-        const charCode = data.keyEvent.charCode;
+        let charCode = data.keyEvent.charCode;
         const keyCode = data.keyEvent.keyCode;
-        const key = data.keyEvent.key;
+        let key = data.keyEvent.key;
 
         if (data.postFor === "keypress") {
-          if (!this.capsLockPressed) {
+          if (!this.down["CapsLock"]) {
+            if (newMods.shiftKey || this.state.isCapsLockOn) {
+              if (key.match(/[a-z]/)) {
+                key = key.toUpperCase();
+                charCode = key.charCodeAt(0);
+              }
+            } else {
+              if (key.match(/[A-Z]/)) {
+                key = key.toLowerCase();
+                charCode = key.charCodeAt(0);
+              }
+            }
+
+            this._handleDebug(
+              `simulateKeyPress(window.term.textarea, '${key}', ${charCode}, '${modStr}')`
+            );
             this.webref.injectJavaScript(
               `simulateKeyPress(window.term.textarea, '${key}', ${charCode}, '${modStr}')`
             );
           }
         } else if (data.postFor === "keydown") {
-          if (key === "CapsLock") {
-            this.capsLockPressed = true;
-            this.capsKeyup();
-          }
+          this.down[data.keyEvent.key] = keyCode;
 
-          // prevKey extends capslock key timeout
-          // in order to simulate some repeated keys, like ctrl-b
-          if (key === this.prevKey) {
-            this.capsKeyup();
-          }
-
-          if (this.state.isCapsLockRemapped && this.capsLockPressed) {
+          // Check if CapsLock is being pressed now
+          if (this.state.isCapsLockRemapped && this.down["CapsLock"]) {
             newMods[modifiers.capslockKey] = true;
             modStr = JSON.stringify(newMods);
           }
@@ -355,9 +270,33 @@ class WVTerm extends Component<Props, IState, any> {
             key === "ArrowUp" ||
             key === "ArrowDown"
           ) {
-            this.webref.injectJavaScript(
-              `simulateKeyDown(window.term.textarea, '${key}', ${keyCode}, '${modStr}')`
-            );
+            if (this.state.isCapsLockRemapped && key === "CapsLock") {
+              this.capsKeyup();
+              // prevKey extends capslock key timeout
+              // in order to simulate some repeated keys, like ctrl-b
+              if (key === this.prevKey) {
+                this.capsKeyup();
+              }
+              const pressedKeys = Object.keys(this.down);
+              pressedKeys.forEach(k => {
+                // ascii 32 to 126
+                if (/[ -~]/.test(k)) {
+                  this._handleDebug(
+                    `simulateKeyDown(window.term.textarea, '${k}', ${this.down[k]}, '${modStr}')`
+                  );
+                  this.webref.injectJavaScript(
+                    `simulateKeyDown(window.term.textarea, '${k}', ${this.down[k]}, '${modStr}')`
+                  );
+                }
+              });
+            } else {
+              this._handleDebug(
+                `simulateKeyDown(window.term.textarea, '${key}', ${keyCode}, '${modStr}')`
+              );
+              this.webref.injectJavaScript(
+                `simulateKeyDown(window.term.textarea, '${key}', ${keyCode}, '${modStr}')`
+              );
+            }
             this.prevKey = key;
           }
         }
@@ -366,10 +305,8 @@ class WVTerm extends Component<Props, IState, any> {
       case "keyup":
         if (data.keyEvent.key === "CapsLock") {
           this.handleCapsLockFromJS("keyup", data.keyEvent);
-          if (this.capsLockPressed) {
-            this.capsLockPressed = false;
-          }
         }
+        this.down[data.keyEvent.key] && delete this.down[data.keyEvent.key];
         break;
     }
   }
