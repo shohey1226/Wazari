@@ -207,8 +207,16 @@ class WVTerm extends Component<Props, IState, any> {
     const data = JSON.parse(event.nativeEvent.data);
     console.log(data);
     switch (data.postFor) {
-      case "keypress":
       case "keydown":
+        let charCode = data.keyEvent.charCode;
+        let keyCode = data.keyEvent.keyCode;
+        let key = data.keyEvent.key;
+        let type = data.keyEvent.type;
+
+        // For simultaneous key press
+        this.down[key] = keyCode;
+
+        // customized modifiers
         const origMods = data.keyEvent.modifiers;
         let newMods = Object.assign({}, origMods);
         Object.keys(origMods).forEach(k => {
@@ -216,89 +224,78 @@ class WVTerm extends Component<Props, IState, any> {
             newMods[k] = newMods[k] || origMods[modifiers[k]];
           }
         });
-        if (data.keyEvent.key === "CapsLock") {
-          if (this.state.isCapsLockRemapped) {
-            newMods[modifiers.capslockKey] = true;
+
+        // handle software capslock
+        if (newMods.shiftKey || this.state.isCapsLockOn) {
+          if (key.match(/[a-z]/)) {
+            key = key.toUpperCase();
+            charCode = key.charCodeAt(0);
           }
-          this.handleCapsLockFromJS("keydown", data.keyEvent);
+        } else {
+          if (key.match(/[A-Z]/)) {
+            key = key.toLowerCase();
+            charCode = key.charCodeAt(0);
+          }
         }
-        let modStr = JSON.stringify(newMods);
-        console.log(data.keyEvent.charCode, modStr);
 
-        let charCode = data.keyEvent.charCode;
-        const keyCode = data.keyEvent.keyCode;
-        let key = data.keyEvent.key;
+        // Some keys needs to be handled
+        if (key === " ") {
+          // space is handled by keypress
+          keyCode = 0;
+          charCode = 32;
+          type = "keypress";
+        } else if (key === "'") {
+          // unable to pass over single quote through stringified json.
+          // pass over singlequote string and handled in JS side.
+          key = "singlequote";
+        } else if (key === "\\") {
+          // escape for JS
+          key = "\\\\";
+        } else if (key === '"') {
+          // escape for JS
+          key = '\\"';
+        }
 
-        if (data.postFor === "keypress") {
-          if (!this.down["CapsLock"]) {
-            if (newMods.shiftKey || this.state.isCapsLockOn) {
-              if (key.match(/[a-z]/)) {
-                key = key.toUpperCase();
-                charCode = key.charCodeAt(0);
-              }
-            } else {
-              if (key.match(/[A-Z]/)) {
-                key = key.toLowerCase();
-                charCode = key.charCodeAt(0);
-              }
-            }
+        const pressedKeys = Object.keys(this.down);
+        if (
+          this.state.isCapsLockRemapped &&
+          pressedKeys.indexOf("CapsLock") !== -1
+        ) {
+          newMods[modifiers.capslockKey] = true;
 
-            this._handleDebug(
-              `simulateKeyPress(window.term.textarea, '${key}', ${charCode}, '${modStr}')`
-            );
-            this.webref.injectJavaScript(
-              `simulateKeyPress(window.term.textarea, '${key}', ${charCode}, '${modStr}')`
-            );
-          }
-        } else if (data.postFor === "keydown") {
-          this.down[data.keyEvent.key] = keyCode;
-
-          // Check if CapsLock is being pressed now
-          if (this.state.isCapsLockRemapped && this.down["CapsLock"]) {
-            newMods[modifiers.capslockKey] = true;
-            modStr = JSON.stringify(newMods);
-          }
-
-          if (
-            (32 < charCode && charCode >= 128) ||
-            (32 >= charCode &&
-              charCode < 128 &&
-              (newMods.ctrlKey || newMods.altKey || newMods.metaKey)) ||
-            key === "Backspace" ||
-            key === "ArrowLeft" ||
-            key === "ArrowRight" ||
-            key === "ArrowUp" ||
-            key === "ArrowDown"
-          ) {
-            if (this.state.isCapsLockRemapped && key === "CapsLock") {
-              this.capsKeyup();
-              // prevKey extends capslock key timeout
-              // in order to simulate some repeated keys, like ctrl-b
-              if (key === this.prevKey) {
-                this.capsKeyup();
-              }
-              const pressedKeys = Object.keys(this.down);
-              pressedKeys.forEach(k => {
-                // ascii 32 to 126
-                if (/[ -~]/.test(k)) {
-                  this._handleDebug(
-                    `simulateKeyDown(window.term.textarea, '${k}', ${this.down[k]}, '${modStr}')`
-                  );
-                  this.webref.injectJavaScript(
-                    `simulateKeyDown(window.term.textarea, '${k}', ${this.down[k]}, '${modStr}')`
-                  );
-                }
-              });
-            } else {
-              this._handleDebug(
-                `simulateKeyDown(window.term.textarea, '${key}', ${keyCode}, '${modStr}')`
+          pressedKeys.forEach(k => {
+            // ascii 32 to 126
+            if (/[ -~]/.test(k)) {
+              let event = Object.assign(
+                {
+                  type: type,
+                  key: key,
+                  keyCode: this.down[k]
+                },
+                newMods
               );
+              let eventStr = JSON.stringify(event);
               this.webref.injectJavaScript(
-                `simulateKeyDown(window.term.textarea, '${key}', ${keyCode}, '${modStr}')`
+                `simulateKey(window.term.textarea, '${eventStr}')`
               );
             }
-            this.prevKey = key;
-          }
+          });
+          this.capsKeyup();
+          this.handleCapsLockFromJS("keydown", data.keyEvent);
+        } else {
+          let event = Object.assign(
+            {
+              type: type,
+              key: key,
+              keyCode: keyCode,
+              charCode: charCode
+            },
+            newMods
+          );
+          let eventStr = JSON.stringify(event);
+          this.webref.injectJavaScript(
+            `simulateKey(window.term.textarea, '${eventStr}')`
+          );
         }
         break;
 
@@ -362,29 +359,39 @@ export default WVTerm;
 
 const injectingJs: string = `
 
-function simulateKeyPress(element, key, charCode, modifiers) {
-  var modifierObjects = JSON.parse(modifiers);
-  var event = {};  
-  event.charCode = charCode  
-  event.key = key;
-  for (var i in modifierObjects) {
-    event[i] = modifierObjects[i];
+
+function simulateKey(element, eventStr) {
+  var event = JSON.parse(eventStr);
+  if(event.key === "singlequote"){
+    event.key = "'";
   }
-  var keyEvent = new KeyboardEvent("keypress", event); 
+  var keyEvent = new KeyboardEvent(event.type, event); 
   element.dispatchEvent(keyEvent)
 }   
 
-function simulateKeyDown(element, key, keyCode, modifiers) {
-  var modifierObjects = JSON.parse(modifiers);
-  var event = {};
-  event.key = key;
-  event.keyCode = keyCode;
-  for (var i in modifierObjects) {
-    event[i] = modifierObjects[i];
-  }  
-  var keyEvent = new KeyboardEvent("keydown", event); 
-  element.dispatchEvent(keyEvent)
-}   
+// function simulateKeyPress(element, key, charCode, modifiers) {
+//   var modifierObjects = JSON.parse(modifiers);
+//   var event = {};  
+//   event.charCode = charCode  
+//   event.key = key;
+//   for (var i in modifierObjects) {
+//     event[i] = modifierObjects[i];
+//   }
+//   var keyEvent = new KeyboardEvent("keypress", event); 
+//   element.dispatchEvent(keyEvent)
+// }   
+
+// function simulateKeyDown(element, key, keyCode, modifiers) {
+//   var modifierObjects = JSON.parse(modifiers);
+//   var event = {};
+//   event.key = key;
+//   event.keyCode = keyCode;
+//   for (var i in modifierObjects) {
+//     event[i] = modifierObjects[i];
+//   }  
+//   var keyEvent = new KeyboardEvent("keydown", event); 
+//   element.dispatchEvent(keyEvent)
+// }   
 
 var isCapsLockRemapped = false;
 
