@@ -134,7 +134,7 @@ class WVTerm extends Component<Props, IState, any> {
         mods = 0;
       } else {
         mods = this.toUIKitFlags(keyEvent);
-        //this.capsKeyup();
+        this.capsKeyup();
         //this.handleKeys(keyEvent);
       }
       DAVKeyManager.setMods(mods);
@@ -164,7 +164,7 @@ class WVTerm extends Component<Props, IState, any> {
     let clearId = setTimeout(() => {
       this.down["CapsLock"] && delete this.down["CapsLock"];
       this.setState({ clearId: null });
-    }, 750);
+    }, 500);
 
     this.setState({ clearId: clearId });
   }
@@ -279,8 +279,12 @@ class WVTerm extends Component<Props, IState, any> {
                 `simulateKey(window.term.textarea, '${eventStr}')`
               );
             }
+            // extends time only for ctrl-b,f,,,y
+            if (/[bfnpwxy]/.test(k)) {
+              this.capsKeyup();
+            }
           });
-          this.capsKeyup();
+
           this.handleCapsLockFromJS("keydown", data.keyEvent);
         } else {
           let event = Object.assign(
@@ -311,7 +315,7 @@ class WVTerm extends Component<Props, IState, any> {
   _handleDebug(line: string) {
     let lines = this.state.debugLines;
     const now = new Date();
-    lines.unshift(`${now}: ${line}`);
+    lines.unshift(`${now.getTime()}: ${line}`);
     this.setState({ debugLines: lines });
   }
 
@@ -393,6 +397,13 @@ function simulateKey(element, eventStr) {
 //   element.dispatchEvent(keyEvent)
 // }   
 
+// Disable tab key
+document.addEventListener('keydown', (e)=>{
+  if(e.keyCode === 9){
+    e.preventDefault();
+  }
+})
+
 var isCapsLockRemapped = false;
 
 function initFromRN(initStr){
@@ -401,6 +412,7 @@ function initFromRN(initStr){
   isCapsLockRemapped = initObj.isCapsLockRemapped;
 
   window.term.attachCustomKeyEventHandler((e) => {
+
     if(e.isTrusted === false){
       return true;
     }
