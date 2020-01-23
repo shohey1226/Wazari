@@ -228,6 +228,12 @@ class WVTerm extends Component<Props, IState, any> {
           this.lastKeyTimestamp = now;
         }
 
+        // HW keyboard send keyCode 229 when it's key repeat
+        // Need to overwrite with key
+        if (repeat === true && keyCode === 229) {
+          keyCode = key.charCodeAt(0);
+        }
+
         // customized modifiers
         const origMods = data.keyEvent.modifiers;
         let newMods = Object.assign({}, origMods);
