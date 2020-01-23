@@ -25,8 +25,9 @@ class WVTerm extends Component<Props, IState, any> {
   webref: WebView | null = null;
   down: any = {};
   capsLockPressed: boolean = false;
-  down: any = {};
   prevKey: string | null = null;
+  isNativeCapslock: boolean = false; // comes from iOS native, not JS
+  lastKeyTimestamp: number = 9999999999999999999;
 
   constructor(props) {
     super(props);
@@ -76,6 +77,8 @@ class WVTerm extends Component<Props, IState, any> {
   handleCapsLockFromNative(isDown) {
     //this.capsLockPressed = true;
     this.down["CapsLock"] = true;
+    this.isNativeCapslock = true;
+
     // if (isDown) {
     //   console.log("simulate capslock key");
     //   this.webref.injectJavaScript(
@@ -134,7 +137,7 @@ class WVTerm extends Component<Props, IState, any> {
         mods = 0;
       } else {
         mods = this.toUIKitFlags(keyEvent);
-        this.capsKeyup();
+        //this.capsKeyup();
         //this.handleKeys(keyEvent);
       }
       DAVKeyManager.setMods(mods);
@@ -157,16 +160,17 @@ class WVTerm extends Component<Props, IState, any> {
   }
 
   capsKeyup() {
-    console.log("RN: Simulate keyup from capsLockKeydown with setTimout");
-    if (this.state.clearId) {
-      clearTimeout(this.state.clearId);
-    }
-    let clearId = setTimeout(() => {
-      this.down["CapsLock"] && delete this.down["CapsLock"];
-      this.setState({ clearId: null });
-    }, 500);
+    this.down["CapsLock"] && delete this.down["CapsLock"];
+    // console.log("RN: Simulate keyup from capsLockKeydown with setTimout");
+    // if (this.state.clearId) {
+    //   clearTimeout(this.state.clearId);
+    // }
+    // let clearId = setTimeout(() => {
+    //   this.down["CapsLock"] && delete this.down["CapsLock"];
+    //   this.setState({ clearId: null });
+    // }, 750);
 
-    this.setState({ clearId: clearId });
+    // this.setState({ clearId: clearId });
   }
 
   handleAction(action) {
@@ -212,9 +216,17 @@ class WVTerm extends Component<Props, IState, any> {
         let keyCode = data.keyEvent.keyCode;
         let key = data.keyEvent.key;
         let type = data.keyEvent.type;
+        const repeat = data.keyEvent.repeat;
+        const now = new Date().getTime();
 
         // For simultaneous key press
         this.down[key] = keyCode;
+
+        // add hack only JS keydown
+        if (key === "CapsLock") {
+          this.isNativeCapslock = false;
+          this.lastKeyTimestamp = now;
+        }
 
         // customized modifiers
         const origMods = data.keyEvent.modifiers;
@@ -227,12 +239,12 @@ class WVTerm extends Component<Props, IState, any> {
 
         // handle software capslock
         if (newMods.shiftKey || this.state.isCapsLockOn) {
-          if (key.match(/[a-z]/)) {
+          if (key.match(/^[a-z]$/)) {
             key = key.toUpperCase();
             charCode = key.charCodeAt(0);
           }
         } else {
-          if (key.match(/[A-Z]/)) {
+          if (key.match(/^[A-Z]$/)) {
             key = key.toLowerCase();
             charCode = key.charCodeAt(0);
           }
@@ -256,13 +268,28 @@ class WVTerm extends Component<Props, IState, any> {
           key = '\\"';
         }
 
-        const pressedKeys = Object.keys(this.down);
+        // handle capslock 1st keydown before simulating key
         if (
           this.state.isCapsLockRemapped &&
-          pressedKeys.indexOf("CapsLock") !== -1
+          key !== "CapsLock" &&
+          this.isNativeCapslock === false &&
+          this.down["CapsLock"]
         ) {
+          if (/^[aekdbfnpwxy]$/.test(key)) {
+            //console.log(now - this.lastKeyTimestamp);
+            if (now - this.lastKeyTimestamp > 500) {
+              delete this.down["CapsLock"]; // keyup
+            }
+            this.lastKeyTimestamp = now;
+          } else {
+            delete this.down["CapsLock"]; // keyup
+          }
+        }
+
+        if (this.state.isCapsLockRemapped && this.down["CapsLock"]) {
           newMods[modifiers.capslockKey] = true;
 
+          const pressedKeys = Object.keys(this.down);
           pressedKeys.forEach(k => {
             // ascii 32 to 126
             if (/[ -~]/.test(k)) {
@@ -270,7 +297,8 @@ class WVTerm extends Component<Props, IState, any> {
                 {
                   type: type,
                   key: key,
-                  keyCode: this.down[k]
+                  keyCode: this.down[k],
+                  repeat: repeat
                 },
                 newMods
               );
@@ -279,12 +307,7 @@ class WVTerm extends Component<Props, IState, any> {
                 `simulateKey(window.term.textarea, '${eventStr}')`
               );
             }
-            // extends time only for ctrl-b,f,,,y
-            if (/[bfnpwxy]/.test(k)) {
-              this.capsKeyup();
-            }
           });
-
           this.handleCapsLockFromJS("keydown", data.keyEvent);
         } else {
           let event = Object.assign(
@@ -292,7 +315,8 @@ class WVTerm extends Component<Props, IState, any> {
               type: type,
               key: key,
               keyCode: keyCode,
-              charCode: charCode
+              charCode: charCode,
+              repeat: repeat
             },
             newMods
           );
@@ -412,7 +436,6 @@ function initFromRN(initStr){
   isCapsLockRemapped = initObj.isCapsLockRemapped;
 
   window.term.attachCustomKeyEventHandler((e) => {
-
     if(e.isTrusted === false){
       return true;
     }
