@@ -27,7 +27,7 @@ class WVTerm extends Component<Props, IState, any> {
   capsLockPressed: boolean = false;
   prevKey: string | null = null;
   isNativeCapslock: boolean = false; // comes from iOS native, not JS
-  lastKeyTimestamp: number = 9999999999999999999;
+  lastKeyTimestamp: number | null = null;
 
   constructor(props) {
     super(props);
@@ -217,7 +217,6 @@ class WVTerm extends Component<Props, IState, any> {
         let key = data.keyEvent.key;
         let type = data.keyEvent.type;
         const repeat = data.keyEvent.repeat;
-        const now = new Date().getTime();
 
         // For simultaneous key press
         this.down[key] = keyCode;
@@ -225,7 +224,7 @@ class WVTerm extends Component<Props, IState, any> {
         // add hack only JS keydown
         if (key === "CapsLock") {
           this.isNativeCapslock = false;
-          this.lastKeyTimestamp = now;
+          this.lastKeyTimestamp = new Date().getTime(); // need first press
         }
 
         // HW keyboard send keyCode 229 when it's key repeat
@@ -274,23 +273,7 @@ class WVTerm extends Component<Props, IState, any> {
           key = '\\"';
         }
 
-        // handle capslock 1st keydown before simulating key
-        if (
-          this.state.isCapsLockRemapped &&
-          key !== "CapsLock" &&
-          this.isNativeCapslock === false &&
-          this.down["CapsLock"]
-        ) {
-          if (/^[bfnpwxy]$/.test(key)) {
-            //console.log(now - this.lastKeyTimestamp);
-            if (now - this.lastKeyTimestamp > 600) {
-              delete this.down["CapsLock"]; // keyup
-            }
-            this.lastKeyTimestamp = now;
-          }
-        }
-
-        this._handleDebug("DOWN: " + JSON.stringify(this.down));
+        console.log("DOWN: ", JSON.stringify(this.down));
 
         if (this.state.isCapsLockRemapped && this.down["CapsLock"]) {
           newMods[modifiers.capslockKey] = true;
@@ -309,12 +292,31 @@ class WVTerm extends Component<Props, IState, any> {
                 newMods
               );
               let eventStr = JSON.stringify(event);
+
+              // keyup handling
+              // handle capslock 1st keydown before simulating key
+              if (this.isNativeCapslock === false) {
+                if (/^[bfnHpwxy]$/.test(k.toLowerCase())) {
+                  const now = new Date().getTime();
+                  if (
+                    this.lastKeyTimestamp &&
+                    now - this.lastKeyTimestamp > 600
+                  ) {
+                    delete this.down["CapsLock"]; // keyup
+                    this.lastKeyTimestamp = null;
+                  }
+                  this.lastKeyTimestamp = now;
+                } else {
+                  delete this.down["CapsLock"]; // keyup
+                }
+              }
+
               this.webref.injectJavaScript(
                 `simulateKey(window.term.textarea, '${eventStr}')`
               );
-              if (/^![bfnpwxy]$/.test(k)) {
-                delete this.down["CapsLock"]; // keyup
-              }
+              // if (/^![bfnpwxy]$/.test(k)) {
+              //   delete this.down["CapsLock"]; // keyup
+              // }
             }
           });
           this.handleCapsLockFromJS("keydown", data.keyEvent);
