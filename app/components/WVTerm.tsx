@@ -281,16 +281,16 @@ class WVTerm extends Component<Props, IState, any> {
           this.isNativeCapslock === false &&
           this.down["CapsLock"]
         ) {
-          if (/^[aekdbfnpwxy]$/.test(key)) {
+          if (/^[bfnpwxy]$/.test(key)) {
             //console.log(now - this.lastKeyTimestamp);
-            if (now - this.lastKeyTimestamp > 500) {
+            if (now - this.lastKeyTimestamp > 600) {
               delete this.down["CapsLock"]; // keyup
             }
             this.lastKeyTimestamp = now;
-          } else {
-            delete this.down["CapsLock"]; // keyup
           }
         }
+
+        this._handleDebug("DOWN: " + JSON.stringify(this.down));
 
         if (this.state.isCapsLockRemapped && this.down["CapsLock"]) {
           newMods[modifiers.capslockKey] = true;
@@ -298,7 +298,7 @@ class WVTerm extends Component<Props, IState, any> {
           const pressedKeys = Object.keys(this.down);
           pressedKeys.forEach(k => {
             // ascii 32 to 126
-            if (/[ -~]/.test(k)) {
+            if (/^[ -~]$/.test(k)) {
               let event = Object.assign(
                 {
                   type: type,
@@ -312,6 +312,9 @@ class WVTerm extends Component<Props, IState, any> {
               this.webref.injectJavaScript(
                 `simulateKey(window.term.textarea, '${eventStr}')`
               );
+              if (/^![bfnpwxy]$/.test(k)) {
+                delete this.down["CapsLock"]; // keyup
+              }
             }
           });
           this.handleCapsLockFromJS("keydown", data.keyEvent);
