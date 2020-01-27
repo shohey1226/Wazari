@@ -241,9 +241,6 @@ class WVTerm extends Component<Props, IState, any> {
               this.webref.injectJavaScript(
                 `simulateKey(window.term.textarea, '${eventStr}')`
               );
-              // if (/^![bfnpwxy]$/.test(k)) {
-              //   delete this.down["CapsLock"]; // keyup
-              // }
             }
           });
           this.handleCapsLockFromJS("keydown", data.keyEvent);

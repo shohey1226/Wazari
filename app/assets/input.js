@@ -8,12 +8,17 @@ function init(initStr) {
 }
 
 function onKeyPress(e) {
-  // don't touch if IME is used
-  if (e.isComposing) {
+  let key = e.key;
+
+  // handle enter key to finish searching
+  if (key === "Enter") {
+    var el = document.activeElement;
+    window.ReactNativeWebView.postMessage(
+      JSON.stringify({ words: el.value, postFor: "searchWords" })
+    );
     return;
   }
 
-  let key = e.key;
   // Handle alt-code. RN only needs to know the code but not key, like ©,å,,,.
   if (e.altKey) {
     // the both which and keyCode are deprecated but it's handy.

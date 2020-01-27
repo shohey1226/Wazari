@@ -23,6 +23,7 @@ interface Props {
 class WVInput extends Component<Props, IState, any> {
   webref: WebView | null = null;
   down: any = {};
+  sub: any = null;
 
   constructor(props) {
     super(props);
@@ -32,7 +33,6 @@ class WVInput extends Component<Props, IState, any> {
       clearId: null,
       isCapsLockRemapped: props.modifiers["capslockKey"] !== "capslockKey"
     };
-    sub = null;
   }
 
   componentDidMount() {
@@ -89,8 +89,6 @@ class WVInput extends Component<Props, IState, any> {
     // handle Enter and Esc
     if (pressedKeys.indexOf("Escape") !== -1) {
       this.props.closeSearch();
-      return;
-    } else if (pressedKeys.indexOf("Enter") !== -1) {
       return;
     }
 
@@ -319,6 +317,9 @@ class WVInput extends Component<Props, IState, any> {
         break;
       case "actions":
         this.props.performAction(data.name);
+        break;
+      case "searchWords":
+        this.props.onEndEditing(data.words);
         break;
     }
   }

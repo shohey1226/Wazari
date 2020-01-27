@@ -191,9 +191,10 @@ class Search extends Component<Props, IState, any> {
     }
   }
 
-  onEndEditing() {
+  onEndEditing(words) {
     const { dispatch, searchEngine, sites } = this.props;
-    if (this.state.text.length === 0) {
+    console.log(words);
+    if (words.length === 0) {
       if (this.state.selectMode) {
         setTimeout(() => {
           dispatch(
@@ -202,19 +203,17 @@ class Search extends Component<Props, IState, any> {
         }, 500);
       }
     } else {
-      const trimmedText = this.state.text.replace(/^\s+|\s+$/g, "");
+      const trimmedText = words.replace(/^\s+|\s+$/g, "");
       if (trimmedText === "") {
         this.searchRef && this.searchRef._root.blur();
         return;
-      } else if (/^http/.test(this.state.text)) {
-        dispatch(addNewTab(this.state.text));
+      } else if (/^http/.test(words)) {
+        dispatch(addNewTab(words));
       } else {
         if (searchEngine === SearchEngine.Google) {
-          dispatch(
-            addNewTab(`https://www.google.com/search?q=${this.state.text}`)
-          );
+          dispatch(addNewTab(`https://www.google.com/search?q=${words}`));
         } else if (searchEngine === SearchEngine.DuckDuckGo) {
-          dispatch(addNewTab(`https://duckduckgo.com/?q=${this.state.text}`));
+          dispatch(addNewTab(`https://duckduckgo.com/?q=${words}`));
         }
       }
       setTimeout(() => {
@@ -661,6 +660,7 @@ class Search extends Component<Props, IState, any> {
             nextHistoryItem={this.nextHistoryItem.bind(this)}
             previousHistoryItem={this.previousHistoryItem.bind(this)}
             {...this.props}
+            onEndEditing={this.onEndEditing.bind(this)}
           />
 
           <Button
