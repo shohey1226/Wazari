@@ -8,7 +8,6 @@ const DAVKeyManagerEmitter = new NativeEventEmitter(DAVKeyManager);
 interface IState {
   downKeys: any;
   isCapsLockOn: boolean;
-  clearId: number | null;
   isCapsLockRemapped: boolean;
   debugLines: Array<string>;
 }
@@ -24,8 +23,6 @@ interface Props {
 class WVTerm extends Component<Props, IState, any> {
   webref: WebView | null = null;
   down: any = {};
-  capsLockPressed: boolean = false;
-  prevKey: string | null = null;
   isNativeCapslock: boolean = false; // comes from iOS native, not JS
   lastKeyTimestamp: number | null = null;
 
@@ -34,7 +31,6 @@ class WVTerm extends Component<Props, IState, any> {
     this.state = {
       downKeys: {},
       isCapsLockOn: props.isCapsLockOn,
-      clearId: null,
       isCapsLockRemapped: props.modifiers["capslockKey"] !== "capslockKey",
       debugLines: []
     };
@@ -58,7 +54,6 @@ class WVTerm extends Component<Props, IState, any> {
           break;
       }
     });
-    console.log("calling wvterm");
   }
   componentWillUnmount() {
     this.sub.remove();
@@ -75,30 +70,13 @@ class WVTerm extends Component<Props, IState, any> {
 
   // RN JS(Webview) -> RN -> Native(iOS) -> RN handling both keydown/up
   handleCapsLockFromNative(isDown) {
-    //this.capsLockPressed = true;
     this.down["CapsLock"] = true;
     this.isNativeCapslock = true;
-
-    // if (isDown) {
-    //   console.log("simulate capslock key");
-    //   this.webref.injectJavaScript(
-    //     `simulateKeyDown(window.term.textarea, 20, '{}')`
-    //   );
-    // } else {
-    //   this.down["CapsLock"] && delete this.down["CapsLock"];
-    // }
   }
 
   // UIKeycommand(Native) to RN and use down object to detect simaltanous keys.
   _handleControl() {
     this.down["Control"] = true;
-    //this.handleKeys();
-    // looks like Control up is called on physical device
-    // __DEV__ === true &&
-    //   setTimeout(() => {
-    //     console.log("simulate Control keyup with setTimout");
-    //     this.down["Control"] && delete this.down["Control"];
-    //   }, 300);
   }
 
   toUIKitFlags(e) {
@@ -137,8 +115,6 @@ class WVTerm extends Component<Props, IState, any> {
         mods = 0;
       } else {
         mods = this.toUIKitFlags(keyEvent);
-        //this.capsKeyup();
-        //this.handleKeys(keyEvent);
       }
       DAVKeyManager.setMods(mods);
       console.log(
@@ -157,20 +133,6 @@ class WVTerm extends Component<Props, IState, any> {
           this.setState({ isCapsLockOn: !this.state.isCapsLockOn });
         }
       });
-  }
-
-  capsKeyup() {
-    this.down["CapsLock"] && delete this.down["CapsLock"];
-    // console.log("RN: Simulate keyup from capsLockKeydown with setTimout");
-    // if (this.state.clearId) {
-    //   clearTimeout(this.state.clearId);
-    // }
-    // let clearId = setTimeout(() => {
-    //   this.down["CapsLock"] && delete this.down["CapsLock"];
-    //   this.setState({ clearId: null });
-    // }, 750);
-
-    // this.setState({ clearId: clearId });
   }
 
   handleAction(action) {
@@ -407,30 +369,6 @@ function simulateKey(element, eventStr) {
   var keyEvent = new KeyboardEvent(event.type, event); 
   element.dispatchEvent(keyEvent)
 }   
-
-// function simulateKeyPress(element, key, charCode, modifiers) {
-//   var modifierObjects = JSON.parse(modifiers);
-//   var event = {};  
-//   event.charCode = charCode  
-//   event.key = key;
-//   for (var i in modifierObjects) {
-//     event[i] = modifierObjects[i];
-//   }
-//   var keyEvent = new KeyboardEvent("keypress", event); 
-//   element.dispatchEvent(keyEvent)
-// }   
-
-// function simulateKeyDown(element, key, keyCode, modifiers) {
-//   var modifierObjects = JSON.parse(modifiers);
-//   var event = {};
-//   event.key = key;
-//   event.keyCode = keyCode;
-//   for (var i in modifierObjects) {
-//     event[i] = modifierObjects[i];
-//   }  
-//   var keyEvent = new KeyboardEvent("keydown", event); 
-//   element.dispatchEvent(keyEvent)
-// }   
 
 // Disable tab key
 document.addEventListener('keydown', (e)=>{
