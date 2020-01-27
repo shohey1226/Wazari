@@ -296,7 +296,7 @@ class WVTerm extends Component<Props, IState, any> {
               // keyup handling
               // handle capslock 1st keydown before simulating key
               if (this.isNativeCapslock === false) {
-                if (/^[bfnHpwxy]$/.test(k.toLowerCase())) {
+                if (/^[dhjklobfnpwxy]$/.test(k.toLowerCase())) {
                   const now = new Date().getTime();
                   if (
                     this.lastKeyTimestamp &&
