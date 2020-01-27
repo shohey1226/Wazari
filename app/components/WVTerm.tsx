@@ -44,7 +44,9 @@ class WVTerm extends Component<Props, IState, any> {
       switch (data.name) {
         case "mods-down":
           if (data.flags === 262144) {
-            //this._handleControl();
+            // UIKeycommand(Native) to RN and use down object to detect simaltanous keys.
+            // handle control key. Looks it's not required after UIKeycommand is set..
+            //this.down["Control"] = true;
           } else {
             this.handleCapsLockFromNative(true);
           }
@@ -72,11 +74,6 @@ class WVTerm extends Component<Props, IState, any> {
   handleCapsLockFromNative(isDown) {
     this.down["CapsLock"] = true;
     this.isNativeCapslock = true;
-  }
-
-  // UIKeycommand(Native) to RN and use down object to detect simaltanous keys.
-  _handleControl() {
-    this.down["Control"] = true;
   }
 
   toUIKitFlags(e) {
@@ -133,38 +130,6 @@ class WVTerm extends Component<Props, IState, any> {
           this.setState({ isCapsLockOn: !this.state.isCapsLockOn });
         }
       });
-  }
-
-  handleAction(action) {
-    switch (action) {
-      case "home":
-        this.webref.injectJavaScript(`cursorToBeginning()`);
-        break;
-      case "end":
-        this.webref.injectJavaScript(`cursorToEnd()`);
-        break;
-      case "deletePreviousChar":
-        this.webref.injectJavaScript(`deletePreviousChar()`);
-        break;
-      case "deleteNextChar":
-        this.webref.injectJavaScript(`deleteNextChar()`);
-        break;
-      case "moveBackOneChar":
-        this.webref.injectJavaScript(`moveBackOneChar()`);
-        break;
-      case "moveForwardOneChar":
-        this.webref.injectJavaScript(`moveForwardOneChar()`);
-        break;
-      case "moveDownOneLine":
-        this.props.nextHistoryItem();
-        break;
-      case "deleteLine":
-        this.webref.injectJavaScript(`deleteLine()`);
-        break;
-      case "moveUpOneLine":
-        this.props.previousHistoryItem();
-        break;
-    }
   }
 
   onMessage(event) {
