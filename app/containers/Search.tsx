@@ -665,6 +665,7 @@ class Search extends Component<Props, IState, any> {
                 this.setState({ text: words });
               }
             }}
+            text={this.state.text}
           />
 
           <Button

@@ -57,6 +57,14 @@ class WVInput extends Component<Props, IState, any> {
       }
     });
   }
+
+  componentDidUpdate(prevProp, prevState) {
+    const { text } = this.props;
+    if (prevProp.text !== text) {
+      this.webref.injectJavaScript(`updateText("${text}")`);
+    }
+  }
+
   componentWillUnmount() {
     this.sub.remove();
     this.webref &&
