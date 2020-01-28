@@ -46,6 +46,9 @@ function onKeyPress(e) {
       e.stopPropagation();
     }
   }
+
+  var el = document.activeElement;
+  sendTextValue(el.value);
 }
 
 function updateInputValue(key) {
@@ -61,9 +64,12 @@ function updateInputValue(key) {
   } else if (el.setSelectionRange) {
     el.setSelectionRange(startPosition + 1, startPosition + 1);
   }
+  sendTextValue(el.value);
+}
 
+function sendTextValue(value) {
   window.ReactNativeWebView.postMessage(
-    JSON.stringify({ words: el.value, postFor: "inputValue" })
+    JSON.stringify({ words: value, postFor: "inputValue" })
   );
 }
 

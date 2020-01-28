@@ -625,6 +625,15 @@ class Search extends Component<Props, IState, any> {
     console.log(name);
   }
 
+  updateWords(words) {
+    console.log(words);
+    if (words.length === 0) {
+      this.setState({ text: "", selectMode: false });
+    } else {
+      this.setState({ text: words });
+    }
+  }
+
   render() {
     const {
       searchEngine,
@@ -658,13 +667,7 @@ class Search extends Component<Props, IState, any> {
             previousHistoryItem={this.previousHistoryItem.bind(this)}
             {...this.props}
             onEndEditing={this.onEndEditing.bind(this)}
-            updateWords={words => {
-              if (words.length === 0) {
-                this.setState({ text: "", selectMode: false });
-              } else {
-                this.setState({ text: words });
-              }
-            }}
+            updateWords={this.updateWords.bind(this)}
             text={this.state.text}
           />
 
