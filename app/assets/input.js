@@ -10,15 +10,6 @@ function init(initStr) {
 function onKeyPress(e) {
   let key = e.key;
 
-  // handle enter key to finish searching
-  if (key === "Enter") {
-    var el = document.activeElement;
-    window.ReactNativeWebView.postMessage(
-      JSON.stringify({ words: el.value, postFor: "searchWords" })
-    );
-    return;
-  }
-
   // for some reason, it comes with charcode 710. It looks ^ but it's not
   if (key.charCodeAt(0) === 710 && key.length === 2) {
     key = key.substr(1);
@@ -70,6 +61,10 @@ function updateInputValue(key) {
   } else if (el.setSelectionRange) {
     el.setSelectionRange(startPosition + 1, startPosition + 1);
   }
+
+  window.ReactNativeWebView.postMessage(
+    JSON.stringify({ words: el.value, postFor: "inputValue" })
+  );
 }
 
 function capslockKeyUp() {

@@ -175,45 +175,44 @@ class Search extends Component<Props, IState, any> {
         this.setState({ text: nextText });
 
         // cursor to end
-        setTimeout(() => {
-          this.searchRef.setNativeProps({
-            selection: {
-              start: nextText.length,
-              end: nextText.length
-            }
-          });
-          this.setState({
-            selectionStart: nextText.length,
-            selectionEnd: nextText.length
-          });
-        }, 100);
+        // setTimeout(() => {
+        //   this.searchRef.setNativeProps({
+        //     selection: {
+        //       start: nextText.length,
+        //       end: nextText.length
+        //     }
+        //   });
+        //   this.setState({
+        //     selectionStart: nextText.length,
+        //     selectionEnd: nextText.length
+        //   });
+        // }, 100);
       }
     }
   }
 
-  onEndEditing(words) {
+  onEndEditing() {
     const { dispatch, searchEngine, sites } = this.props;
-    console.log(words);
-    if (words.length === 0) {
-      if (this.state.selectMode) {
-        setTimeout(() => {
-          dispatch(
-            selectTab(this.currentTabIndice[this.state.selectedItemIndex])
-          );
-        }, 500);
-      }
+    if (this.state.selectMode) {
+      setTimeout(() => {
+        dispatch(
+          selectTab(this.currentTabIndice[this.state.selectedItemIndex])
+        );
+      }, 500);
     } else {
-      const trimmedText = words.replace(/^\s+|\s+$/g, "");
+      const trimmedText = this.state.text.replace(/^\s+|\s+$/g, "");
       if (trimmedText === "") {
         this.searchRef && this.searchRef._root.blur();
         return;
-      } else if (/^http/.test(words)) {
-        dispatch(addNewTab(words));
+      } else if (/^http/.test(this.state.words)) {
+        dispatch(addNewTab(this.state.words));
       } else {
         if (searchEngine === SearchEngine.Google) {
-          dispatch(addNewTab(`https://www.google.com/search?q=${words}`));
+          dispatch(
+            addNewTab(`https://www.google.com/search?q=${this.state.text}`)
+          );
         } else if (searchEngine === SearchEngine.DuckDuckGo) {
-          dispatch(addNewTab(`https://duckduckgo.com/?q=${words}`));
+          dispatch(addNewTab(`https://duckduckgo.com/?q=${this.state.text}`));
         }
       }
       setTimeout(() => {
@@ -652,8 +651,6 @@ class Search extends Component<Props, IState, any> {
             keyup={v => this.setState({ text: v })}
             updateCapsLockState={s => this.setState({ capsLockOn: s })}
             isCapsLockOn={this.state.capsLockOn}
-            updateAction={a => this.setState({ action: a })}
-            debug={a => this.setState({ debug: a })}
             modifiers={modifiers}
             browserKeymap={browserKeymap}
             performAction={this.performAction.bind(this)}
@@ -661,6 +658,13 @@ class Search extends Component<Props, IState, any> {
             previousHistoryItem={this.previousHistoryItem.bind(this)}
             {...this.props}
             onEndEditing={this.onEndEditing.bind(this)}
+            updateWords={words => {
+              if (words.length === 0) {
+                this.setState({ text: "", selectMode: false });
+              } else {
+                this.setState({ text: words });
+              }
+            }}
           />
 
           <Button
@@ -683,8 +687,6 @@ class Search extends Component<Props, IState, any> {
           </Button>
         </Item>
         <Text>capslock: {this.state.capsLockOn === true ? "ON" : "OFF"}</Text>
-        <Text>action: {this.state.action}</Text>
-        <Text>debug: {this.state.debug}</Text>
         <List>{this.renderCandidates()}</List>
       </Content>
     );

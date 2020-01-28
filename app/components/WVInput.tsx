@@ -91,8 +91,12 @@ class WVInput extends Component<Props, IState, any> {
     const pressedKeys = Object.keys(this.down);
     console.log(`RN: pressedKeys: ${pressedKeys.join(",")}`);
 
+    if (pressedKeys.indexOf("Enter") !== -1) {
+      this.props.onEndEditing();
+      return;
+    }
     // handle Enter and Esc
-    if (pressedKeys.indexOf("Escape") !== -1) {
+    else if (pressedKeys.indexOf("Escape") !== -1) {
       this.props.closeSearch();
       return;
     }
@@ -141,7 +145,7 @@ class WVInput extends Component<Props, IState, any> {
     // m[modifiers.ctrlKey] = pressedKeys.indexOf("Control") !== -1;
     // m[modifiers.metaKey] = pressedKeys.indexOf("Meta") !== -1;
 
-    this.props.updateAction(JSON.stringify(this.down));
+    this._handleDebug(JSON.stringify(this.down));
 
     let hasAction = false;
     pressedKeys
@@ -154,10 +158,9 @@ class WVInput extends Component<Props, IState, any> {
             isEqual(keymap.modifiers, m) &&
             keymap.key === key.toLowerCase()
           ) {
-            this.props.updateAction(
+            this._handleDebug(
               `action: ${action} - ${JSON.stringify(this.down)}`
             );
-
             this.handleAction(action);
             hasAction = true;
 
@@ -198,7 +201,6 @@ class WVInput extends Component<Props, IState, any> {
             ? keyEvent.key.toUpperCase()
             : keyEvent.key.toLowerCase();
 
-        console.log("inputKey", inputKey);
         this.webref.injectJavaScript(`updateInputValue("${inputKey}")`);
       }
     }
@@ -338,18 +340,11 @@ class WVInput extends Component<Props, IState, any> {
         this.down[data.keyEvent.key] && delete this.down[data.keyEvent.key];
         console.log("keyup", this.down);
         break;
-
-      case "pressedKeys":
-        this.props.updateAction(JSON.stringify(data.keys));
-        break;
       case "capslock":
         DAVKeyManager.setCapslock(data.mods);
         break;
-      case "actions":
-        this.props.performAction(data.name);
-        break;
-      case "searchWords":
-        this.props.onEndEditing(data.words);
+      case "inputValue":
+        this.props.updateWords(data.words);
         break;
     }
   }
@@ -373,7 +368,7 @@ class WVInput extends Component<Props, IState, any> {
 
   renderDebugInfo() {
     return (
-      <View style={{ width: "50%", height: 100, backgroundColor: "#333" }}>
+      <View style={{ width: "60%", height: 200, backgroundColor: "#333" }}>
         {this.state.debugLines.slice(0, 15).map((l, i) => (
           <Text
             key={`debug-line-${i}`}
