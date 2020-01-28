@@ -19,6 +19,11 @@ function onKeyPress(e) {
     return;
   }
 
+  // for some reason, it comes with charcode 710. It looks ^ but it's not
+  if (key.charCodeAt(0) === 710 && key.length === 2) {
+    key = key.substr(1);
+  }
+
   // Handle alt-code. RN only needs to know the code but not key, like ©,å,,,.
   if (e.altKey) {
     // the both which and keyCode are deprecated but it's handy.
@@ -215,12 +220,13 @@ function deleteLine() {
 ///////////////////////////////////////////////////////////////////////////////
 
 var inputField = document.getElementById("search");
+// call the same onKeyPress but use e.type to dispatch keyup or keydown
+inputField.addEventListener("keydown", onKeyPress, false);
+inputField.addEventListener("keyup", onKeyPress, false);
 inputField.setAttribute("autocorrection", false);
 inputField.setAttribute("spellcheck", "false");
 inputField.setAttribute("autocomplete", "off");
 inputField.setAttribute("autocorrect", "off");
 inputField.setAttribute("autocapitalize", "none");
-// call the same onKeyPress but use e.type to dispatch keyup or keydown
-inputField.addEventListener("keydown", onKeyPress, false);
-inputField.addEventListener("keyup", onKeyPress, false);
+
 true;

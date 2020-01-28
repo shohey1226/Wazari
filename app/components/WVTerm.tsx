@@ -304,7 +304,7 @@ class WVTerm extends Component<Props, IState, any> {
     const { url } = this.props;
     return (
       <View style={{ flex: 1 }}>
-        {this.renderDebugInfo()}
+        {/* this.renderDebugInfo() */}
         <WebView
           ref={r => (this.webref = r as any)}
           injectedJavaScript={injectingJs}

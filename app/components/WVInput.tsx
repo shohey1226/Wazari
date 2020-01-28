@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { NativeModules, NativeEventEmitter } from "react-native";
+import { NativeModules, NativeEventEmitter, View, Text } from "react-native";
 import { WebView } from "react-native-webview";
 import RNFS from "react-native-fs";
 import { isEqual } from "lodash";
@@ -11,6 +11,7 @@ interface IState {
   isCapsLockOn: boolean;
   clearId: number | null;
   isCapsLockRemapped: boolean;
+  debugLines: Array<string>;
 }
 
 interface Props {
@@ -24,10 +25,13 @@ class WVInput extends Component<Props, IState, any> {
   webref: WebView | null = null;
   down: any = {};
   sub: any = null;
+  isNativeCapslock: boolean = false;
+  lastKeyTimestamp: number | null = null;
 
   constructor(props) {
     super(props);
     this.state = {
+      debugLines: [],
       downKeys: {},
       isCapsLockOn: props.isCapsLockOn,
       clearId: null,
@@ -63,6 +67,7 @@ class WVInput extends Component<Props, IState, any> {
   handleCapsLockFromNative(isDown) {
     if (isDown) {
       this.down["CapsLock"] = true;
+      this.isNativeCapslock = true;
       this.handleKeys({ key: "CapsLock", type: "keydown", isFromNative: true });
     } else {
       this.down["CapsLock"] && delete this.down["CapsLock"];
@@ -152,14 +157,35 @@ class WVInput extends Component<Props, IState, any> {
             this.props.updateAction(
               `action: ${action} - ${JSON.stringify(this.down)}`
             );
+
             this.handleAction(action);
             hasAction = true;
 
+            // handle keyup
+            if (
+              this.state.isCapsLockRemapped &&
+              this.down["CapsLock"] &&
+              this.isNativeCapslock === false
+            ) {
+              if (/^[dhjklobfnpwxy]$/.test(key.toLowerCase())) {
+                const now = new Date().getTime();
+                if (
+                  this.lastKeyTimestamp &&
+                  now - this.lastKeyTimestamp > 600
+                ) {
+                  delete this.down["CapsLock"]; // keyup
+                }
+                this.lastKeyTimestamp = now;
+              } else {
+                delete this.down["CapsLock"]; // keyup
+              }
+            }
+
             // simulate key repeat
             // extends capslock keyup - clear and set again
-            if (this.state.clearId !== null && keyEvent.isFromNative !== true) {
-              this.capsKeyup();
-            }
+            // if (this.state.clearId !== null && keyEvent.isFromNative !== true) {
+            //   this.capsKeyup();
+            // }
           }
         });
       });
@@ -172,6 +198,7 @@ class WVInput extends Component<Props, IState, any> {
             ? keyEvent.key.toUpperCase()
             : keyEvent.key.toLowerCase();
 
+        console.log("inputKey", inputKey);
         this.webref.injectJavaScript(`updateInputValue("${inputKey}")`);
       }
     }
@@ -213,7 +240,7 @@ class WVInput extends Component<Props, IState, any> {
         mods = 0;
       } else {
         mods = this.toUIKitFlags(keyEvent);
-        this.capsKeyup();
+        //this.capsKeyup();
         this.handleKeys(keyEvent);
       }
       DAVKeyManager.setMods(mods);
@@ -283,13 +310,16 @@ class WVInput extends Component<Props, IState, any> {
   onMessage(event) {
     const data = JSON.parse(event.nativeEvent.data);
     console.log(data);
-    this.props.debug(JSON.stringify(data));
+    this._handleDebug(JSON.stringify(data));
     let _down;
     switch (data.postFor) {
       case "keydown":
         this.down[data.keyEvent.key] = true;
+
         console.log("keydown", this.down);
         if (data.keyEvent.key === "CapsLock") {
+          this.isNativeCapslock = false;
+          this.lastKeyTimestamp = new Date().getTime(); // need first press
           this.handleCapsLockFromJS("keydown", data.keyEvent);
         } else {
           this.handleKeys(data.keyEvent);
@@ -334,15 +364,40 @@ class WVInput extends Component<Props, IState, any> {
     this.webref.injectJavaScript(`init('${initStr}')`);
   }
 
+  _handleDebug(line: string) {
+    let lines = this.state.debugLines;
+    const now = new Date();
+    lines.unshift(`${now.getTime()}: ${line}`);
+    this.setState({ debugLines: lines });
+  }
+
+  renderDebugInfo() {
+    return (
+      <View style={{ width: "50%", height: 100, backgroundColor: "#333" }}>
+        {this.state.debugLines.slice(0, 15).map((l, i) => (
+          <Text
+            key={`debug-line-${i}`}
+            style={{ fontSize: 10, color: "white" }}
+          >
+            {l}
+          </Text>
+        ))}
+      </View>
+    );
+  }
+
   render() {
     return (
-      <WebView
-        ref={r => (this.webref = r as any)}
-        originWhitelist={["*"]}
-        source={{ uri: `file://${RNFS.MainBundlePath}/search.html` }}
-        onLoadEnd={this.onLoadEnd.bind(this)}
-        onMessage={this.onMessage.bind(this)}
-      />
+      <View style={{ flex: 1, flexDirection: "row" }}>
+        <WebView
+          ref={r => (this.webref = r as any)}
+          originWhitelist={["*"]}
+          source={{ uri: `file://${RNFS.MainBundlePath}/search.html` }}
+          onLoadEnd={this.onLoadEnd.bind(this)}
+          onMessage={this.onMessage.bind(this)}
+        />
+        {this.renderDebugInfo()}
+      </View>
     );
   }
 }
