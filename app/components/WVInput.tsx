@@ -7,7 +7,6 @@ const { DAVKeyManager } = NativeModules;
 const DAVKeyManagerEmitter = new NativeEventEmitter(DAVKeyManager);
 
 interface IState {
-  downKeys: any;
   isCapsLockOn: boolean;
   isCapsLockRemapped: boolean;
   debugLines: Array<string>;
@@ -18,6 +17,10 @@ interface Props {
   modifiers: any;
   browserKeymap: any;
   updateCapsLockState: (any) => void;
+  closeSearch: () => void;
+  onEndEditing: () => void;
+  updateWords: (string) => void;
+  text: string;
 }
 
 // Use webview input
@@ -32,7 +35,6 @@ class WVInput extends Component<Props, IState, any> {
     super(props);
     this.state = {
       debugLines: [],
-      downKeys: {},
       words: "",
       isCapsLockOn: props.isCapsLockOn,
       isCapsLockRemapped: props.modifiers["capslockKey"] !== "capslockKey"
@@ -40,7 +42,6 @@ class WVInput extends Component<Props, IState, any> {
   }
 
   componentDidMount() {
-    const { modifiers, browserKeymap } = this.props;
     this.sub = DAVKeyManagerEmitter.addListener("modKeyPress", data => {
       console.log("RN: ModsFromNative", data);
       switch (data.name) {
@@ -59,10 +60,10 @@ class WVInput extends Component<Props, IState, any> {
   }
 
   componentDidUpdate(prevProp, prevState) {
-    const { text, selectMode } = this.props;
+    const { text } = this.props;
     const { words } = this.state;
     if (prevProp.text !== text) {
-      this.webref.injectJavaScript(`updateText("${text}")`);
+      this.webref && this.webref.injectJavaScript(`updateText("${text}")`);
     }
 
     if (prevState.words !== words) {
@@ -81,7 +82,7 @@ class WVInput extends Component<Props, IState, any> {
     if (isDown) {
       this.down["CapsLock"] = true;
       this.isNativeCapslock = true;
-      this.handleKeys({ key: "CapsLock", type: "keydown", isFromNative: true });
+      this.handleKeys({ key: "CapsLock", type: "keydown" });
     } else {
       this.down["CapsLock"] && delete this.down["CapsLock"];
     }
@@ -220,9 +221,7 @@ class WVInput extends Component<Props, IState, any> {
 
   // handle capslock comes from JS
   handleCapsLockFromJS(type, keyEvent) {
-    const { modifiers } = this.props;
-    // if capslock is remapped
-    if (modifiers["capslockKey"] !== "capslockKey") {
+    if (this.state.isCapsLockRemapped) {
       let mods = 0;
       if (type === "keyup") {
         mods = 0;
@@ -231,9 +230,6 @@ class WVInput extends Component<Props, IState, any> {
         this.handleKeys(keyEvent);
       }
       DAVKeyManager.setMods(mods);
-      console.log(
-        `RN: capslock is remapped and setMods - type: ${type} mods: ${mods}`
-      );
     }
   }
 
@@ -285,7 +281,6 @@ class WVInput extends Component<Props, IState, any> {
     const data = JSON.parse(event.nativeEvent.data);
     console.log(data);
     this._handleDebug(JSON.stringify(data));
-    let _down;
     switch (data.postFor) {
       case "keydown":
         this.down[data.keyEvent.key] = true;
@@ -310,7 +305,6 @@ class WVInput extends Component<Props, IState, any> {
           this.down = {};
         }
         this.down[data.keyEvent.key] && delete this.down[data.keyEvent.key];
-        console.log("keyup", this.down);
         break;
       case "capslock":
         DAVKeyManager.setCapslock(data.mods);
