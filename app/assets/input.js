@@ -81,7 +81,9 @@ function capslockKeyUp() {
 
 function updateText(text) {
   var el = document.activeElement;
-  el.value = text;
+  if (text !== el.value) {
+    el.value = text;
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -98,10 +98,9 @@ class Search extends Component<Props, IState, any> {
 
   componentDidMount() {
     const { activeSite, activeUrl, history } = this.props;
-    this.subscriptions.push(
-      //DAVKeyManagerEmitter.addListener("RNKeyEvent", this.typing),
-      DAVKeyManagerEmitter.addListener("RNBrowserKeyEvent", this.handleActions)
-    );
+    this.subscriptions.push;
+    //DAVKeyManagerEmitter.addListener("RNKeyEvent", this.typing),
+    //DAVKeyManagerEmitter.addListener("RNBrowserKeyEvent", this.handleActions)();
     this.props.searchIsFocused === true &&
       this.searchRef &&
       this.searchRef._root.focus();
@@ -416,51 +415,51 @@ class Search extends Component<Props, IState, any> {
     });
   }
 
-  typing = data => {
-    const { dispatch, keyMode } = this.props;
-    if (this.props.searchIsFocused && keyMode === KeyMode.Search) {
-      // handle shift key to make it Uppercase
-      if (data.modifiers.shiftKey) {
-        if (data.key.match(/[a-z]/)) {
-          data.key = data.key.toUpperCase();
-        }
-      }
+  // typing = data => {
+  //   const { dispatch, keyMode } = this.props;
+  //   if (this.props.searchIsFocused && keyMode === KeyMode.Search) {
+  //     // handle shift key to make it Uppercase
+  //     if (data.modifiers.shiftKey) {
+  //       if (data.key.match(/[a-z]/)) {
+  //         data.key = data.key.toUpperCase();
+  //       }
+  //     }
 
-      let text = this.state.text;
-      switch (data.key) {
-        case "Backspace":
-          this.handleActions({ action: "deletePreviousChar" });
-          return;
-        case "Up":
-          this.previousHistoryItem();
-          return;
-        case "Down":
-          this.nextHistoryItem();
-          return;
-        case "Left":
-          this.handleActions({ action: "moveBackOneChar" });
-          return;
-        case "Right":
-          this.handleActions({ action: "moveForwardOneChar" });
-          return;
-        case "Esc":
-          if (this.state.text !== "") {
-            dispatch(updateWordsForPageFind(this.state.text));
-          }
-          this.closingSearch();
-          return;
-      }
-      let newText =
-        this.state.text.slice(0, this.state.selectionStart) +
-        data.key +
-        this.state.text.slice(this.state.selectionStart);
-      this.setState({
-        text: newText,
-        selectionStart: this.state.selectionStart + 1,
-        selectionEnd: this.state.selectionStart + 1
-      });
-    }
-  };
+  //     let text = this.state.text;
+  //     switch (data.key) {
+  //       case "Backspace":
+  //         this.handleActions({ action: "deletePreviousChar" });
+  //         return;
+  //       case "Up":
+  //         this.previousHistoryItem();
+  //         return;
+  //       case "Down":
+  //         this.nextHistoryItem();
+  //         return;
+  //       case "Left":
+  //         this.handleActions({ action: "moveBackOneChar" });
+  //         return;
+  //       case "Right":
+  //         this.handleActions({ action: "moveForwardOneChar" });
+  //         return;
+  //       case "Esc":
+  //         if (this.state.text !== "") {
+  //           dispatch(updateWordsForPageFind(this.state.text));
+  //         }
+  //         this.closingSearch();
+  //         return;
+  //     }
+  //     let newText =
+  //       this.state.text.slice(0, this.state.selectionStart) +
+  //       data.key +
+  //       this.state.text.slice(this.state.selectionStart);
+  //     this.setState({
+  //       text: newText,
+  //       selectionStart: this.state.selectionStart + 1,
+  //       selectionEnd: this.state.selectionStart + 1
+  //     });
+  //   }
+  // };
 
   onPressHistoryItem(url: string) {
     this.setState({ text: url });
