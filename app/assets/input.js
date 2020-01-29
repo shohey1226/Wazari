@@ -47,8 +47,10 @@ function onKeyPress(e) {
     }
   }
 
-  var el = document.activeElement;
-  sendTextValue(el.value);
+  if (e.type === "keyup" && /^[ -~]|Enter$/.test(key)) {
+    var el = document.activeElement;
+    sendTextValue(el.value);
+  }
 }
 
 function updateInputValue(key) {
@@ -64,7 +66,7 @@ function updateInputValue(key) {
   } else if (el.setSelectionRange) {
     el.setSelectionRange(startPosition + 1, startPosition + 1);
   }
-  sendTextValue(el.value);
+  //sendTextValue(el.value);
 }
 
 function sendTextValue(value) {

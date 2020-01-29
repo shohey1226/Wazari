@@ -12,6 +12,7 @@ interface IState {
   clearId: number | null;
   isCapsLockRemapped: boolean;
   debugLines: Array<string>;
+  words: string;
 }
 
 interface Props {
@@ -33,6 +34,7 @@ class WVInput extends Component<Props, IState, any> {
     this.state = {
       debugLines: [],
       downKeys: {},
+      words: "",
       isCapsLockOn: props.isCapsLockOn,
       clearId: null,
       isCapsLockRemapped: props.modifiers["capslockKey"] !== "capslockKey"
@@ -59,9 +61,14 @@ class WVInput extends Component<Props, IState, any> {
   }
 
   componentDidUpdate(prevProp, prevState) {
-    const { text } = this.props;
+    const { text, selectMode } = this.props;
+    const { words } = this.state;
     if (prevProp.text !== text) {
       this.webref.injectJavaScript(`updateText("${text}")`);
+    }
+
+    if (prevState.words !== words) {
+      this.props.updateWords(words);
     }
   }
 
@@ -352,7 +359,8 @@ class WVInput extends Component<Props, IState, any> {
         DAVKeyManager.setCapslock(data.mods);
         break;
       case "inputValue":
-        this.props.updateWords(data.words);
+        this.setState({ words: data.words });
+
         break;
     }
   }
@@ -391,16 +399,13 @@ class WVInput extends Component<Props, IState, any> {
 
   render() {
     return (
-      <View style={{ flex: 1, flexDirection: "row" }}>
-        <WebView
-          ref={r => (this.webref = r as any)}
-          originWhitelist={["*"]}
-          source={{ uri: `file://${RNFS.MainBundlePath}/search.html` }}
-          onLoadEnd={this.onLoadEnd.bind(this)}
-          onMessage={this.onMessage.bind(this)}
-        />
-        {this.renderDebugInfo()}
-      </View>
+      <WebView
+        ref={r => (this.webref = r as any)}
+        originWhitelist={["*"]}
+        source={{ uri: `file://${RNFS.MainBundlePath}/search.html` }}
+        onLoadEnd={this.onLoadEnd.bind(this)}
+        onMessage={this.onMessage.bind(this)}
+      />
     );
   }
 }

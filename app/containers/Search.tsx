@@ -193,19 +193,21 @@ class Search extends Component<Props, IState, any> {
 
   onEndEditing() {
     const { dispatch, searchEngine, sites } = this.props;
-    if (this.state.selectMode) {
-      setTimeout(() => {
-        dispatch(
-          selectTab(this.currentTabIndice[this.state.selectedItemIndex])
-        );
-      }, 500);
+    if (this.state.text === "") {
+      if (this.state.selectMode) {
+        setTimeout(() => {
+          dispatch(
+            selectTab(this.currentTabIndice[this.state.selectedItemIndex])
+          );
+        }, 500);
+      }
     } else {
       const trimmedText = this.state.text.replace(/^\s+|\s+$/g, "");
       if (trimmedText === "") {
         this.searchRef && this.searchRef._root.blur();
         return;
-      } else if (/^http/.test(this.state.words)) {
-        dispatch(addNewTab(this.state.words));
+      } else if (/^http/.test(this.state.text)) {
+        dispatch(addNewTab(this.state.text));
       } else {
         if (searchEngine === SearchEngine.Google) {
           dispatch(
@@ -690,7 +692,6 @@ class Search extends Component<Props, IState, any> {
             <Icon name="ios-close" style={{ paddingLeft: 0, fontSize: 30 }} />
           </Button>
         </Item>
-        <Text>capslock: {this.state.capsLockOn === true ? "ON" : "OFF"}</Text>
         <List>{this.renderCandidates()}</List>
       </Content>
     );
