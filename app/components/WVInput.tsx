@@ -47,7 +47,7 @@ class WVInput extends Component<Props, IState, any> {
       switch (data.name) {
         case "mods-down":
           if (data.flags === 262144) {
-            this._handleControl();
+            //this._handleControl();
           } else {
             this.handleCapsLockFromNative(true);
           }
@@ -82,7 +82,16 @@ class WVInput extends Component<Props, IState, any> {
     if (isDown) {
       this.down["CapsLock"] = true;
       this.isNativeCapslock = true;
-      this.handleKeys({ key: "CapsLock", type: "keydown" });
+      this.handleKeys({
+        key: "CapsLock",
+        type: "keydown",
+        modifiers: {
+          shiftKey: false,
+          metaKey: false,
+          altKey: false,
+          ctrlKey: false
+        }
+      });
     } else {
       this.down["CapsLock"] && delete this.down["CapsLock"];
     }
@@ -96,59 +105,50 @@ class WVInput extends Component<Props, IState, any> {
   handleKeys(keyEvent) {
     const { modifiers, browserKeymap } = this.props;
     const pressedKeys = Object.keys(this.down);
-    console.log(`RN: pressedKeys: ${pressedKeys.join(",")}`);
 
-    if (pressedKeys.indexOf("Enter") !== -1) {
+    if (this.down["Enter"]) {
       this.props.onEndEditing();
       return;
     }
     // handle Enter and Esc
-    else if (pressedKeys.indexOf("Escape") !== -1) {
+    else if (this.down["Escape"]) {
       this.props.closeSearch();
       return;
     }
 
-    // modifiers from input
-    let m = {
-      capslockKey: pressedKeys.indexOf("CapsLock") !== -1,
-      shiftKey: pressedKeys.indexOf("Shift") !== -1,
-      altKey: pressedKeys.indexOf("Alt") !== -1,
-      ctrlKey: pressedKeys.indexOf("Control") !== -1,
-      metaKey: pressedKeys.indexOf("Meta") !== -1
-    };
-
-    console.log("Modifiers: before applying remap", m);
-    let _m = {}; // m should not be modified during transformation
-    Object.keys(m).forEach(inputKey => {
-      //console.log("inputKey:", inputKey, "input mods:", m[inputKey]);
-      let targetMods = Object.keys(modifiers).filter(
-        k => modifiers[k] === inputKey
-      );
-      //console.log("targetMods", targetMods);
-      if (targetMods.length === 0) {
-        _m[inputKey] = false;
-      } else {
-        let result = false;
-        targetMods.forEach(k => {
-          result = result || m[k];
-        });
-        _m[inputKey] = result;
+    // customized modifiers
+    const origMods = keyEvent.modifiers;
+    let newMods = Object.assign({}, origMods);
+    Object.keys(origMods).forEach(k => {
+      if (modifiers[k]) {
+        newMods[k] = newMods[k] || origMods[modifiers[k]];
       }
     });
-    m = _m;
-    console.log("Modifiers: after applyed remap", m);
+    // capslock handling
+    newMods["capslockKey"] = false;
+    if (this.state.isCapsLockRemapped) {
+      // if rempapped, capslockKey is never becoming "on"
+      newMods[modifiers.capslockKey] = "CapsLock" in this.down;
+    } else {
+      newMods["capslockKey"] = "CapsLock" in this.down;
+    }
 
-    this._handleDebug(JSON.stringify(this.down));
-
+    console.log("down", this.down);
     let hasAction = false;
     pressedKeys
       .filter(k => k.length === 1)
       .forEach(key => {
         Object.keys(browserKeymap).forEach(action => {
           const keymap = browserKeymap[action];
+          console.log(
+            "origMods and newMods and keymap",
+            origMods,
+            newMods,
+            keymap.modifiers
+          );
           // always comparing to lowercase of the input key
           if (
-            isEqual(keymap.modifiers, m) &&
+            isEqual(keymap.modifiers, newMods) &&
             keymap.key === key.toLowerCase()
           ) {
             this._handleDebug(

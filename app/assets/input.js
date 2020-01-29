@@ -27,11 +27,12 @@ function onKeyPress(e) {
         keyEvent: {
           key: key,
           type: e.type,
-          shiftKey: e.shiftKey,
-          metaKey: e.metaKey,
-          altKey: e.altKey,
-          ctrlKey: e.ctrlKey,
-          repeat: e.repeat
+          modifiers: {
+            shiftKey: e.shiftKey,
+            metaKey: e.metaKey,
+            altKey: e.altKey,
+            ctrlKey: e.ctrlKey
+          }
         },
         postFor: e.type
       })
