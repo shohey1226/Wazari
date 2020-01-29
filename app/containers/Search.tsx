@@ -99,7 +99,6 @@ class Search extends Component<Props, IState, any> {
   componentDidMount() {
     const { activeSite, activeUrl, history } = this.props;
     this.subscriptions.push;
-    //DAVKeyManagerEmitter.addListener("RNKeyEvent", this.typing),
     //DAVKeyManagerEmitter.addListener("RNBrowserKeyEvent", this.handleActions)();
     this.props.searchIsFocused === true &&
       this.searchRef &&
@@ -172,20 +171,6 @@ class Search extends Component<Props, IState, any> {
           nextText = result[selectedItemIndex].item.url;
         }
         this.setState({ text: nextText });
-
-        // cursor to end
-        // setTimeout(() => {
-        //   this.searchRef.setNativeProps({
-        //     selection: {
-        //       start: nextText.length,
-        //       end: nextText.length
-        //     }
-        //   });
-        //   this.setState({
-        //     selectionStart: nextText.length,
-        //     selectionEnd: nextText.length
-        //   });
-        // }, 100);
       }
     }
   }
@@ -231,135 +216,6 @@ class Search extends Component<Props, IState, any> {
     const pattern = port ? `https?://${host}${port}/*` : `https?://${host}/*`;
     return pattern;
   }
-
-  handleActions = async event => {
-    const { dispatch, keyMode } = this.props;
-    if (
-      keyMode === KeyMode.Search &&
-      this.searchRef &&
-      this.props.searchIsFocused
-    ) {
-      switch (event.action) {
-        case "home":
-          this.searchRef.setNativeProps({ selection: { start: 0, end: 0 } });
-          this.setState({
-            selectionStart: 0,
-            selectionEnd: 0
-          });
-          break;
-        case "end":
-          this.searchRef.setNativeProps({
-            selection: {
-              start: this.state.text.length,
-              end: this.state.text.length
-            }
-          });
-          this.setState({
-            selectionStart: this.state.text.length,
-            selectionEnd: this.state.text.length
-          });
-          break;
-        case "deletePreviousChar":
-          if (0 < this.state.selectionStart) {
-            const first = this.state.text.slice(
-              0,
-              this.state.selectionStart - 1
-            );
-            const second = this.state.text.slice(
-              this.state.selectionStart,
-              this.state.text.length
-            );
-
-            setTimeout(() => {
-              let nextStart = this.state.selectionStart - 1;
-              this.setState({
-                text: first + second,
-                selectionStart: nextStart,
-                selectionEnd: nextStart
-              });
-              this.searchRef.setNativeProps({
-                selection: {
-                  start: nextStart + 1,
-                  end: nextStart + 1
-                }
-              });
-            }, 50);
-          }
-          break;
-        case "deleteNextChar":
-          if (this.state.text.length > this.state.selectionStart) {
-            const first = this.state.text.slice(0, this.state.selectionStart);
-            const second = this.state.text.slice(
-              this.state.selectionStart + 1,
-              this.state.text.length
-            );
-            this.setState({
-              text: first + second
-            });
-            setTimeout(() => {
-              this.searchRef.setNativeProps({
-                selection: {
-                  start: this.state.selectionStart,
-                  end: this.state.selectionEnd
-                }
-              });
-            }, 50);
-          }
-          break;
-        case "moveBackOneChar":
-          this.searchRef.setNativeProps({
-            selection: {
-              start: this.state.selectionStart - 1,
-              end: this.state.selectionEnd - 1
-            }
-          });
-          this.setState({
-            selectionStart: this.state.selectionStart - 1,
-            selectionEnd: this.state.selectionEnd - 1
-          });
-          break;
-        case "moveForwardOneChar":
-          if (this.state.text.length > this.state.selectionStart) {
-            this.searchRef.setNativeProps({
-              selection: {
-                start: this.state.selectionStart + 1,
-                end: this.state.selectionEnd + 1
-              }
-            });
-            this.setState({
-              selectionStart: this.state.selectionStart + 1,
-              selectionEnd: this.state.selectionEnd + 1
-            });
-          }
-          break;
-        case "deleteLine":
-          const newText = this.state.text.slice(0, this.state.selectionStart);
-          // For some reason, need setTimeout..
-          setTimeout(() => {
-            this.searchRef.setNativeProps({
-              selection: {
-                start: this.state.selectionStart,
-                end: this.state.selectionEnd
-              }
-            });
-          }, 50);
-          this.setState({
-            text: newText
-          });
-          break;
-        case "moveDownOneLine":
-          this.nextHistoryItem();
-          break;
-        case "moveUpOneLine":
-          this.previousHistoryItem();
-          break;
-        case "copy":
-          break;
-        case "paste":
-          break;
-      }
-    }
-  };
 
   nextHistoryItem() {
     const { history, sites } = this.props;
@@ -414,52 +270,6 @@ class Search extends Component<Props, IState, any> {
       selectedItemIndex: index
     });
   }
-
-  // typing = data => {
-  //   const { dispatch, keyMode } = this.props;
-  //   if (this.props.searchIsFocused && keyMode === KeyMode.Search) {
-  //     // handle shift key to make it Uppercase
-  //     if (data.modifiers.shiftKey) {
-  //       if (data.key.match(/[a-z]/)) {
-  //         data.key = data.key.toUpperCase();
-  //       }
-  //     }
-
-  //     let text = this.state.text;
-  //     switch (data.key) {
-  //       case "Backspace":
-  //         this.handleActions({ action: "deletePreviousChar" });
-  //         return;
-  //       case "Up":
-  //         this.previousHistoryItem();
-  //         return;
-  //       case "Down":
-  //         this.nextHistoryItem();
-  //         return;
-  //       case "Left":
-  //         this.handleActions({ action: "moveBackOneChar" });
-  //         return;
-  //       case "Right":
-  //         this.handleActions({ action: "moveForwardOneChar" });
-  //         return;
-  //       case "Esc":
-  //         if (this.state.text !== "") {
-  //           dispatch(updateWordsForPageFind(this.state.text));
-  //         }
-  //         this.closingSearch();
-  //         return;
-  //     }
-  //     let newText =
-  //       this.state.text.slice(0, this.state.selectionStart) +
-  //       data.key +
-  //       this.state.text.slice(this.state.selectionStart);
-  //     this.setState({
-  //       text: newText,
-  //       selectionStart: this.state.selectionStart + 1,
-  //       selectionEnd: this.state.selectionStart + 1
-  //     });
-  //   }
-  // };
 
   onPressHistoryItem(url: string) {
     this.setState({ text: url });
