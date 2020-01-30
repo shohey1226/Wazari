@@ -95,10 +95,15 @@ export default function ui(state = initialState, action) {
         .set("keySwitchOn", action.keySwitchOn);
 
     case CLOSE_TAB:
-      return state.setIn(
-        ["panes", action.paneId, "sites"],
-        state.getIn(["panes", action.paneId, "sites"]).delete(action.index)
-      );
+      return state
+        .setIn(
+          ["panes", action.paneId, "sites"],
+          state.getIn(["panes", action.paneId, "sites"]).delete(action.index)
+        )
+        .setIn(
+          ["panes", action.paneId, "activeTabIndex"],
+          action.activeTabIndex
+        );
 
     case UPDATE_SITE:
       return state

@@ -257,11 +257,9 @@ class Browser extends Component<Props, State> {
   };
 
   pressCloseTab(tabId: number) {
-    console.log(tabId);
     const { dispatch, sites, activeTabIndex, paneId } = this.props;
     const index = this.state.siteIds.indexOf(tabId);
-    console.log(index);
-    dispatch(closeTab(index, paneId));
+    dispatch(closeTab(index, paneId, activeTabIndex));
     if (index === activeTabIndex) {
       if (sites.length > index + 1) {
         dispatch(selectTab(index));

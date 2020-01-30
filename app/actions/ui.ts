@@ -58,11 +58,30 @@ function _addNewTab(url: string, paneId: number) {
   };
 }
 
-export function closeTab(index: number, paneId: number) {
+export function closeTab(
+  index: number,
+  paneId: number,
+  activeTabIndex: number
+) {
+  let nextActiveTabIndex = 0;
+  if (activeTabIndex === index) {
+    if (index > 0) {
+      nextActiveTabIndex = index - 1;
+    } else {
+      nextActiveTabIndex = 0;
+    }
+  } else {
+    if (index > activeTabIndex) {
+      nextActiveTabIndex = activeTabIndex;
+    } else {
+      nextActiveTabIndex = activeTabIndex - 1;
+    }
+  }
   return {
     type: CLOSE_TAB,
     index: index,
-    paneId: paneId
+    paneId: paneId,
+    activeTabIndex: nextActiveTabIndex
   };
 }
 
