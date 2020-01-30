@@ -249,21 +249,18 @@ class Browser extends Component<Props, State> {
           dispatch(selectTab(prevIndex));
           break;
         case "closeTab":
-          this.pressCloseTab(activeTabIndex, activePaneId);
+          const _id = this.state.siteIds[activeTabIndex];
+          this.pressCloseTab(_id);
           break;
       }
     }
   };
 
-  pressCloseTab(tabId) {
+  pressCloseTab(tabId: number) {
+    console.log(tabId);
     const { dispatch, sites, activeTabIndex, paneId } = this.props;
-    let index = 0;
-    for (let i = 0; i < sites.length; i++) {
-      if (sites[i].id === tabId) {
-        index = i;
-        break;
-      }
-    }
+    const index = this.state.siteIds.indexOf(tabId);
+    console.log(index);
     dispatch(closeTab(index, paneId));
     if (index === activeTabIndex) {
       if (sites.length > index + 1) {
@@ -292,17 +289,19 @@ class Browser extends Component<Props, State> {
   buildTabs() {
     const { keyMode, sites, paneId } = this.props;
     for (let i = 0; i < sites.length; i++) {
-      this.tabViews[sites[i].id] = (
+      const _id = sites[i].id;
+      const _url = sites[i].url;
+      this.tabViews[_id] = (
         <TabWindow
-          key={`tab-${sites[i].id}`}
+          key={`tab-${_id}`}
           tabLabel={{
             label: "",
-            id: sites[i].id,
-            onPressButton: () => this.pressCloseTab(i),
-            url: sites[i].url
+            id: _id,
+            onPressButton: () => this.pressCloseTab(_id),
+            url: _url
           }}
-          url={sites[i].url}
-          tabId={sites[i].id}
+          url={_url}
+          tabId={_id}
           paneId={paneId}
           {...this.props}
         />
