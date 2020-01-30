@@ -47,7 +47,7 @@ class WVInput extends Component<Props, IState, any> {
       switch (data.name) {
         case "mods-down":
           if (data.flags === 262144) {
-            //this._handleControl();
+            this._handleControl();
           } else {
             this.handleCapsLockFromNative(true);
           }
@@ -104,6 +104,8 @@ class WVInput extends Component<Props, IState, any> {
 
   handleKeys(keyEvent) {
     const { modifiers, browserKeymap } = this.props;
+
+    console.log("down", this.down);
     const pressedKeys = Object.keys(this.down);
 
     if (this.down["Enter"]) {
@@ -124,16 +126,22 @@ class WVInput extends Component<Props, IState, any> {
         newMods[k] = newMods[k] || origMods[modifiers[k]];
       }
     });
+
     // capslock handling
-    newMods["capslockKey"] = false;
     if (this.state.isCapsLockRemapped) {
+      newMods["capslockKey"] = false;
+      Object.keys(modifiers).forEach(m => {
+        if (modifiers[m] === "capslockKey") {
+          newMods["capslockKey"] = newMods["capslockKey"] || newMods[m];
+        }
+      });
       // if rempapped, capslockKey is never becoming "on"
-      newMods[modifiers.capslockKey] = "CapsLock" in this.down;
+      newMods[modifiers.capslockKey] =
+        newMods[modifiers.capslockKey] || "CapsLock" in this.down;
     } else {
       newMods["capslockKey"] = "CapsLock" in this.down;
     }
 
-    console.log("down", this.down);
     let hasAction = false;
     pressedKeys
       .filter(k => k.length === 1)
@@ -151,9 +159,7 @@ class WVInput extends Component<Props, IState, any> {
             isEqual(keymap.modifiers, newMods) &&
             keymap.key === key.toLowerCase()
           ) {
-            this._handleDebug(
-              `action: ${action} - ${JSON.stringify(this.down)}`
-            );
+            console.log("executing actin: ", action);
             this.handleAction(action);
             hasAction = true;
 
