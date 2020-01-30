@@ -46,6 +46,7 @@ const DAVKeyManagerEmitter = new NativeEventEmitter(DAVKeyManager);
 
 interface IState {
   text: string;
+  urlText: string;
   previousKeyMode: KeyMode | null;
   selectionStart: number;
   selectionEnd: number;
@@ -91,6 +92,7 @@ class Search extends Component<Props, IState, any> {
       result: [],
       selectMode: false,
       capsLockOn: false,
+      urlText: "",
       action: "",
       debug: ""
     };
@@ -170,7 +172,7 @@ class Search extends Component<Props, IState, any> {
         if (result.length !== 0) {
           nextText = result[selectedItemIndex].item.url;
         }
-        this.setState({ text: nextText });
+        this.setState({ urlText: nextText, text: nextText });
       }
     }
   }
@@ -479,7 +481,7 @@ class Search extends Component<Props, IState, any> {
             {...this.props}
             onEndEditing={this.onEndEditing.bind(this)}
             updateWords={this.updateWords.bind(this)}
-            text={this.state.text}
+            text={this.state.urlText}
           />
 
           <Button
