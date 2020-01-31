@@ -61,16 +61,19 @@ class WVTerm extends Component<Props, IState, any> {
     this.sub.remove();
     this.webref &&
       this.webref.injectJavaScript(`document.getElementById('search').blur()`);
+    this.down = {};
   }
 
   componentDidUpdate(prevProp) {
     const { reloadToggled, isActive } = this.props;
     if (prevProp.reloadToggled !== reloadToggled && isActive) {
       this.webref && this.webref.reload();
+      this.down = {};
     }
 
     if (prevProp.isActive !== isActive && isActive === true) {
       this.webref && this.webref.injectJavaScript(`window.term.focus()`);
+      this.down = {};
     }
   }
 
@@ -231,7 +234,7 @@ class WVTerm extends Component<Props, IState, any> {
                   const now = new Date().getTime();
                   if (
                     this.lastKeyTimestamp &&
-                    now - this.lastKeyTimestamp > 600
+                    now - this.lastKeyTimestamp > 500
                   ) {
                     delete this.down["CapsLock"]; // keyup
                     this.lastKeyTimestamp = null;
