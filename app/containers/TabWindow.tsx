@@ -461,7 +461,7 @@ class TabWindow extends Component<Props, State, any> {
 
   onLoadStart(syntheticEvent) {
     this.setState({ isLoadingJSInjection: true });
-    const { nativeEvent } = syntheticEvent;
+    //const { nativeEvent } = syntheticEvent;
   }
 
   onMessage(event) {

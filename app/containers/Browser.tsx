@@ -98,7 +98,9 @@ class Browser extends Component<Props, State> {
     this.buildTabs();
 
     if (activeTabIndex) {
-      this.tabsRef.goToPage(activeTabIndex);
+      setTimeout(() => {
+        this.tabsRef.goToPage(activeTabIndex);
+      }, 500);
     }
   }
 
