@@ -60,7 +60,7 @@ class WVInput extends Component<Props, IState, any> {
   }
 
   componentDidUpdate(prevProp, prevState) {
-    const { text } = this.props;
+    const { text, isActive } = this.props;
     const { words } = this.state;
     if (prevProp.text !== text) {
       this.webref && this.webref.injectJavaScript(`updateText("${text}")`);

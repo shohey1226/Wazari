@@ -68,6 +68,10 @@ class WVTerm extends Component<Props, IState, any> {
     if (prevProp.reloadToggled !== reloadToggled && isActive) {
       this.webref && this.webref.reload();
     }
+
+    if (prevProp.isActive !== isActive && isActive === true) {
+      this.webref && this.webref.injectJavaScript(`window.term.focus()`);
+    }
   }
 
   // RN JS(Webview) -> RN -> Native(iOS) -> RN handling both keydown/up

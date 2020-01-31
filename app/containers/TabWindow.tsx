@@ -438,7 +438,8 @@ class TabWindow extends Component<Props, State, any> {
       isActive,
       modifiers
     } = this.props;
-    if (isActive) {
+
+    if (isActive && nativeEvent.url) {
       dispatch(
         updateSite(
           activeTabIndex,
