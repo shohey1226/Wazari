@@ -309,6 +309,7 @@ class WVTerm extends Component<Props, IState, any> {
 
   render() {
     const { url } = this.props;
+    console.log(this.props);
     return (
       <View style={{ flex: 1 }}>
         {/* this.renderDebugInfo() */}

@@ -494,18 +494,19 @@ class TabWindow extends Component<Props, State, any> {
   }
 
   renderTerminal() {
-    const { tabId } = this.props;
-    if (/^https:\/\/www\.wazaterm\.com\/terminals\/\S+/.test(this.state.url)) {
+    const { tabId, url } = this.props;
+    console.log("renderTerminal url", url);
+    if (/^https:\/\/www\.wazaterm\.com\/terminals\/\S+/.test(url)) {
       return (
         <WVTerm
           key={`tab-${tabId}`}
           tabLabel={{
             label: "",
             id: tabId,
-            onPressButton: () => this.pressCloseTab(tabId),
-            url: this.state.url
+            onPressButton: () => this.pressCloseTab(tabId)
+            //            url: this.state.url
           }}
-          url={this.state.url}
+          url={url}
           tabId={tabId}
           {...this.props}
         />
