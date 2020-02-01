@@ -745,7 +745,7 @@
 			baseConfigurationReference = AEA91A04A5089DF2B8F062FA /* Pods-Wazari.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 58;
+				CURRENT_PROJECT_VERSION = 60;
 				DEAD_CODE_STRIPPING = NO;
 				DEVELOPMENT_TEAM = Z8P2ZL4PVQ;
 				INFOPLIST_FILE = Wazari/Info.plist;
@@ -769,7 +769,7 @@
 			baseConfigurationReference = 5C1748E7FB4248599574CC90 /* Pods-Wazari.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CURRENT_PROJECT_VERSION = 58;
+				CURRENT_PROJECT_VERSION = 60;
 				DEVELOPMENT_TEAM = Z8P2ZL4PVQ;
 				INFOPLIST_FILE = Wazari/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
