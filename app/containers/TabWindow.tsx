@@ -497,7 +497,7 @@ class TabWindow extends Component<Props, State, any> {
     const { tabId, url } = this.props;
     console.log("renderTerminal url", url);
     if (
-      /^https:\/\/www\.wazaterm\.com\/terminals\/\A(?!-)[a-zA-Z0-9-]{1,63}(?<!-)\z$/.test(
+      /^https:\/\/www\.wazaterm\.com\/terminals\/^[a-zA-Z0-9_\-.]{3,15}$/.test(
         url
       )
     ) {

@@ -8,7 +8,8 @@ function init(initStr) {
 }
 
 function onKeyPress(e) {
-  if (e.isComposing) {
+  // https://developer.mozilla.org/ja/docs/Web/API/Document/keydown_event
+  if (e.isComposing || (e.keyCode === 229 && e.repeat === false)) {
     return true;
   }
 
@@ -17,6 +18,9 @@ function onKeyPress(e) {
   // for some reason, it comes with charcode 710. It looks ^ but it's not
   if (key.charCodeAt(0) === 710 && key.length === 2) {
     key = key.substr(1);
+    // updateInputValue(key);
+    // e.preventDefault();
+    // e.stopPropagation();
   }
 
   // Handle alt-code. RN only needs to know the code but not key, like ©,å,,,.

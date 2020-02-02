@@ -100,7 +100,7 @@ const defaultKeymap = {
       }
     },
     focusOnSearch: {
-      key: "i",
+      key: "p",
       modifiers: {
         capslockKey: false,
         shiftKey: false,
