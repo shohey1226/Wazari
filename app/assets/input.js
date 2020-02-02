@@ -8,6 +8,10 @@ function init(initStr) {
 }
 
 function onKeyPress(e) {
+  if (e.isComposing) {
+    return true;
+  }
+
   let key = e.key;
 
   // for some reason, it comes with charcode 710. It looks ^ but it's not
@@ -73,6 +77,13 @@ function updateInputValue(key) {
 function sendTextValue(value) {
   window.ReactNativeWebView.postMessage(
     JSON.stringify({ words: value, postFor: "inputValue" })
+  );
+}
+
+function processEnter() {
+  var el = document.activeElement;
+  window.ReactNativeWebView.postMessage(
+    JSON.stringify({ words: el.value, postFor: "enterValue" })
   );
 }
 

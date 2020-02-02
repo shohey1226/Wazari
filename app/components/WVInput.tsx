@@ -18,7 +18,7 @@ interface Props {
   browserKeymap: any;
   updateCapsLockState: (any) => void;
   closeSearch: () => void;
-  onEndEditing: () => void;
+  onEndEditing: (string) => void;
   updateWords: (string) => void;
   text: string;
 }
@@ -109,7 +109,7 @@ class WVInput extends Component<Props, IState, any> {
     const pressedKeys = Object.keys(this.down);
 
     if (this.down["Enter"]) {
-      this.props.onEndEditing();
+      this.webref.injectJavaScript(`processEnter()`);
       return;
     }
     // handle Enter and Esc
@@ -317,7 +317,10 @@ class WVInput extends Component<Props, IState, any> {
         break;
       case "inputValue":
         this.setState({ words: data.words });
-
+        break;
+      case "enterValue":
+        this.setState({ words: "" });
+        this.props.onEndEditing(data.words);
         break;
     }
   }
