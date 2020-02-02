@@ -85,15 +85,8 @@ class TabWindow extends Component<Props, State, any> {
       ),
 
       DAVKeyManagerEmitter.addListener("RNAppKeyEvent", this.handleAppActions)
-
-      // DAVKeyManagerEmitter.addListener("RNKeyEvent", data => {
-      //   if (this.props.keyMode === KeyMode.Terminal) {
-      //     //this.typing(data);
-      //   } else if (this.props.keyMode === KeyMode.Text) {
-      //     //this.textTyping(data);
-      //   }
-      // })
     );
+
     AppState.addEventListener("change", this._handleAppStateChange);
   }
 
@@ -216,32 +209,11 @@ class TabWindow extends Component<Props, State, any> {
         case "moveDownOneLine":
           this.webref.injectJavaScript(`moveDownOneLine()`);
           break;
-        // case "goBack":
-        //   this.webref.goBack();
-        //   break;
-        // case "goForward":
-        //   this.webref.goForward();
-        //   break;
-        // case "reload":
-        //   this.webref.reload();
-        //   break;
-        // case "hitAHint":
-        //   this.webref.injectJavaScript(`sVimHint.start()`);
-        //   this.webref.injectJavaScript(`document.activeElement.blur();`);
-        //   break;
-        // case "hitAHintOpeningNewTab":
-        //   this.webref.injectJavaScript(`hitAHintOpeningNewTab()`);
-        //   this.webref.injectJavaScript(`document.activeElement.blur();`);
-        //   break;
+
         case "deleteLine":
           this.webref.injectJavaScript(`deleteLine()`);
           break;
-        // case "zoomIn":
-        //   this.webref.injectJavaScript(`sVimTab.commands.zoomPageIn()`);
-        //   break;
-        // case "zoomOut":
-        //   this.webref.injectJavaScript(`sVimTab.commands.zoomPageOut()`);
-        //   break;
+
         case "copy":
           this.webref.injectJavaScript(`copyToRN()`);
           break;
@@ -289,146 +261,6 @@ class TabWindow extends Component<Props, State, any> {
     }
   };
 
-  typing(data) {
-    const { isActive } = this.props;
-    if (isActive) {
-      console.log("terminal input", data);
-      let charCode;
-      let modifiers = Object.assign({}, data.modifiers);
-      switch (data.key) {
-        case "Backspace":
-          charCode = 8;
-          break;
-        case "Return":
-          charCode = 13;
-          break;
-        case "Tab":
-          charCode = 9;
-          break;
-        case "Esc":
-          charCode = 27;
-          break;
-        case "Up":
-          charCode = "P".charCodeAt(0);
-          modifiers.ctrlKey = true;
-          break;
-        case "Down":
-          charCode = "N".charCodeAt(0);
-          modifiers.ctrlKey = true;
-          break;
-        case "Left":
-          charCode = "B".charCodeAt(0);
-          modifiers.ctrlKey = true;
-          break;
-        case "Right":
-          charCode = "F".charCodeAt(0);
-          modifiers.ctrlKey = true;
-          break;
-        default:
-          charCode = data.key.charCodeAt(0);
-      }
-
-      // if (modifiers.ctrlKey) {
-      //   charCode = data.key.toUpperCase().charCodeAt(0);
-      // }
-
-      // handle shift key to make it Uppercase
-      if (modifiers.shiftKey) {
-        if (data.key.match(/[a-z]/)) {
-          charCode = data.key.toUpperCase().charCodeAt(0);
-        }
-      }
-
-      const modifiersStr = JSON.stringify(modifiers);
-
-      if (
-        32 <= charCode &&
-        charCode < 128 &&
-        !modifiers.ctrlKey &&
-        !modifiers.altKey &&
-        !modifiers.metaKey
-      ) {
-        this.webref.injectJavaScript(
-          `simulateKeyPress(window.term.textarea, ${charCode}, '${modifiersStr}')`
-        );
-      } else {
-        this.webref.injectJavaScript(
-          `simulateKeyDown(window.term.textarea, ${charCode}, '${modifiersStr}')`
-        );
-      }
-    }
-  }
-
-  textTyping(data) {
-    const { isActive } = this.props;
-
-    if (isActive) {
-      console.log(data);
-
-      // handle shift key to make it Uppercase
-      if (data.modifiers.shiftKey) {
-        if (data.key.match(/[a-z]/)) {
-          data.key = data.key.toUpperCase();
-        }
-      }
-
-      // dealing with some exception
-      if (data.key === "\\") {
-        data.key = "\\\\";
-      } else if (data.key === String.fromCharCode(39)) {
-        this.webref.injectJavaScript(`typingFromRN("'")`);
-        return;
-      }
-
-      switch (data.key) {
-        case "Esc":
-          this.webref.injectJavaScript(`document.activeElement.blur();`);
-          break;
-        case "Backspace":
-          this.webref.injectJavaScript(`deletePreviousChar()`);
-          break;
-        case "Left":
-          this.webref.injectJavaScript(`moveBackOneChar()`);
-          break;
-        case "Right":
-          this.webref.injectJavaScript(`moveForwardOneChar()`);
-          break;
-        case "Up":
-          this.webref.injectJavaScript(`moveUpOneLine()`);
-          return;
-        case "Down":
-          this.webref.injectJavaScript(`moveDownOneLine()`);
-          return;
-        default:
-          this.webref.injectJavaScript(`typingFromRN('${data.key}')`);
-
-          // From iOS13, keyevent is not listening and need to dispatch by ourselves
-          const majorVersionIOS = parseInt(Platform.Version, 10);
-          if (majorVersionIOS >= 13) {
-            let charCode = data.key.charCodeAt(0);
-            switch (data.key) {
-              case "Backspace":
-                charCode = 8;
-                break;
-              case "Return":
-                charCode = 13;
-                break;
-              case "Tab":
-                charCode = 9;
-                break;
-              case "Esc":
-                charCode = 27;
-                break;
-            }
-
-            this.webref.injectJavaScript(
-              `dispatchKeyEventForHints(${charCode})`
-            );
-          }
-      }
-    }
-  }
-
   onLoadEnd(syntheticEvent) {
     const { nativeEvent } = syntheticEvent;
     const {
@@ -452,11 +284,9 @@ class TabWindow extends Component<Props, State, any> {
       );
       this.focusWindow();
       dispatch(addHistory(nativeEvent.url, nativeEvent.title));
-      console.log(JSON.stringify(modifiers));
       this.webref.injectJavaScript(
         `loadModifers(${JSON.stringify(modifiers)})`
       );
-      this.setState({ url: nativeEvent.url });
     }
   }
 
@@ -496,11 +326,7 @@ class TabWindow extends Component<Props, State, any> {
   renderTerminal() {
     const { tabId, url } = this.props;
     console.log("renderTerminal url", url);
-    if (
-      /^https:\/\/www\.wazaterm\.com\/terminals\/^[a-zA-Z0-9_\-.]{3,15}$/.test(
-        url
-      )
-    ) {
+    if (/^https:\/\/www\.wazaterm\.com\/terminals\/\S+$/.test(url)) {
       return (
         <WVTerm
           key={`tab-${tabId}`}
@@ -508,7 +334,6 @@ class TabWindow extends Component<Props, State, any> {
             label: "",
             id: tabId,
             onPressButton: () => this.pressCloseTab(tabId)
-            //            url: this.state.url
           }}
           url={url}
           tabId={tabId}
@@ -594,9 +419,16 @@ function mapStateToProps(state, ownProps) {
     "activeTabIndex"
   ]);
   const _isActivePane = activePaneId === ownProps.paneId;
-  console.log(sites, activeTabIndex);
+  //console.log(sites, activeTabIndex);
   const isActive = sites[activeTabIndex].id === ownProps.tabId && _isActivePane;
-  console.log(ownProps.tabId, isActive);
+  // maybe there is better way to deal with this.
+  let url = ownProps.url;
+  for (let i = 0; i < sites.length; i++) {
+    if (sites[i].id === ownProps.tabId) {
+      url = sites[i].url;
+      break;
+    }
+  }
 
   return {
     backToggled,
@@ -612,7 +444,8 @@ function mapStateToProps(state, ownProps) {
     wordsForPageFind,
     isActive,
     activeTabIndex,
-    keyMode
+    keyMode,
+    url
   };
 }
 
@@ -633,31 +466,6 @@ SVIM_TAB
 SVIM_GLOBAL
 SVIM_HINT
 sVimTab.bind();
-
-
-function simulateKeyPress(element, charCode, modifiers) {
-  var modifierObjects = JSON.parse(modifiers);
-  var event = {};  
-  event.charCode = charCode  
-  event.key = event.char = String.fromCharCode(charCode);
-  for (var i in modifierObjects) {
-    event[i] = modifierObjects[i];
-  }  
-  var keyEvent = new KeyboardEvent("keypress", event); 
-  element.dispatchEvent(keyEvent)
-}   
-
-function simulateKeyDown(element, keyCode, modifiers) {
-  var modifierObjects = JSON.parse(modifiers);
-  var event = {};
-  event.key = event.char = String.fromCharCode(keyCode);  
-  event.keyCode = event.code = event.key.toUpperCase().charCodeAt(0);
-  for (var i in modifierObjects) {
-    event[i] = modifierObjects[i];
-  }  
-  var keyEvent = new KeyboardEvent("keydown", event); 
-  element.dispatchEvent(keyEvent)
-}   
 
 function cursorToBeginning(){
   var inp = document.activeElement;
@@ -830,25 +638,20 @@ function pasteFromRN(words) {
   }
 }
 
-function typingFromRN(key){
-  var el = document.activeElement;
-  var startPosition = el.selectionStart;
-  var value = el.value;
+// function typingFromRN(key){
+//   var el = document.activeElement;
+//   var startPosition = el.selectionStart;
+//   var value = el.value;
 
-  el.value = value.slice(0, startPosition) + key + value.slice(startPosition);
-  if (el.createTextRange) {
-    var part = el.createTextRange();
-    part.move("character", startPosition+1);
-    part.select();
-  } else if (el.setSelectionRange) {
-    el.setSelectionRange(startPosition+1, startPosition+1);
-  }
-
-}
-
-function dispatchKeyEventForHints(charCode){
-  sVimTab.mode === "hint" && simulateKeyDown(document, charCode, null);
-}
+//   el.value = value.slice(0, startPosition) + key + value.slice(startPosition);
+//   if (el.createTextRange) {
+//     var part = el.createTextRange();
+//     part.move("character", startPosition+1);
+//     part.select();
+//   } else if (el.setSelectionRange) {
+//     el.setSelectionRange(startPosition+1, startPosition+1);
+//   }
+// }
 
 function hitAHintOpeningNewTab(){
   var openUrl = function(url){
@@ -893,50 +696,6 @@ function findInPage(text){
   }
   searchWithinNode(document.body, text.toLowerCase(), text.length);  
 }
-
-var termSelectionHandler = null;
-
-
-var modifiers = {};
-function loadModifers(modifiersStr){
-  modifiers = JSON.parse(modifiersStr);
-}
-
-function onKeyDown(e){
-  e.preventDefault();
-  //e.stopPropagation();  
-  var event = new KeyboardEvent("keydown", e);
-  for (var i in modifiers) {
-    event[modifiers[i]] = e[i];
-  }
-  window.term.textarea.dispatchEvent(event);
-}
-
-function onKeyPress(e){
-  e.preventDefault();
-  e.stopPropagation();
-  var event = new KeyboardEvent("keypress", e);
-  for (var i in modifiers) {
-    event[modifiers[i]] = e[i];
-  }  
-  window.term.textarea.dispatchEvent(event);
-}
-
-setTimeout(function(){
-  if(window.term && !termSelectionHandler){
-    termSelectionHandler = window.term.onSelectionChange(function(){
-      var selectedText = window.term.getSelection()
-      window.ReactNativeWebView.postMessage(JSON.stringify({selection: selectedText, postFor: "copy"}));
-    })
-  }
-
-  // testing
-  if(window.term){
-    document.addEventListener("keydown", onKeyDown, false);
-    document.addEventListener("keypress", onKeyPress, false);
-  }
-
-}, 800);
 
 window.ReactNativeWebView.postMessage(JSON.stringify({isLoading: false, postFor: "jsloading"}))
 

@@ -297,8 +297,7 @@ class Browser extends Component<Props, State> {
           tabLabel={{
             label: "",
             id: _id,
-            onPressButton: () => this.pressCloseTab(_id),
-            url: _url
+            onPressButton: () => this.pressCloseTab(_id)
           }}
           url={_url}
           tabId={_id}
