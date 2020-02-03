@@ -363,15 +363,9 @@ class TabWindow extends Component<Props, State, any> {
       case "moveForwardOneChar":
         this.webref.injectJavaScript(`moveForwardOneChar()`);
         break;
-      // case "moveDownOneLine":
-      //   this.props.nextHistoryItem();
-      //   break;
       case "deleteLine":
         this.webref.injectJavaScript(`deleteLine()`);
         break;
-      // case "moveUpOneLine":
-      //   this.props.previousHistoryItem();
-      //   break;
     }
   }
 
@@ -951,12 +945,21 @@ function init(initStr) {
 }
 
 function onKeyPress(e) {
-  // https://developer.mozilla.org/ja/docs/Web/API/Document/keydown_event
-  if (e.isComposing || (e.keyCode === 229 && e.repeat === false)) {
+
+  let key = e.key;
+  let el = document.activeElement;  
+
+  // only handle on input text or textarea - not content editable
+  if(el.type === "text" || el.type === "textarea"){
+    // ok
+  }else{
     return true;
   }
 
-  let key = e.key;
+  // IME: https://developer.mozilla.org/ja/docs/Web/API/Document/keydown_event
+  if (e.isComposing || (e.keyCode === 229 && e.repeat === false)) {
+    return true;
+  }
 
   // for some reason, it comes with charcode 710. It looks ^ but it's not
   if (key.charCodeAt(0) === 710 && key.length === 2) {
@@ -1000,7 +1003,6 @@ function onKeyPress(e) {
   }
 
   if (e.type === "keyup" && /^[ -~]|Enter$/.test(key)) {
-    var el = document.activeElement;
     sendTextValue(el.value);
   }
 }
