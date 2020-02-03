@@ -12,6 +12,7 @@ import { WebView } from "react-native-webview";
 import { connect } from "react-redux";
 import DeviceInfo from "react-native-device-info";
 import ProgressBarAnimated from "react-native-progress-bar-animated";
+import { isEqual } from "lodash";
 import Loader from "../components/Loader";
 import Error from "../components/Error";
 import WVTerm from "../components/WVTerm";
@@ -38,6 +39,7 @@ interface State {
   width: number;
   progress: number;
   userAgent: string | null;
+  isCapsLockRemapped: boolean;
 }
 
 interface Props {
@@ -51,6 +53,7 @@ interface Props {
   keySwitchOn: boolean;
   activeUrl: string;
   isActive: boolean;
+  isCapsLockOn: boolean;
 }
 
 const USER_AGENT =
@@ -59,6 +62,9 @@ const USER_AGENT =
 class TabWindow extends Component<Props, State, any> {
   webref: WebView | null = null;
   subscriptions: Array<any> = [];
+  down: any = {};
+  isNativeCapslock: boolean = false;
+  lastKeyTimestamp: number | null = null;
 
   constructor(props) {
     super(props);
@@ -68,7 +74,9 @@ class TabWindow extends Component<Props, State, any> {
       isLoadingJSInjection: true,
       width: width,
       progress: 0,
-      userAgent: DeviceInfo.isTablet() ? USER_AGENT : null
+      userAgent: DeviceInfo.isTablet() ? USER_AGENT : null,
+      isCapsLockRemapped: props.modifiers["capslockKey"] !== "capslockKey",
+      isCapsLockOn: false
     };
     this.subscriptions = [];
   }
@@ -79,10 +87,10 @@ class TabWindow extends Component<Props, State, any> {
       this.setState({ isLoadingSVim: false });
     });
     this.subscriptions.push(
-      DAVKeyManagerEmitter.addListener(
-        "RNBrowserKeyEvent",
-        this.handleBrowserActions
-      ),
+      // DAVKeyManagerEmitter.addListener(
+      //   "RNBrowserKeyEvent",
+      //   this.handleBrowserActions
+      // ),
 
       DAVKeyManagerEmitter.addListener("RNAppKeyEvent", this.handleAppActions)
     );
@@ -166,6 +174,207 @@ class TabWindow extends Component<Props, State, any> {
     }
   }
 
+  // RN JS(Webview) -> RN -> Native(iOS) -> RN handling both keydown/up
+  handleCapsLockFromNative(isDown) {
+    if (isDown) {
+      this.down["CapsLock"] = true;
+      this.isNativeCapslock = true;
+      this.handleKeys({
+        key: "CapsLock",
+        type: "keydown",
+        modifiers: {
+          shiftKey: false,
+          metaKey: false,
+          altKey: false,
+          ctrlKey: false
+        }
+      });
+    } else {
+      this.down["CapsLock"] && delete this.down["CapsLock"];
+    }
+  }
+
+  handleKeys(keyEvent) {
+    const { modifiers, browserKeymap } = this.props;
+
+    console.log("down", this.down);
+    const pressedKeys = Object.keys(this.down);
+
+    // if (this.down["Enter"]) {
+    //   this.webref.injectJavaScript(`processEnter()`);
+    //   return;
+    // }
+    // // handle Enter and Esc
+    // else if (this.down["Escape"]) {
+    //   this.props.closeSearch();
+    //   return;
+    // }
+
+    // customized modifiers
+    const origMods = keyEvent.modifiers;
+    let newMods = Object.assign({}, origMods);
+    Object.keys(origMods).forEach(k => {
+      if (modifiers[k]) {
+        newMods[k] = newMods[k] || origMods[modifiers[k]];
+      }
+    });
+
+    // capslock handling
+    if (this.state.isCapsLockRemapped) {
+      newMods["capslockKey"] = false;
+      Object.keys(modifiers).forEach(m => {
+        if (modifiers[m] === "capslockKey") {
+          newMods["capslockKey"] = newMods["capslockKey"] || newMods[m];
+        }
+      });
+      // if rempapped, capslockKey is never becoming "on"
+      newMods[modifiers.capslockKey] =
+        newMods[modifiers.capslockKey] || "CapsLock" in this.down;
+    } else {
+      newMods["capslockKey"] = "CapsLock" in this.down;
+    }
+
+    let hasAction = false;
+    pressedKeys
+      .filter(k => k.length === 1)
+      .forEach(key => {
+        Object.keys(browserKeymap).forEach(action => {
+          const keymap = browserKeymap[action];
+          console.log(
+            "origMods and newMods and keymap",
+            origMods,
+            newMods,
+            keymap.modifiers
+          );
+          // always comparing to lowercase of the input key
+          if (
+            isEqual(keymap.modifiers, newMods) &&
+            keymap.key === key.toLowerCase()
+          ) {
+            console.log("executing actin: ", action);
+            this.handleAction(action);
+            hasAction = true;
+
+            // handle keyup
+            if (
+              this.state.isCapsLockRemapped &&
+              this.down["CapsLock"] &&
+              this.isNativeCapslock === false
+            ) {
+              if (/^[dhjklobfnpwxy]$/.test(key.toLowerCase())) {
+                const now = new Date().getTime();
+                if (
+                  this.lastKeyTimestamp &&
+                  now - this.lastKeyTimestamp > 600
+                ) {
+                  delete this.down["CapsLock"]; // keyup
+                }
+                this.lastKeyTimestamp = now;
+              } else {
+                delete this.down["CapsLock"]; // keyup
+              }
+            }
+          }
+        });
+      });
+
+    if (!hasAction && this.state.isCapsLockRemapped) {
+      if (/^[A-Za-z]$/.test(keyEvent.key) && keyEvent.type === "keydown") {
+        let inputKey =
+          this.state.isCapsLockOn === true ||
+          pressedKeys.indexOf("Shift") !== -1
+            ? keyEvent.key.toUpperCase()
+            : keyEvent.key.toLowerCase();
+
+        this.webref.injectJavaScript(`updateInputValue("${inputKey}")`);
+      }
+    }
+  }
+
+  toUIKitFlags(e) {
+    // https://github.com/blinksh/blink/blob/847298f9a1bc99848989fbbf5d3afd7cef51449f/KB/JS/src/UIKeyModifierFlags.ts
+    const UIKeyModifierAlphaShift = 1 << 16; // This bit indicates CapsLock
+    const UIKeyModifierShift = 1 << 17;
+    const UIKeyModifierControl = 1 << 18;
+    const UIKeyModifierAlternate = 1 << 19;
+    const UIKeyModifierCommand = 1 << 20;
+    const UIKeyModifierNumericPad = 1 << 21;
+
+    let res = 0;
+    if (e.shiftKey) {
+      res |= UIKeyModifierShift;
+    }
+    if (e.ctrlKey) {
+      res |= UIKeyModifierControl;
+    }
+    if (e.altKey) {
+      res |= UIKeyModifierAlternate;
+    }
+    if (e.metaKey) {
+      res |= UIKeyModifierCommand;
+    }
+    res |= UIKeyModifierAlphaShift;
+    return res;
+  }
+
+  // handle capslock comes from JS
+  handleCapsLockFromJS(type, keyEvent) {
+    if (this.state.isCapsLockRemapped) {
+      let mods = 0;
+      if (type === "keyup") {
+        mods = 0;
+      } else {
+        mods = this.toUIKitFlags(keyEvent);
+        this.handleKeys(keyEvent);
+      }
+      DAVKeyManager.setMods(mods);
+    }
+  }
+
+  handleSoftwareCapsLock(keyEvent) {
+    // const { modifiers, updateCapsLockState } = this.props;
+    // Object.keys(modifiers)
+    //   .filter(m => modifiers[m] === "capslockKey")
+    //   .forEach(m => {
+    //     if (keyEvent[m] === true) {
+    //       updateCapsLockState(!this.state.isCapsLockOn);
+    //       this.setState({ isCapsLockOn: !this.state.isCapsLockOn });
+    //     }
+    //   });
+  }
+
+  handleAction(action) {
+    switch (action) {
+      case "home":
+        this.webref.injectJavaScript(`cursorToBeginning()`);
+        break;
+      case "end":
+        this.webref.injectJavaScript(`cursorToEnd()`);
+        break;
+      case "deletePreviousChar":
+        this.webref.injectJavaScript(`deletePreviousChar()`);
+        break;
+      case "deleteNextChar":
+        this.webref.injectJavaScript(`deleteNextChar()`);
+        break;
+      case "moveBackOneChar":
+        this.webref.injectJavaScript(`moveBackOneChar()`);
+        break;
+      case "moveForwardOneChar":
+        this.webref.injectJavaScript(`moveForwardOneChar()`);
+        break;
+      // case "moveDownOneLine":
+      //   this.props.nextHistoryItem();
+      //   break;
+      case "deleteLine":
+        this.webref.injectJavaScript(`deleteLine()`);
+        break;
+      // case "moveUpOneLine":
+      //   this.props.previousHistoryItem();
+      //   break;
+    }
+  }
+
   focusWindow() {
     this.webref && this.webref.injectJavaScript(focusJS);
   }
@@ -175,55 +384,55 @@ class TabWindow extends Component<Props, State, any> {
       this.webref.injectJavaScript(`document.activeElement.blur();`);
   }
 
-  handleBrowserActions = async event => {
-    const { dispatch, keyMode, isActive } = this.props;
-    if (
-      (keyMode === KeyMode.Terminal || keyMode === KeyMode.Text) &&
-      this.webref &&
-      isActive &&
-      this.state.isLoadingJSInjection === false
-    ) {
-      console.log("action at tabwindow", event);
-      switch (event.action) {
-        case "home":
-          this.webref.injectJavaScript(`cursorToBeginning()`);
-          break;
-        case "end":
-          this.webref.injectJavaScript(`cursorToEnd()`);
-          break;
-        case "deletePreviousChar":
-          this.webref.injectJavaScript(`deletePreviousChar()`);
-          break;
-        case "deleteNextChar":
-          this.webref.injectJavaScript(`deleteNextChar()`);
-          break;
-        case "moveBackOneChar":
-          this.webref.injectJavaScript(`moveBackOneChar()`);
-          break;
-        case "moveForwardOneChar":
-          this.webref.injectJavaScript(`moveForwardOneChar()`);
-          break;
-        case "moveUpOneLine":
-          this.webref.injectJavaScript(`moveUpOneLine()`);
-          break;
-        case "moveDownOneLine":
-          this.webref.injectJavaScript(`moveDownOneLine()`);
-          break;
+  // handleBrowserActions = async event => {
+  //   const { dispatch, keyMode, isActive } = this.props;
+  //   if (
+  //     (keyMode === KeyMode.Terminal || keyMode === KeyMode.Text) &&
+  //     this.webref &&
+  //     isActive &&
+  //     this.state.isLoadingJSInjection === false
+  //   ) {
+  //     console.log("action at tabwindow", event);
+  //     switch (event.action) {
+  //       case "home":
+  //         this.webref.injectJavaScript(`cursorToBeginning()`);
+  //         break;
+  //       case "end":
+  //         this.webref.injectJavaScript(`cursorToEnd()`);
+  //         break;
+  //       case "deletePreviousChar":
+  //         this.webref.injectJavaScript(`deletePreviousChar()`);
+  //         break;
+  //       case "deleteNextChar":
+  //         this.webref.injectJavaScript(`deleteNextChar()`);
+  //         break;
+  //       case "moveBackOneChar":
+  //         this.webref.injectJavaScript(`moveBackOneChar()`);
+  //         break;
+  //       case "moveForwardOneChar":
+  //         this.webref.injectJavaScript(`moveForwardOneChar()`);
+  //         break;
+  //       case "moveUpOneLine":
+  //         this.webref.injectJavaScript(`moveUpOneLine()`);
+  //         break;
+  //       case "moveDownOneLine":
+  //         this.webref.injectJavaScript(`moveDownOneLine()`);
+  //         break;
 
-        case "deleteLine":
-          this.webref.injectJavaScript(`deleteLine()`);
-          break;
+  //       case "deleteLine":
+  //         this.webref.injectJavaScript(`deleteLine()`);
+  //         break;
 
-        case "copy":
-          this.webref.injectJavaScript(`copyToRN()`);
-          break;
-        case "paste":
-          let content = await Clipboard.getString();
-          this.webref.injectJavaScript(`pasteFromRN("${content}")`);
-          break;
-      }
-    }
-  };
+  //       case "copy":
+  //         this.webref.injectJavaScript(`copyToRN()`);
+  //         break;
+  //       case "paste":
+  //         let content = await Clipboard.getString();
+  //         this.webref.injectJavaScript(`pasteFromRN("${content}")`);
+  //         break;
+  //     }
+  //   }
+  // };
 
   handleAppActions = async event => {
     const { dispatch, keyMode, isActive } = this.props;
@@ -288,6 +497,12 @@ class TabWindow extends Component<Props, State, any> {
         `loadModifers(${JSON.stringify(modifiers)})`
       );
     }
+
+    let initStr = JSON.stringify({
+      isCapsLockRemapped: this.state.isCapsLockRemapped
+    });
+    console.log(initStr);
+    this.webref.injectJavaScript(`init('${initStr}')`);
   }
 
   onLoadStart(syntheticEvent) {
@@ -315,6 +530,30 @@ class TabWindow extends Component<Props, State, any> {
         setTimeout(() => {
           dispatch(selectTab(sites.length));
         }, 500);
+        break;
+      case "keydown":
+        this.down[data.keyEvent.key] = true;
+
+        console.log("keydown", this.down);
+        if (data.keyEvent.key === "CapsLock") {
+          this.isNativeCapslock = false;
+          this.lastKeyTimestamp = new Date().getTime(); // need first press
+          this.handleCapsLockFromJS("keydown", data.keyEvent);
+        } else {
+          this.handleKeys(data.keyEvent);
+        }
+        this.handleSoftwareCapsLock(data.keyEvent);
+        break;
+
+      case "keyup":
+        if (data.keyEvent.key === "CapsLock") {
+          this.handleCapsLockFromJS("keyup", data.keyEvent);
+          console.log("capslock - keyup for keydown", this.down);
+        } else if (data.keyEvent.key === "Meta") {
+          // Meta+key doesn't fire key up event..
+          this.down = {};
+        }
+        this.down[data.keyEvent.key] && delete this.down[data.keyEvent.key];
         break;
     }
   }
@@ -400,7 +639,7 @@ class TabWindow extends Component<Props, State, any> {
 }
 
 function mapStateToProps(state, ownProps) {
-  const keymap = selectBrowserKeymap(state);
+  const browserKeymap = selectBrowserKeymap(state);
   const modifiers = selectModifiers(state);
   const activePaneId = state.ui.get("activePaneId");
   const activeUrl = selectActiveUrl(state, activePaneId);
@@ -434,7 +673,7 @@ function mapStateToProps(state, ownProps) {
     backToggled,
     forwardToggled,
     reloadToggled,
-    keymap,
+    browserKeymap,
     modifiers,
     focusedPane,
     excludedPatterns,
@@ -697,27 +936,117 @@ function findInPage(text){
   searchWithinNode(document.body, text.toLowerCase(), text.length);  
 }
 
-window.ReactNativeWebView.postMessage(JSON.stringify({isLoading: false, postFor: "jsloading"}))
 
+
+////////////////////////////////////////
+
+// revamp 2020
+var isCapsLockOn = false;
+var isCapsLockRemapped = false;
+var down = false;
+
+function init(initStr) {
+  let initObj = JSON.parse(initStr);
+  isCapsLockRemapped = initObj.isCapsLockRemapped;
+}
+
+function onKeyPress(e) {
+  // https://developer.mozilla.org/ja/docs/Web/API/Document/keydown_event
+  if (e.isComposing || (e.keyCode === 229 && e.repeat === false)) {
+    return true;
+  }
+
+  let key = e.key;
+
+  // for some reason, it comes with charcode 710. It looks ^ but it's not
+  if (key.charCodeAt(0) === 710 && key.length === 2) {
+    key = key.substr(1);
+    // updateInputValue(key);
+    // e.preventDefault();
+    // e.stopPropagation();
+  }
+
+  // Handle alt-code. RN only needs to know the code but not key, like ©,å,,,.
+  if (e.altKey) {
+    // the both which and keyCode are deprecated but it's handy.
+    let code = event.which || event.keyCode;
+    key = String.fromCharCode(code);
+  }
+  window.ReactNativeWebView &&
+    window.ReactNativeWebView.postMessage(
+      JSON.stringify({
+        keyEvent: {
+          key: key,
+          type: e.type,
+          modifiers: {
+            shiftKey: e.shiftKey,
+            metaKey: e.metaKey,
+            altKey: e.altKey,
+            ctrlKey: e.ctrlKey
+          }
+        },
+        postFor: e.type
+      })
+    );
+
+  if (isCapsLockRemapped) {
+    down[e.key] = new Date().getTime();
+
+    // Need to handle input depending on software capslock
+    if (/^[A-Za-z]$/.test(key)) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  }
+
+  if (e.type === "keyup" && /^[ -~]|Enter$/.test(key)) {
+    var el = document.activeElement;
+    sendTextValue(el.value);
+  }
+}
+
+function sendTextValue(value) {
+  window.ReactNativeWebView.postMessage(
+    JSON.stringify({ words: value, postFor: "inputValue" })
+  );
+}
+
+function updateInputValue(key) {
+  var el = document.activeElement;
+  var startPosition = el.selectionStart;
+  var value = el.value;
+
+  el.value = value.slice(0, startPosition) + key + value.slice(startPosition);
+  if (el.createTextRange) {
+    var part = el.createTextRange();
+    part.move("character", startPosition + 1);
+    part.select();
+  } else if (el.setSelectionRange) {
+    el.setSelectionRange(startPosition + 1, startPosition + 1);
+  }
+  //sendTextValue(el.value);
+}
+
+window.document.addEventListener("keydown", onKeyPress, false);
+window.document.addEventListener("keyup", onKeyPress, false);
+
+
+window.ReactNativeWebView.postMessage(JSON.stringify({isLoading: false, postFor: "jsloading"}))
 true;
 `;
 
 // specify 16px fontSize not to zoom in.
 const focusJS = `
 setTimeout(function(){
-  if (/^https:\\/\\/www\\.wazaterm\\.com\\/terminals\\/\\S+/.test(window.location.href)){
-    window.term.focus()
-  }else{
-    var input = document.createElement("input");
-    input.type = "text";  
-    input.style.position = "absolute";
-    input.style.fontSize = "16px";
-    input.style.top = window.pageYOffset + 'px';
-    document.body.appendChild(input);
-    input.focus();
-    input.blur();
-    input.setAttribute("style", "display:none");
-    delete input;
-  }
+  var input = document.createElement("input");
+  input.type = "text";  
+  input.style.position = "absolute";
+  input.style.fontSize = "16px";
+  input.style.top = window.pageYOffset + 'px';
+  document.body.appendChild(input);
+  input.focus();
+  input.blur();
+  input.setAttribute("style", "display:none");
+  delete input;
 }, 500);
 `;
