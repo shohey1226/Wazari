@@ -48,7 +48,8 @@ class Tab extends Component {
       onPressHandler,
       onTabLayout,
       styles,
-      siteTitles
+      siteTitle,
+      siteUrl
     } = this.props;
 
     const { label, url, onPressButton, id } = tab;
@@ -79,8 +80,8 @@ class Tab extends Component {
         key={page}
       >
         <View style={containerStyle}>
-          <Favicon url={url} />
-          <Text style={textStyle}>{siteTitles[id]}</Text>
+          <Favicon url={siteUrl} />
+          <Text style={textStyle}>{siteTitle}</Text>
           <Button
             style={{ height: 37.5 }}
             transparent
@@ -104,13 +105,20 @@ class Tab extends Component {
 
 function mapStateToTabProps(state, ownProps) {
   const sites = selectSites(state, ownProps.paneId);
-  let siteTitles = {};
-  sites.forEach(s => {
-    const tabTitle = s.title ? _truncate(s.title) : _truncate(s.url);
-    siteTitles[s.id] = tabTitle;
-  });
+  let siteTitle = "";
+  let siteUrl = "";
+  for (let i = 0; i < sites.length; i++) {
+    if (sites[i].id === ownProps.tab.id) {
+      siteTitle = sites[i].title
+        ? _truncate(sites[i].title)
+        : _truncate(sites[i].url);
+      siteUrl = sites[i].url;
+      break;
+    }
+  }
   return {
-    siteTitles
+    siteTitle,
+    siteUrl
   };
 }
 
