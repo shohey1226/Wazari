@@ -173,7 +173,7 @@ class WVInput extends Component<Props, IState, any> {
                 const now = new Date().getTime();
                 if (
                   this.lastKeyTimestamp &&
-                  now - this.lastKeyTimestamp > 600
+                  now - this.lastKeyTimestamp > 500
                 ) {
                   delete this.down["CapsLock"]; // keyup
                 }

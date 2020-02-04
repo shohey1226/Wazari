@@ -215,7 +215,7 @@ class NavBar extends Component<Props, IState, any> {
       if (/^https:\/\/www\.wazaterm\.com\/terminals\/\S+/.test(activeUrl)) {
         return (
           <MCIcon
-            name="toggle-switch"
+            name="mdiCapsLock"
             style={{ color: "#ffd60a", fontSize: 22 }}
           />
         );

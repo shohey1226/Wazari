@@ -40,6 +40,7 @@ interface State {
   progress: number;
   userAgent: string | null;
   isCapsLockRemapped: boolean;
+  nextAppState: string;
 }
 
 interface Props {
@@ -87,14 +88,8 @@ class TabWindow extends Component<Props, State, any> {
       this.setState({ isLoadingSVim: false });
     });
     this.subscriptions.push(
-      // DAVKeyManagerEmitter.addListener(
-      //   "RNBrowserKeyEvent",
-      //   this.handleBrowserActions
-      // ),
-
       DAVKeyManagerEmitter.addListener("RNAppKeyEvent", this.handleAppActions)
     );
-
     AppState.addEventListener("change", this._handleAppStateChange);
   }
 
@@ -107,6 +102,9 @@ class TabWindow extends Component<Props, State, any> {
 
   _handleAppStateChange = nextAppState => {
     const { isActive } = this.props;
+    // pass over app state to WVTerm
+    this.setState({ nextAppState: nextAppState });
+
     if (nextAppState === "active") {
       if (isActive) {
         this.focusWindow();
@@ -265,7 +263,7 @@ class TabWindow extends Component<Props, State, any> {
                 const now = new Date().getTime();
                 if (
                   this.lastKeyTimestamp &&
-                  now - this.lastKeyTimestamp > 600
+                  now - this.lastKeyTimestamp > 500
                 ) {
                   delete this.down["CapsLock"]; // keyup
                 }
@@ -371,62 +369,14 @@ class TabWindow extends Component<Props, State, any> {
 
   focusWindow() {
     this.webref && this.webref.injectJavaScript(focusJS);
+    this.down = {};
   }
 
   blurWindow() {
+    this.down = {};
     this.webref &&
       this.webref.injectJavaScript(`document.activeElement.blur();`);
   }
-
-  // handleBrowserActions = async event => {
-  //   const { dispatch, keyMode, isActive } = this.props;
-  //   if (
-  //     (keyMode === KeyMode.Terminal || keyMode === KeyMode.Text) &&
-  //     this.webref &&
-  //     isActive &&
-  //     this.state.isLoadingJSInjection === false
-  //   ) {
-  //     console.log("action at tabwindow", event);
-  //     switch (event.action) {
-  //       case "home":
-  //         this.webref.injectJavaScript(`cursorToBeginning()`);
-  //         break;
-  //       case "end":
-  //         this.webref.injectJavaScript(`cursorToEnd()`);
-  //         break;
-  //       case "deletePreviousChar":
-  //         this.webref.injectJavaScript(`deletePreviousChar()`);
-  //         break;
-  //       case "deleteNextChar":
-  //         this.webref.injectJavaScript(`deleteNextChar()`);
-  //         break;
-  //       case "moveBackOneChar":
-  //         this.webref.injectJavaScript(`moveBackOneChar()`);
-  //         break;
-  //       case "moveForwardOneChar":
-  //         this.webref.injectJavaScript(`moveForwardOneChar()`);
-  //         break;
-  //       case "moveUpOneLine":
-  //         this.webref.injectJavaScript(`moveUpOneLine()`);
-  //         break;
-  //       case "moveDownOneLine":
-  //         this.webref.injectJavaScript(`moveDownOneLine()`);
-  //         break;
-
-  //       case "deleteLine":
-  //         this.webref.injectJavaScript(`deleteLine()`);
-  //         break;
-
-  //       case "copy":
-  //         this.webref.injectJavaScript(`copyToRN()`);
-  //         break;
-  //       case "paste":
-  //         let content = await Clipboard.getString();
-  //         this.webref.injectJavaScript(`pasteFromRN("${content}")`);
-  //         break;
-  //     }
-  //   }
-  // };
 
   handleAppActions = async event => {
     const { dispatch, keyMode, isActive } = this.props;
@@ -570,6 +520,7 @@ class TabWindow extends Component<Props, State, any> {
           }}
           url={url}
           tabId={tabId}
+          nextAppState={this.state.nextAppState}
           {...this.props}
         />
       );
@@ -870,21 +821,6 @@ function pasteFromRN(words) {
     el.setSelectionRange(caretPos+words.length, caretPos+words.length);  
   }
 }
-
-// function typingFromRN(key){
-//   var el = document.activeElement;
-//   var startPosition = el.selectionStart;
-//   var value = el.value;
-
-//   el.value = value.slice(0, startPosition) + key + value.slice(startPosition);
-//   if (el.createTextRange) {
-//     var part = el.createTextRange();
-//     part.move("character", startPosition+1);
-//     part.select();
-//   } else if (el.setSelectionRange) {
-//     el.setSelectionRange(startPosition+1, startPosition+1);
-//   }
-// }
 
 function hitAHintOpeningNewTab(){
   var openUrl = function(url){

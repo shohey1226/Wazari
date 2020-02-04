@@ -17,6 +17,9 @@ interface Props {
   modifiers: any;
   browserKeymap: any;
   updateCapsLockState: (any) => void;
+  nextAppState: string;
+  isActive: boolean;
+  reloadToggled: boolean;
 }
 
 // Use webview input
@@ -65,16 +68,34 @@ class WVTerm extends Component<Props, IState, any> {
   }
 
   componentDidUpdate(prevProp) {
-    const { reloadToggled, isActive } = this.props;
+    const { reloadToggled, isActive, nextAppState } = this.props;
     if (prevProp.reloadToggled !== reloadToggled && isActive) {
       this.webref && this.webref.reload();
       this.down = {};
     }
 
     if (prevProp.isActive !== isActive && isActive === true) {
-      this.webref && this.webref.injectJavaScript(`window.term.focus()`);
-      this.down = {};
+      this.focusWindow();
     }
+
+    // app state change
+    if (prevProp.nextAppState !== nextAppState && nextAppState === "active") {
+      if (isActive) {
+        this.focusWindow();
+      } else {
+        this.blurWindow();
+      }
+    }
+  }
+
+  focusWindow() {
+    this.webref && this.webref.injectJavaScript(`window.term.focus()`);
+    this.down = {};
+  }
+
+  blurWindow() {
+    this.down = {};
+    this.webref && this.webref.injectJavaScript(`window.term.blur();`);
   }
 
   // RN JS(Webview) -> RN -> Native(iOS) -> RN handling both keydown/up
@@ -299,7 +320,7 @@ class WVTerm extends Component<Props, IState, any> {
 
   onLoadEnd() {
     const { modifiers } = this.props;
-    this.webref.injectJavaScript(`window.term.focus();`);
+    this.focusWindow();
     let initStr = JSON.stringify({
       isCapsLockRemapped: this.state.isCapsLockRemapped
     });
