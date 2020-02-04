@@ -88,8 +88,26 @@ class TabWindow extends Component<Props, State, any> {
       this.setState({ isLoadingSVim: false });
     });
     this.subscriptions.push(
-      DAVKeyManagerEmitter.addListener("RNAppKeyEvent", this.handleAppActions)
+      DAVKeyManagerEmitter.addListener("RNAppKeyEvent", this.handleAppActions),
+      DAVKeyManagerEmitter.addListener("modKeyPress", data => {
+        console.log("RN: ModsFromNative", data);
+        switch (data.name) {
+          case "mods-down":
+            if (data.flags === 262144) {
+              // UIKeycommand(Native) to RN and use down object to detect simaltanous keys.
+              // handle control key. Looks it's not required after UIKeycommand is set..
+              //this.down["Control"] = true;
+            } else {
+              this.handleCapsLockFromNative(true);
+            }
+            break;
+          case "mods-up":
+            //this.handleCapsLockFromNative(false);
+            break;
+        }
+      })
     );
+
     AppState.addEventListener("change", this._handleAppStateChange);
   }
 
