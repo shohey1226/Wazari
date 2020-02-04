@@ -214,25 +214,16 @@ class NavBar extends Component<Props, IState, any> {
     if (this.props.keySwitchOn) {
       if (/^https:\/\/www\.wazaterm\.com\/terminals\/\S+/.test(activeUrl)) {
         return (
-          <MCIcon
-            name="mdiCapsLock"
-            style={{ color: "#ffd60a", fontSize: 22 }}
-          />
+          <MCIcon name="caps-lock" style={{ color: "#ffd60a", fontSize: 22 }} />
         );
       } else {
         return (
-          <MCIcon
-            name="toggle-switch"
-            style={{ color: "#30d158", fontSize: 22 }}
-          />
+          <MCIcon name="caps-lock" style={{ color: "#30d158", fontSize: 22 }} />
         );
       }
     } else {
       return (
-        <MCIcon
-          name="toggle-switch-off"
-          style={{ color: "#aaa", fontSize: 22 }}
-        />
+        <MCIcon name="caps-lock" style={{ color: "#aaa", fontSize: 22 }} />
       );
     }
   }
