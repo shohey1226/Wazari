@@ -6,7 +6,7 @@ const { DAVKeyManager } = NativeModules;
 
 class SettingBackButton extends Component {
   onPressBack() {
-    DAVKeyManager.turnOnKeymap();
+    //DAVKeyManager.turnOnKeymap();
     this.props.pop();
   }
 

@@ -154,15 +154,15 @@ RCT_EXPORT_METHOD(setInputKeymap:(NSDictionary *)keymap)
 }
 
 
-RCT_EXPORT_METHOD(turnOnKeymap)
-{
-  [[NSNotificationCenter defaultCenter] postNotificationName:@"turnOnKeymap" object:nil ];
-}
-
-RCT_EXPORT_METHOD(turnOffKeymap)
-{
-  [[NSNotificationCenter defaultCenter] postNotificationName:@"turnOffKeymap" object:nil ];
-}
+//RCT_EXPORT_METHOD(turnOnKeymap)
+//{
+//  [[NSNotificationCenter defaultCenter] postNotificationName:@"turnOnKeymap" object:nil ];
+//}
+//
+//RCT_EXPORT_METHOD(turnOffKeymap)
+//{
+//  [[NSNotificationCenter defaultCenter] postNotificationName:@"turnOffKeymap" object:nil ];
+//}
 
 
 @end

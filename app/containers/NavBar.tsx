@@ -188,7 +188,7 @@ class NavBar extends Component<Props, IState, any> {
   }
 
   onPressSetting() {
-    DAVKeyManager.turnOffKeymap();
+    //DAVKeyManager.turnOffKeymap();
     this.props.navigate({ routeName: "Setting" });
   }
 

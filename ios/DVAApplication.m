@@ -40,8 +40,8 @@ KeyCommand *_activeModsCommand;
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(activeModeReceived:) name:@"activeMode" object:nil];
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(browserKeymapReceived:) name:@"browserKeymap" object:nil];
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(inputKeymapReceived:) name:@"inputKeymap" object:nil];
-  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(turnOnKeymapReceived:) name:@"turnOnKeymap" object:nil];
-  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(turnOffKeymapReceived:) name:@"turnOffKeymap" object:nil];
+//  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(turnOnKeymapReceived:) name:@"turnOnKeymap" object:nil];
+//  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(turnOffKeymapReceived:) name:@"turnOffKeymap" object:nil];
   
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(appKeymapReceived:) name:@"appKeymap" object:nil];
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(modsReceived:) name:@"mods" object:nil];
@@ -195,164 +195,21 @@ This is main function for keymapping - API to call key notification to RN side.
   _inputKeymap = notification.userInfo[@"inputKeymap"];
 }
 
-- (void) turnOnKeymapReceived:(NSNotification *)notification
-{
-   NSLog(@"Turn on keymap!");
-  _keymapEnabled = YES;
-}
-
-- (void) turnOffKeymapReceived:(NSNotification *)notification
-{
-   NSLog(@"Turn off keymap!");
-  _keymapEnabled = NO;
-}
+//- (void) turnOnKeymapReceived:(NSNotification *)notification
+//{
+//   NSLog(@"Turn on keymap!");
+//  _keymapEnabled = YES;
+//}
+//
+//- (void) turnOffKeymapReceived:(NSNotification *)notification
+//{
+//   NSLog(@"Turn off keymap!");
+//  _keymapEnabled = NO;
+//}
 
 - (BOOL)canBecomeFirstResponder {
   return YES;
 }
 
-
-//// keymap is set on RN side. When there is key set, then execute the handleCommand.
-//- (NSMutableArray *)buildDAKeymap :(NSString*)mode
-//{
-//  NSDictionary* _keymap;
-//  if([mode isEqual: @"app"]){
-//    _keymap = _appKeymap;
-//  }else if([mode isEqual: @"browser"]){
-//    _keymap = _browserKeymap;
-//  }
-//  else if([mode isEqual: @"input"]){
-//    _keymap = _inputKeymap;
-//  }
-//
-//  NSMutableArray *_commands = [[NSMutableArray alloc] init];
-//  for (NSString* keyMod in [_keymap allKeys]) {
-//    NSArray *keyModArray = [keyMod componentsSeparatedByString:@":*:"];
-//    NSString* key = keyModArray[0];
-//    NSString* modStr = keyModArray[1];
-//    NSInteger intMod = [[modStr stringByTrimmingCharactersInSet:[[NSCharacterSet decimalDigitCharacterSet] invertedSet]] intValue];
-//    if([mode  isEqual: @"app"]){
-//      [_commands addObject:[UIKeyCommand keyCommandWithInput:key modifierFlags:intMod action:@selector(handleAppCommand:)]];
-//    }else if([mode  isEqual: @"browser"]){
-//      [_commands addObject:[UIKeyCommand keyCommandWithInput:key modifierFlags:intMod action:@selector(handleBrowserCommand:)]];
-//    }else if([mode  isEqual: @"input"]){
-//      [_commands addObject:[UIKeyCommand keyCommandWithInput:key modifierFlags:intMod action:@selector(handleInputCommand:)]];
-//    }
-//  }
-//
-//  return _commands;
-//}
-
-
-//- (void)handleBrowserCommand:(UIKeyCommand *)command {
-//  NSLog(@"handleBrowserCommand!!");
-//  [self _handleDACommand:command :@"browser"];
-//}
-
-//- (void)handleInputCommand:(UIKeyCommand *)command {
-//  NSLog(@"handleInputCommand!!");
-//  [self _handleDACommand:command :@"input"];
-//}
-
-
-//- (void)_handleDACommand:(UIKeyCommand *)command :(NSString*)mode {
-//  NSLog(@"handleDACommand!!");
-//  UIKeyModifierFlags modifierFlags = command.modifierFlags;
-//  NSString *input = command.input;
-//  NSDictionary *_keymap;
-//  NSString *_notificatinName;
-//
-//  if([mode isEqual: @"browser"]){
-//    _keymap = _browserKeymap;
-//    _notificatinName = @"BrowserKeyEvent";
-//  }else if([mode isEqual: @"app"]){
-//    _keymap = _appKeymap;
-//    _notificatinName = @"AppKeyEvent";
-//  }
-//
-//  for (NSString* keyMod in [_keymap allKeys]) {
-//    NSArray *keyModArray = [keyMod componentsSeparatedByString:@":*:"];
-//    NSString* key = keyModArray[0];
-//    NSString* modStr = keyModArray[1];
-//    NSInteger intMod = [[modStr stringByTrimmingCharactersInSet:[[NSCharacterSet decimalDigitCharacterSet] invertedSet]] intValue];
-//    if(intMod == modifierFlags && input == key){
-//      NSString *action = [ _keymap objectForKey:keyMod];
-//      NSLog(@"action: %@", action);
-//      NSDictionary *userInfo = @{@"action": action};
-//      [[NSNotificationCenter defaultCenter] postNotificationName:_notificatinName object:self userInfo:userInfo];
-//      break;
-//    }
-//  }
-//}
-
-//- (void)handleCommand:(UIKeyCommand *)command {
-//
-//  UIKeyModifierFlags modifierFlags = command.modifierFlags;
-//  NSString *input = command.input;
-//
-//  NSMutableString *modifierSymbols = [[NSMutableString alloc] init];
-//  NSMutableString *inputCharacters = [[NSMutableString alloc] init];
-//  NSDictionary *dict = @{ @"shiftKey" : @NO, @"altKey" : @NO, @"ctrlKey": @NO, @"metaKey": @NO, @"capslockKey": @NO};
-//  NSMutableDictionary *modifierDict = [ dict mutableCopy ];
-//
-//  // https://github.com/ajaxorg/ace/blob/master/lib/ace/lib/keys.js
-//  if ((modifierFlags & UIKeyModifierAlphaShift) == UIKeyModifierAlphaShift) {
-//    [modifierSymbols appendString:@"CapsLock"];
-//    modifierDict[@"capslockKey"] = @YES;
-//  }
-//  if ((modifierFlags & UIKeyModifierShift) == UIKeyModifierShift) {
-//    [modifierSymbols appendString:@"Shift"];
-//    modifierDict[@"shiftKey"] = @YES;
-//  }
-//  if ((modifierFlags & UIKeyModifierControl) == UIKeyModifierControl) {
-//    [modifierSymbols appendString:@"Ctrl"];
-//    modifierDict[@"ctrlKey"] = @YES;
-//  }
-//  if ((modifierFlags & UIKeyModifierAlternate) == UIKeyModifierAlternate) {
-//    [modifierSymbols appendString:@"Alt"];
-//    modifierDict[@"altKey"] = @YES;
-//  }
-//  if ((modifierFlags & UIKeyModifierCommand) == UIKeyModifierCommand) {
-//    [modifierSymbols appendString:@"Meta"];
-//    modifierDict[@"metaKey"] = @YES;
-//  }
-//
-//  if ([input isEqualToString:@"\b"]) {
-//    [inputCharacters appendFormat:@"%@", @"Backspace"];
-//  }
-//  if ([input isEqualToString:@"\t"]) {
-//    [inputCharacters appendFormat:@"%@", @"Tab"];
-//  }
-//  if ([input isEqualToString:@"\r"]) {
-//    [inputCharacters appendFormat:@"%@", @"Return"];
-//  }
-//  if (input == UIKeyInputUpArrow) {
-//    [inputCharacters appendFormat:@"%@", @"Up"];
-//  }
-//  if (input == UIKeyInputDownArrow) {
-//    [inputCharacters appendFormat:@"%@", @"Down"];
-//  }
-//  if (input == UIKeyInputLeftArrow) {
-//    [inputCharacters appendFormat:@"%@", @"Left"];
-//  }
-//  if (input == UIKeyInputRightArrow) {
-//    [inputCharacters appendFormat:@"%@", @"Right"];
-//  }
-//  if (input == UIKeyInputEscape) {
-//    [inputCharacters appendFormat:@"%@", @"Esc"];
-//  }
-//
-//  if (input.length > 0 && inputCharacters.length == 0) {
-//    [inputCharacters appendFormat:@"%@", input];
-//  }
-//
-//  NSLog(@"input: %@", input);
-//  NSLog(@"modifierDict: %@", modifierDict);
-//  NSLog(@"inputCharacterds: %@", inputCharacters);
-//
-//  NSDictionary *userInfo = @{@"key": inputCharacters, @"modifiers": modifierDict};
-//  [[NSNotificationCenter defaultCenter] postNotificationName:@"KeyEvent" object:self userInfo:userInfo];
-//
-//}
 
 @end

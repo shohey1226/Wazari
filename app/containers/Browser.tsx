@@ -133,14 +133,14 @@ class Browser extends Component<Props, State> {
       //   DAVKeyManager.setMode("input");
       //   break;
       case KeyMode.Direct:
-        DAVKeyManager.turnOffKeymap();
+        //DAVKeyManager.turnOffKeymap();
         break;
       case KeyMode.Browser:
-        DAVKeyManager.turnOnKeymap();
+        //DAVKeyManager.turnOnKeymap();
         DAVKeyManager.setMode("browser");
         break;
       case KeyMode.Search:
-        DAVKeyManager.turnOnKeymap();
+        //DAVKeyManager.turnOnKeymap();
         DAVKeyManager.setMode("text");
         break;
     }

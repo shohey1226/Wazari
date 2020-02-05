@@ -106,7 +106,7 @@ class PaneRoot extends Component<Props, State> {
       DAVKeyManagerEmitter.addListener("RNAppKeyEvent", this.handleAppActions)
     );
 
-    DAVKeyManager.turnOnKeymap();
+    //DAVKeyManager.turnOnKeymap();
     DAVKeyManager.setMode("text");
 
     // let newNodeId = TreeUtils.addNode(this.root, "Row", 1);
