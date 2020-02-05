@@ -57,7 +57,7 @@ interface Props {
   activeUrl: string;
   isActive: boolean;
   isCapsLockOn: boolean;
-  softCapslockState: boolean;
+  isSoftCapslockOn: boolean;
 }
 
 const USER_AGENT =
@@ -86,7 +86,7 @@ class TabWindow extends Component<Props, State, any> {
   }
 
   componentDidMount() {
-    const { isActive, dispatch, softCapslockState, capslockState } = this.props;
+    const { isActive, dispatch, isSoftCapslockOn, capslockState } = this.props;
     sVim.init(() => {
       this.setState({ isLoadingSVim: false });
     });
@@ -147,7 +147,8 @@ class TabWindow extends Component<Props, State, any> {
       keySwitchOn,
       isActive,
       activePaneId,
-      wordsForPageFind
+      wordsForPageFind,
+      isSoftCapslockOn
     } = this.props;
 
     // tab is chagned
@@ -214,7 +215,7 @@ class TabWindow extends Component<Props, State, any> {
   }
 
   handleKeys(keyEvent) {
-    const { modifiers, browserKeymap } = this.props;
+    const { modifiers, browserKeymap, isSoftCapslockOn } = this.props;
 
     console.log("down", this.down);
     const pressedKeys = Object.keys(this.down);
@@ -300,8 +301,7 @@ class TabWindow extends Component<Props, State, any> {
     if (!hasAction && this.state.isCapsLockRemapped) {
       if (/^[A-Za-z]$/.test(keyEvent.key) && keyEvent.type === "keydown") {
         let inputKey =
-          this.state.isCapsLockOn === true ||
-          pressedKeys.indexOf("Shift") !== -1
+          isSoftCapslockOn === true || this.down["Shift"] === true
             ? keyEvent.key.toUpperCase()
             : keyEvent.key.toLowerCase();
 
@@ -389,26 +389,26 @@ class TabWindow extends Component<Props, State, any> {
   }
 
   focusWindow() {
-    const { softCapslockState, dispatch, capslockState } = this.props;
+    const { isSoftCapslockOn, dispatch, capslockState } = this.props;
 
     this.webref && this.webref.injectJavaScript(focusJS);
     this.down = {};
 
     const _capsState =
-      softCapslockState === true ? CapslockState.SoftOn : CapslockState.SoftOff;
+      isSoftCapslockOn === true ? CapslockState.SoftOn : CapslockState.SoftOff;
     if (capslockState !== _capsState) {
       dispatch(updateCapslock(_capsState));
     }
   }
 
   blurWindow() {
-    const { dispatch, softCapslockState } = this.props;
+    const { dispatch, isSoftCapslockOn } = this.props;
     this.down = {};
     this.webref &&
       this.webref.injectJavaScript(`document.activeElement.blur();`);
 
     const _capsState =
-      softCapslockState === true ? CapslockState.SoftOn : CapslockState.SoftOff;
+      isSoftCapslockOn === true ? CapslockState.SoftOn : CapslockState.SoftOff;
     dispatch(updateCapslock(_capsState));
   }
 
@@ -489,7 +489,7 @@ class TabWindow extends Component<Props, State, any> {
   }
 
   onMessage(event) {
-    const { dispatch, sites, capslockState, softCapslockState } = this.props;
+    const { dispatch, sites, capslockState, isSoftCapslockOn } = this.props;
     const data = JSON.parse(event.nativeEvent.data);
     console.log(data);
     switch (data.postFor) {
@@ -542,7 +542,7 @@ class TabWindow extends Component<Props, State, any> {
         ) {
           // revert capslock from state
           const _capsState =
-            softCapslockState === true
+            isSoftCapslockOn === true
               ? CapslockState.SoftOn
               : CapslockState.SoftOff;
           dispatch(updateCapslock(_capsState));
@@ -654,7 +654,7 @@ function mapStateToProps(state, ownProps) {
   const keyMode = state.ui.get("keyMode");
   const wordsForPageFind = state.ui.get("wordsForPageFind");
   const capslockState = state.ui.get("capslockState");
-  const softCapslockState = state.ui.get("softCapslockState");
+  const isSoftCapslockOn = state.ui.get("isSoftCapslockOn");
   const sites = selectSites(state, ownProps.paneId);
   const activeTabIndex = state.ui.getIn([
     "panes",
@@ -690,7 +690,7 @@ function mapStateToProps(state, ownProps) {
     keyMode,
     url,
     capslockState,
-    softCapslockState
+    isSoftCapslockOn
   };
 }
 

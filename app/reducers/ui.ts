@@ -45,7 +45,7 @@ export interface UiState extends Map<any, any> {
   paneBlueprint: any;
   wordsForPageFind: string;
   capslockState: CapslockState; // For Icon in Navbar
-  softCapslockState: boolean; // soft capslock state
+  isSoftCapslockOn: boolean; // soft capslock state
 }
 
 const initialState: UiState = fromJS({
@@ -60,8 +60,8 @@ const initialState: UiState = fromJS({
   paneBlueprint: {},
   panes: {},
   wordsForPageFind: "",
-  isCapslockOn: CapslockState.SoftOff,
-  softCapslockState: false
+  //  isCapslockOn: CapslockState.SoftOff,
+  isSoftCapslockOn: false
 });
 
 export default function ui(state = initialState, action) {
@@ -178,7 +178,7 @@ export default function ui(state = initialState, action) {
       return state.set("capslockState", action.capslockState);
 
     case TOGGLE_SOFT_CAPSLOCK:
-      return state.set("softCapslockState", !state.get("softCapslockState"));
+      return state.set("isSoftCapslockOn", !state.get("isSoftCapslockOn"));
 
     // case LOGOUT:
     //   // make it default state
