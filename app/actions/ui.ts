@@ -1,4 +1,4 @@
-import { KeyMode } from "../types/index.d";
+import { KeyMode, CapslockState } from "../types/index.d";
 
 export const ADD_NEW_TAB = "ADD_NEW_TAB";
 export const SELECT_TAB = "SELECT_TAB";
@@ -17,6 +17,8 @@ export const REMOVE_PANE = "REMOVE_PANE";
 export const SELECT_PANE = "SELECT_PANE";
 export const UPDATE_PANE_BLUEPRINT = "UPDATE_PANE_BLUEPRINT";
 export const UPDATE_WORDS_FOR_PAGE_FIND = "UPDATE_WORDS_FOR_PAGE_FIND";
+export const UPDATE_CAPSLOCK = "UPDATE_CAPSLOCK";
+export const TOGGLE_SOFT_CAPSLOCK = "TOGGLE_SOFT_CAPSLOCK";
 
 export function updateWordsForPageFind(words: string) {
   return {
@@ -315,6 +317,19 @@ export function updatePaneBlueprint(blueprint: Object) {
   return {
     type: UPDATE_PANE_BLUEPRINT,
     blueprint: blueprint
+  };
+}
+
+export function updateCapslock(capslockState: CapslockState) {
+  return {
+    type: UPDATE_CAPSLOCK,
+    capslockState: capslockState
+  };
+}
+
+export function toggleSoftCapslock() {
+  return {
+    type: TOGGLE_SOFT_CAPSLOCK
   };
 }
 

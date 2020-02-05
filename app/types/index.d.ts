@@ -27,3 +27,10 @@ export enum KeyMode {
 | browser  | browser  | app+browser       |
 +----------+----------+-------------------+
 */
+
+export enum CapslockState {
+  SoftOn = "softOn",
+  SoftOff = "softOff",
+  hardOn = "hardOn",
+  hardOff = "hardOff"
+}

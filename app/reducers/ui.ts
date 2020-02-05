@@ -14,10 +14,12 @@ import {
   REMOVE_PANE,
   SELECT_PANE,
   UPDATE_PANE_BLUEPRINT,
-  UPDATE_WORDS_FOR_PAGE_FIND
+  UPDATE_WORDS_FOR_PAGE_FIND,
+  UPDATE_CAPSLOCK,
+  TOGGLE_SOFT_CAPSLOCK
 } from "../actions/ui";
 import { Map, fromJS, List } from "immutable";
-import { KeyMode } from "../types/index.d";
+import { KeyMode, CapslockState } from "../types/index.d";
 
 type Site = {
   url: string;
@@ -42,6 +44,8 @@ export interface UiState extends Map<any, any> {
   activePaneId: string;
   paneBlueprint: any;
   wordsForPageFind: string;
+  capslockState: CapslockState; // For Icon in Navbar
+  softCapslockState: boolean; // soft capslock state
 }
 
 const initialState: UiState = fromJS({
@@ -55,7 +59,9 @@ const initialState: UiState = fromJS({
   activePaneId: null,
   paneBlueprint: {},
   panes: {},
-  wordsForPageFind: ""
+  wordsForPageFind: "",
+  isCapslockOn: CapslockState.SoftOff,
+  softCapslockState: false
 });
 
 export default function ui(state = initialState, action) {
@@ -167,6 +173,12 @@ export default function ui(state = initialState, action) {
 
     case UPDATE_PANE_BLUEPRINT:
       return state.set("paneBlueprint", fromJS(action.blueprint));
+
+    case UPDATE_CAPSLOCK:
+      return state.set("capslockState", action.capslockState);
+
+    case TOGGLE_SOFT_CAPSLOCK:
+      return state.set("softCapslockState", !state.get("softCapslockState"));
 
     // case LOGOUT:
     //   // make it default state

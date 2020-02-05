@@ -24,11 +24,12 @@ import {
   updateSite,
   closeTab,
   updateKeySwitch,
-  updateWordsForPageFind
+  updateWordsForPageFind,
+  updateCapslock
 } from "../actions/ui";
 import { addHistory } from "../actions/user";
 import { selectSites, selectActiveUrl } from "../selectors/ui";
-import { KeyMode } from "../types/index.d";
+import { KeyMode, CapslockState } from "../types/index.d";
 
 const { DAVKeyManager } = NativeModules;
 const DAVKeyManagerEmitter = new NativeEventEmitter(DAVKeyManager);
@@ -41,6 +42,7 @@ interface State {
   userAgent: string | null;
   isCapsLockRemapped: boolean;
   nextAppState: string;
+  capslockState: CapslockState;
 }
 
 interface Props {
@@ -55,6 +57,7 @@ interface Props {
   activeUrl: string;
   isActive: boolean;
   isCapsLockOn: boolean;
+  softCapslockState: boolean;
 }
 
 const USER_AGENT =
@@ -83,7 +86,7 @@ class TabWindow extends Component<Props, State, any> {
   }
 
   componentDidMount() {
-    const { isActive } = this.props;
+    const { isActive, dispatch, softCapslockState, capslockState } = this.props;
     sVim.init(() => {
       this.setState({ isLoadingSVim: false });
     });
@@ -386,14 +389,27 @@ class TabWindow extends Component<Props, State, any> {
   }
 
   focusWindow() {
+    const { softCapslockState, dispatch, capslockState } = this.props;
+
     this.webref && this.webref.injectJavaScript(focusJS);
     this.down = {};
+
+    const _capsState =
+      softCapslockState === true ? CapslockState.SoftOn : CapslockState.SoftOff;
+    if (capslockState !== _capsState) {
+      dispatch(updateCapslock(_capsState));
+    }
   }
 
   blurWindow() {
+    const { dispatch, softCapslockState } = this.props;
     this.down = {};
     this.webref &&
       this.webref.injectJavaScript(`document.activeElement.blur();`);
+
+    const _capsState =
+      softCapslockState === true ? CapslockState.SoftOn : CapslockState.SoftOff;
+    dispatch(updateCapslock(_capsState));
   }
 
   handleAppActions = async event => {
@@ -473,7 +489,7 @@ class TabWindow extends Component<Props, State, any> {
   }
 
   onMessage(event) {
-    const { dispatch, sites } = this.props;
+    const { dispatch, sites, capslockState, softCapslockState } = this.props;
     const data = JSON.parse(event.nativeEvent.data);
     console.log(data);
     switch (data.postFor) {
@@ -516,6 +532,29 @@ class TabWindow extends Component<Props, State, any> {
           this.down = {};
         }
         this.down[data.keyEvent.key] && delete this.down[data.keyEvent.key];
+        break;
+
+      case "capslock":
+        if (
+          data.key === "Enter" ||
+          data.key === "Escape" ||
+          data.key === "Tab"
+        ) {
+          // revert capslock from state
+          const _capsState =
+            softCapslockState === true
+              ? CapslockState.SoftOn
+              : CapslockState.SoftOff;
+          dispatch(updateCapslock(_capsState));
+        } else {
+          if (data.isCapslockOn) {
+            capslockState !== CapslockState.hardOn &&
+              dispatch(updateCapslock(CapslockState.hardOn));
+          } else {
+            capslockState !== CapslockState.hardOff &&
+              dispatch(updateCapslock(CapslockState.hardOff));
+          }
+        }
         break;
     }
   }
@@ -614,6 +653,8 @@ function mapStateToProps(state, ownProps) {
   const excludedPatterns = state.user.get("excludedPatterns").toArray();
   const keyMode = state.ui.get("keyMode");
   const wordsForPageFind = state.ui.get("wordsForPageFind");
+  const capslockState = state.ui.get("capslockState");
+  const softCapslockState = state.ui.get("softCapslockState");
   const sites = selectSites(state, ownProps.paneId);
   const activeTabIndex = state.ui.getIn([
     "panes",
@@ -647,7 +688,9 @@ function mapStateToProps(state, ownProps) {
     isActive,
     activeTabIndex,
     keyMode,
-    url
+    url,
+    capslockState,
+    softCapslockState
   };
 }
 
@@ -907,6 +950,11 @@ function onKeyPress(e) {
   if(el.type === "text" || el.type === "textarea"){
     // ok
   }else{
+    if(e.type === "keyup"){
+      window.ReactNativeWebView.postMessage(
+        JSON.stringify({ isCapslockOn: e.getModifierState("CapsLock"), key: key, postFor: "capslock" })
+      );    
+    }
     return true;
   }
 

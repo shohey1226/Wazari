@@ -31,7 +31,7 @@ import { updateMode, updateFocusedPane, updateKeySwitch } from "../actions/ui";
 import { addExcludedPattern, removeExcludedPattern } from "../actions/user";
 import { SearchEngine } from "../components/SearchEnginePicker";
 import Search from "./Search";
-import { KeyMode } from "../types/index.d";
+import { KeyMode, CapslockState } from "../types/index.d";
 import Modal from "react-native-modal";
 
 import {
@@ -68,6 +68,7 @@ interface Props {
   focusedPane: string;
   sites: any;
   keySwitchOn: boolean;
+  capslockState: CapslockState;
 }
 
 class NavBar extends Component<Props, IState, any> {
@@ -209,23 +210,29 @@ class NavBar extends Component<Props, IState, any> {
     return pattern;
   }
 
-  switchIcon() {
-    const { activeUrl } = this.props;
-    if (this.props.keySwitchOn) {
-      if (/^https:\/\/www\.wazaterm\.com\/terminals\/\S+/.test(activeUrl)) {
-        return (
-          <MCIcon name="caps-lock" style={{ color: "#ffd60a", fontSize: 22 }} />
-        );
-      } else {
-        return (
-          <MCIcon name="caps-lock" style={{ color: "#30d158", fontSize: 22 }} />
-        );
-      }
-    } else {
-      return (
-        <MCIcon name="caps-lock" style={{ color: "#aaa", fontSize: 22 }} />
-      );
+  capslockIcon() {
+    const { capslockState } = this.props;
+    let color;
+    switch (capslockState) {
+      case CapslockState.hardOn:
+        color = "#ef5350";
+        break;
+      case CapslockState.hardOff:
+        color = "#ffcdd2";
+        break;
+      case CapslockState.SoftOff:
+        color = "#999";
+        break;
+      case CapslockState.SoftOn:
+        color = "#30d158";
+        break;
     }
+    return (
+      <MCIcon
+        name="caps-lock"
+        style={{ color: color, fontSize: 22, marginTop: 2.5 }}
+      />
+    );
   }
 
   handleAppActions = event => {
@@ -354,7 +361,7 @@ class NavBar extends Component<Props, IState, any> {
           onPress={() => this.onPressSwitch()}
           style={{ marginLeft: 5 }}
         >
-          {this.switchIcon()}
+          {this.capslockIcon()}
         </Button>
         <Button transparent light onPress={() => this.onPressAdd()}>
           <Icon name="md-add" />
@@ -397,6 +404,7 @@ function mapStateToProps(state, ownProps) {
   const orientation = state.ui.get("orientation");
   const focusedPane = state.ui.get("focusedPane");
   const keySwitchOn = state.ui.get("keySwitchOn");
+  const capslockState = state.ui.get("capslockState");
   return {
     keymap,
     modifiers,
@@ -409,7 +417,8 @@ function mapStateToProps(state, ownProps) {
     activeSite,
     sites,
     focusedPane,
-    keySwitchOn
+    keySwitchOn,
+    capslockState
   };
 }
 
