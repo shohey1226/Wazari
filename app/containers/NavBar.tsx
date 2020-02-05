@@ -39,7 +39,8 @@ import {
   selectTab,
   toggleBack,
   toggleForward,
-  toggleReload
+  toggleReload,
+  toggleSoftCapslock
 } from "../actions/ui";
 
 const { DAVKeyManager } = NativeModules;
@@ -192,14 +193,9 @@ class NavBar extends Component<Props, IState, any> {
     this.props.navigate({ routeName: "Setting" });
   }
 
-  onPressSwitch() {
-    const { dispatch, activeUrl, keySwitchOn } = this.props;
-    const pattern = this.urlToPattern(activeUrl);
-    if (keySwitchOn) {
-      dispatch(addExcludedPattern(pattern));
-    } else {
-      dispatch(removeExcludedPattern(pattern));
-    }
+  onPressCapslock() {
+    const { dispatch } = this.props;
+    dispatch(toggleSoftCapslock());
   }
 
   urlToPattern(url) {
@@ -241,9 +237,6 @@ class NavBar extends Component<Props, IState, any> {
     switch (event.action) {
       case "focusOnSearch":
         this.openSearch();
-        break;
-      case "toggleWazariInput":
-        this.onPressSwitch();
         break;
     }
   };
@@ -358,7 +351,7 @@ class NavBar extends Component<Props, IState, any> {
         <Button
           transparent
           light
-          onPress={() => this.onPressSwitch()}
+          onPress={() => this.onPressCapslock()}
           style={{ marginLeft: 5 }}
         >
           {this.capslockIcon()}
