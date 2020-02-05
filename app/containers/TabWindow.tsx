@@ -950,7 +950,7 @@ function onKeyPress(e) {
   if(el.type === "text" || el.type === "textarea"){
     // ok
   }else{
-    if(e.type === "keyup"){
+    if(e.type === "keyup" && el.isContentEditable){
       window.ReactNativeWebView.postMessage(
         JSON.stringify({ isCapslockOn: e.getModifierState("CapsLock"), key: key, postFor: "capslock" })
       );    
