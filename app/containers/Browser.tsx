@@ -18,9 +18,9 @@ import DeviceInfo from "react-native-device-info";
 import TabWindow from "./TabWindow";
 import { selectSites } from "../selectors/ui";
 import { selectAppKeymap, selectModifiers } from "../selectors/keymap";
-import { addNewTab, selectTab, closeTab } from "../actions/ui";
+import { addNewTab, selectTab, closeTab, updateCapslock } from "../actions/ui";
 import keymapper from "../utils/Keymapper";
-import { KeyMode } from "../types/index.d";
+import { KeyMode, CapslockState } from "../types/index.d";
 import Tab from "./Tab";
 
 const { DAVKeyManager } = NativeModules;
@@ -155,7 +155,8 @@ class Browser extends Component<Props, State> {
       dispatch,
       activePaneId,
       paneId,
-      paneIds
+      paneIds,
+      isSoftCapslockOn
     } = this.props;
 
     if (prevProp.activeTabIndex !== activeTabIndex) {
@@ -185,6 +186,14 @@ class Browser extends Component<Props, State> {
         prevProp.sites
           .filter(ps => !siteIds.includes(ps.id))
           .forEach(ps => this.removeTabView(ps));
+      }
+    }
+
+    if (isSoftCapslockOn !== prevProp.isSoftCapslockOn) {
+      if (isSoftCapslockOn) {
+        dispatch(updateCapslock(CapslockState.SoftOn));
+      } else {
+        dispatch(updateCapslock(CapslockState.SoftOff));
       }
     }
   }
@@ -379,6 +388,7 @@ function mapStateToProps(state, ownProps) {
   const sites = selectSites(state, ownProps.paneId);
   const keyMode = state.ui.get("keyMode");
   const orientation = state.ui.get("orientation");
+  const isSoftCapslockOn = state.ui.get("isSoftCapslockOn");
   const homeUrl = state.user.get("homeUrl");
   const keySwitchOn = state.ui.get("keySwitchOn");
 
@@ -392,7 +402,8 @@ function mapStateToProps(state, ownProps) {
     homeUrl,
     keySwitchOn,
     activePaneId,
-    paneIds
+    paneIds,
+    isSoftCapslockOn
   };
 }
 

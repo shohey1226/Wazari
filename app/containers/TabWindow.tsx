@@ -25,7 +25,8 @@ import {
   closeTab,
   updateKeySwitch,
   updateWordsForPageFind,
-  updateCapslock
+  updateCapslock,
+  toggleSoftCapslock
 } from "../actions/ui";
 import { addHistory } from "../actions/user";
 import { selectSites, selectActiveUrl } from "../selectors/ui";
@@ -99,7 +100,17 @@ class TabWindow extends Component<Props, State, any> {
             if (data.flags === 262144) {
               // UIKeycommand(Native) to RN and use down object to detect simaltanous keys.
               // handle control key. Looks it's not required after UIKeycommand is set..
-              //this.down["Control"] = true;
+              this.down["Control"] = true;
+              this.handleKeys({
+                key: "Control",
+                type: "keydown",
+                modifiers: {
+                  shiftKey: false,
+                  metaKey: false,
+                  altKey: false,
+                  ctrlKey: true
+                }
+              });
             } else {
               this.handleCapsLockFromNative(true);
             }
@@ -215,20 +226,19 @@ class TabWindow extends Component<Props, State, any> {
   }
 
   handleKeys(keyEvent) {
-    const { modifiers, browserKeymap, isSoftCapslockOn } = this.props;
+    const { modifiers, browserKeymap, isSoftCapslockOn, dispatch } = this.props;
 
     console.log("down", this.down);
-    const pressedKeys = Object.keys(this.down);
 
-    // if (this.down["Enter"]) {
-    //   this.webref.injectJavaScript(`processEnter()`);
-    //   return;
-    // }
-    // // handle Enter and Esc
-    // else if (this.down["Escape"]) {
-    //   this.props.closeSearch();
-    //   return;
-    // }
+    const pressedKeys = Object.keys(this.down);
+    const _isCapslockRemappedFrom =
+      Object.values(modifiers).indexOf("capslockKey") > -1;
+    const modMap = {
+      ctrlKey: "Control",
+      altKey: "Alt",
+      shiftKey: "Shift",
+      metaKey: "Meta"
+    };
 
     // customized modifiers
     const origMods = keyEvent.modifiers;
@@ -240,18 +250,23 @@ class TabWindow extends Component<Props, State, any> {
     });
 
     // capslock handling
+    newMods["capslockKey"] = false;
     if (this.state.isCapsLockRemapped) {
-      newMods["capslockKey"] = false;
-      Object.keys(modifiers).forEach(m => {
-        if (modifiers[m] === "capslockKey") {
-          newMods["capslockKey"] = newMods["capslockKey"] || newMods[m];
-        }
-      });
       // if rempapped, capslockKey is never becoming "on"
       newMods[modifiers.capslockKey] =
         newMods[modifiers.capslockKey] || "CapsLock" in this.down;
     } else {
       newMods["capslockKey"] = "CapsLock" in this.down;
+    }
+
+    if (_isCapslockRemappedFrom) {
+      if (keyEvent.type === "keydown") {
+        Object.keys(modifiers).forEach(m => {
+          if (modifiers[m] === "capslockKey" && modMap[m] in this.down) {
+            dispatch(toggleSoftCapslock());
+          }
+        });
+      }
     }
 
     let hasAction = false;
@@ -260,18 +275,18 @@ class TabWindow extends Component<Props, State, any> {
       .forEach(key => {
         Object.keys(browserKeymap).forEach(action => {
           const keymap = browserKeymap[action];
-          console.log(
-            "origMods and newMods and keymap",
-            origMods,
-            newMods,
-            keymap.modifiers
-          );
+          // console.log(
+          //   "origMods and newMods and keymap",
+          //   origMods,
+          //   newMods,
+          //   keymap.modifiers
+          // );
           // always comparing to lowercase of the input key
           if (
             isEqual(keymap.modifiers, newMods) &&
             keymap.key === key.toLowerCase()
           ) {
-            console.log("executing actin: ", action);
+            //console.log("executing actin: ", action);
             this.handleAction(action);
             hasAction = true;
 
@@ -950,7 +965,7 @@ function onKeyPress(e) {
   if(el.type === "text" || el.type === "textarea"){
     // ok
   }else{
-    if(e.type === "keyup" && el.isContentEditable){
+    if(e.type === "keydown" && el.isContentEditable){
       window.ReactNativeWebView.postMessage(
         JSON.stringify({ isCapslockOn: e.getModifierState("CapsLock"), key: key, postFor: "capslock" })
       );    
