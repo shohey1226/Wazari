@@ -123,27 +123,27 @@ class Browser extends Component<Props, State> {
   */
 
   setIOSMode(keyMode: KeyMode): void {
-    switch (keyMode) {
-      // case KeyMode.Text:
-      //   DAVKeyManager.turnOnKeymap();
-      //   DAVKeyManager.setMode("text");
-      //   break;
-      // case KeyMode.Terminal:
-      //   DAVKeyManager.turnOnKeymap();
-      //   DAVKeyManager.setMode("input");
-      //   break;
-      case KeyMode.Direct:
-        //DAVKeyManager.turnOffKeymap();
-        break;
-      case KeyMode.Browser:
-        //DAVKeyManager.turnOnKeymap();
-        DAVKeyManager.setMode("browser");
-        break;
-      case KeyMode.Search:
-        //DAVKeyManager.turnOnKeymap();
-        DAVKeyManager.setMode("text");
-        break;
-    }
+    // switch (keyMode) {
+    //   // case KeyMode.Text:
+    //   //   DAVKeyManager.turnOnKeymap();
+    //   //   DAVKeyManager.setMode("text");
+    //   //   break;
+    //   // case KeyMode.Terminal:
+    //   //   DAVKeyManager.turnOnKeymap();
+    //   //   DAVKeyManager.setMode("input");
+    //   //   break;
+    //   case KeyMode.Direct:
+    //     //DAVKeyManager.turnOffKeymap();
+    //     break;
+    //   case KeyMode.Browser:
+    //     //DAVKeyManager.turnOnKeymap();
+    //     DAVKeyManager.setMode("browser");
+    //     break;
+    //   case KeyMode.Search:
+    //     //DAVKeyManager.turnOnKeymap();
+    //     DAVKeyManager.setMode("text");
+    //     break;
+    // }
   }
 
   componentDidUpdate(prevProp: Props) {

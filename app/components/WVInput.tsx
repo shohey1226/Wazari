@@ -100,13 +100,32 @@ class WVInput extends Component<Props, IState, any> {
   // UIKeycommand(Native) to RN and use down object to detect simaltanous keys.
   _handleControl() {
     this.down["Control"] = true;
+    this.handleKeys({
+      key: "Control",
+      type: "keydown",
+      modifiers: {
+        shiftKey: false,
+        metaKey: false,
+        altKey: false,
+        ctrlKey: true
+      }
+    });
   }
 
   handleKeys(keyEvent) {
-    const { modifiers, browserKeymap } = this.props;
+    const { modifiers, browserKeymap, isSoftCapslockOn } = this.props;
 
     console.log("down", this.down);
+
     const pressedKeys = Object.keys(this.down);
+    const _isCapslockRemappedFrom =
+      Object.values(modifiers).indexOf("capslockKey") > -1;
+    const modMap = {
+      ctrlKey: "Control",
+      altKey: "Alt",
+      shiftKey: "Shift",
+      metaKey: "Meta"
+    };
 
     if (this.down["Enter"]) {
       this.webref.injectJavaScript(`processEnter()`);
@@ -128,18 +147,23 @@ class WVInput extends Component<Props, IState, any> {
     });
 
     // capslock handling
+    newMods["capslockKey"] = false;
     if (this.state.isCapsLockRemapped) {
-      newMods["capslockKey"] = false;
-      Object.keys(modifiers).forEach(m => {
-        if (modifiers[m] === "capslockKey") {
-          newMods["capslockKey"] = newMods["capslockKey"] || newMods[m];
-        }
-      });
       // if rempapped, capslockKey is never becoming "on"
       newMods[modifiers.capslockKey] =
         newMods[modifiers.capslockKey] || "CapsLock" in this.down;
     } else {
       newMods["capslockKey"] = "CapsLock" in this.down;
+    }
+
+    if (_isCapslockRemappedFrom) {
+      if (keyEvent.type === "keydown") {
+        Object.keys(modifiers).forEach(m => {
+          if (modifiers[m] === "capslockKey" && modMap[m] in this.down) {
+            this.props.toggleSoftCapslock();
+          }
+        });
+      }
     }
 
     let hasAction = false;
@@ -189,8 +213,7 @@ class WVInput extends Component<Props, IState, any> {
     if (!hasAction && this.state.isCapsLockRemapped) {
       if (/^[A-Za-z]$/.test(keyEvent.key) && keyEvent.type === "keydown") {
         let inputKey =
-          this.state.isCapsLockOn === true ||
-          pressedKeys.indexOf("Shift") !== -1
+          isSoftCapslockOn === true || pressedKeys.indexOf("Shift") !== -1
             ? keyEvent.key.toUpperCase()
             : keyEvent.key.toLowerCase();
 
@@ -237,18 +260,6 @@ class WVInput extends Component<Props, IState, any> {
       }
       DAVKeyManager.setMods(mods);
     }
-  }
-
-  handleSoftwareCapsLock(keyEvent) {
-    const { modifiers, updateCapsLockState } = this.props;
-    Object.keys(modifiers)
-      .filter(m => modifiers[m] === "capslockKey")
-      .forEach(m => {
-        if (keyEvent[m] === true) {
-          updateCapsLockState(!this.state.isCapsLockOn);
-          this.setState({ isCapsLockOn: !this.state.isCapsLockOn });
-        }
-      });
   }
 
   handleAction(action) {
@@ -299,7 +310,6 @@ class WVInput extends Component<Props, IState, any> {
         } else {
           this.handleKeys(data.keyEvent);
         }
-        this.handleSoftwareCapsLock(data.keyEvent);
         break;
 
       case "keyup":

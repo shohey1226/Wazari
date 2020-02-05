@@ -129,11 +129,11 @@ RCT_EXPORT_METHOD(updateModifiers:(NSDictionary *)modifiers )
 }
 
 // Set Mode name using notification
-RCT_EXPORT_METHOD(setMode:(NSString *)modeName)
-{
-  NSDictionary *mode = @{@"modeName": modeName};
-  [[NSNotificationCenter defaultCenter] postNotificationName:@"activeMode" object:self userInfo:mode];
-}
+//RCT_EXPORT_METHOD(setMode:(NSString *)modeName)
+//{
+//  NSDictionary *mode = @{@"modeName": modeName};
+//  [[NSNotificationCenter defaultCenter] postNotificationName:@"activeMode" object:self userInfo:mode];
+//}
 
 RCT_EXPORT_METHOD(setAppKeymap:(NSDictionary *)keymap)
 {

@@ -37,7 +37,7 @@ KeyCommand *_activeModsCommand;
 - (id)init
 {
   NSLog(@"init DVAApplication now");
-  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(activeModeReceived:) name:@"activeMode" object:nil];
+//  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(activeModeReceived:) name:@"activeMode" object:nil];
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(browserKeymapReceived:) name:@"browserKeymap" object:nil];
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(inputKeymapReceived:) name:@"inputKeymap" object:nil];
 //  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(turnOnKeymapReceived:) name:@"turnOnKeymap" object:nil];
@@ -174,12 +174,12 @@ This is main function for keymapping - API to call key notification to RN side.
 /////////////////////////////////////////////////////
 
 
-- (void)activeModeReceived:(NSNotification *)notification
-{
-  NSLog(@"Notification - You recieved mode!");
-  _currentMode = notification.userInfo[@"modeName"];
-  NSLog(@"mode: %@", _currentMode);
-}
+//- (void)activeModeReceived:(NSNotification *)notification
+//{
+//  NSLog(@"Notification - You recieved mode!");
+//  _currentMode = notification.userInfo[@"modeName"];
+//  NSLog(@"mode: %@", _currentMode);
+//}
 
 
 

@@ -32,7 +32,8 @@ import {
   updateMode,
   updateFocusedPane,
   updateKeySwitch,
-  updateWordsForPageFind
+  updateWordsForPageFind,
+  toggleSoftCapslock
 } from "../actions/ui";
 import { addExcludedPattern, removeExcludedPattern } from "../actions/user";
 import { SearchEngine } from "../components/SearchEnginePicker";
@@ -446,6 +447,12 @@ class Search extends Component<Props, IState, any> {
     }
   }
 
+  toggleSoftCapslock() {
+    const { dispatch } = this.props;
+    console.log("toggleSoftCapslock in search");
+    dispatch(toggleSoftCapslock());
+  }
+
   render() {
     const {
       searchEngine,
@@ -471,16 +478,16 @@ class Search extends Component<Props, IState, any> {
           <WVInput
             keyup={v => this.setState({ text: v })}
             updateCapsLockState={s => this.setState({ capsLockOn: s })}
-            isCapsLockOn={this.state.capsLockOn}
             modifiers={modifiers}
             browserKeymap={browserKeymap}
             performAction={this.performAction.bind(this)}
             nextHistoryItem={this.nextHistoryItem.bind(this)}
             previousHistoryItem={this.previousHistoryItem.bind(this)}
-            {...this.props}
             onEndEditing={this.onEndEditing.bind(this)}
             updateWords={this.updateWords.bind(this)}
             text={this.state.urlText}
+            toggleSoftCapslock={this.toggleSoftCapslock.bind(this)}
+            {...this.props}
           />
 
           <Button
@@ -511,6 +518,7 @@ class Search extends Component<Props, IState, any> {
 function mapStateToProps(state, ownProps) {
   const history = state.user.get("history").toJS();
   const activePaneId = state.ui.get("activePaneId");
+  const isSoftCapslockOn = state.ui.get("isSoftCapslockOn");
   const sites = selectSites(state, activePaneId);
   const activeTabIndex = state.ui.getIn([
     "panes",
@@ -525,7 +533,8 @@ function mapStateToProps(state, ownProps) {
     sites,
     activeTabIndex,
     modifiers,
-    browserKeymap
+    browserKeymap,
+    isSoftCapslockOn
   };
 }
 
