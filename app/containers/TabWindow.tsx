@@ -463,6 +463,11 @@ class TabWindow extends Component<Props, State, any> {
     }
   };
 
+  toggleCapslock() {
+    const { dispatch } = this.props;
+    dispatch(toggleSoftCapslock());
+  }
+
   onLoadEnd(syntheticEvent) {
     const { nativeEvent } = syntheticEvent;
     const {
@@ -593,6 +598,7 @@ class TabWindow extends Component<Props, State, any> {
           url={url}
           tabId={tabId}
           nextAppState={this.state.nextAppState}
+          toggleSoftCapslock={this.toggleCapslock.bind(this)}
           {...this.props}
         />
       );

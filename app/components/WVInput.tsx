@@ -17,6 +17,7 @@ interface Props {
   modifiers: any;
   browserKeymap: any;
   updateCapsLockState: (any) => void;
+  isSoftCapslockOn: boolean;
   closeSearch: () => void;
   onEndEditing: (string) => void;
   updateWords: (string) => void;

@@ -7,7 +7,6 @@ const DAVKeyManagerEmitter = new NativeEventEmitter(DAVKeyManager);
 
 interface IState {
   downKeys: any;
-  isCapsLockOn: boolean;
   isCapsLockRemapped: boolean;
   debugLines: Array<string>;
 }
@@ -16,10 +15,11 @@ interface Props {
   url: string;
   modifiers: any;
   browserKeymap: any;
-  updateCapsLockState: (any) => void;
   nextAppState: string;
   isActive: boolean;
   reloadToggled: boolean;
+  isSoftCapslockOn: boolean;
+  toggleSoftCapslock: () => void;
 }
 
 // Use webview input
@@ -33,7 +33,6 @@ class WVTerm extends Component<Props, IState, any> {
     super(props);
     this.state = {
       downKeys: {},
-      isCapsLockOn: props.isCapsLockOn,
       isCapsLockRemapped: props.modifiers["capslockKey"] !== "capslockKey",
       debugLines: []
     };
@@ -49,7 +48,18 @@ class WVTerm extends Component<Props, IState, any> {
           if (data.flags === 262144) {
             // UIKeycommand(Native) to RN and use down object to detect simaltanous keys.
             // handle control key. Looks it's not required after UIKeycommand is set..
-            //this.down["Control"] = true;
+            this.down["Control"] = true;
+            this.handleKeys({
+              key: "Control",
+              type: "keydown",
+              keyCode: 17,
+              modifiers: {
+                shiftKey: false,
+                metaKey: false,
+                altKey: false,
+                ctrlKey: true
+              }
+            });
           } else {
             this.handleCapsLockFromNative(true);
           }
@@ -148,148 +158,155 @@ class WVTerm extends Component<Props, IState, any> {
     }
   }
 
-  handleSoftwareCapsLock(keyEvent) {
-    const { modifiers, updateCapsLockState } = this.props;
-    Object.keys(modifiers)
-      .filter(m => modifiers[m] === "capslockKey")
-      .forEach(m => {
-        if (keyEvent[m] === true) {
-          updateCapsLockState(!this.state.isCapsLockOn);
-          this.setState({ isCapsLockOn: !this.state.isCapsLockOn });
+  handleKeys(keyEvent) {
+    const { modifiers, toggleSoftCapslock, isSoftCapslockOn } = this.props;
+
+    let charCode = keyEvent.charCode;
+    let keyCode = keyEvent.keyCode;
+    let key = keyEvent.key;
+    let type = keyEvent.type;
+    const repeat = keyEvent.repeat;
+
+    const _isCapslockRemappedFrom =
+      Object.values(modifiers).indexOf("capslockKey") > -1;
+    const modMap = {
+      ctrlKey: "Control",
+      altKey: "Alt",
+      shiftKey: "Shift",
+      metaKey: "Meta"
+    };
+
+    // For simultaneous key press
+    this.down[key] = keyCode;
+
+    // add hack only JS keydown
+    if (key === "CapsLock") {
+      this.isNativeCapslock = false;
+      this.lastKeyTimestamp = new Date().getTime(); // need first press
+    }
+
+    // HW keyboard send keyCode 229 when it's key repeat
+    // Need to overwrite with key
+    if (repeat === true && keyCode === 229) {
+      keyCode = key.charCodeAt(0);
+    }
+
+    // customized modifiers
+    const origMods = keyEvent.modifiers;
+    let newMods = Object.assign({}, origMods);
+    Object.keys(origMods).forEach(k => {
+      if (modifiers[k]) {
+        newMods[k] = newMods[k] || origMods[modifiers[k]];
+      }
+    });
+
+    // handle software capslock
+    if (newMods.shiftKey || isSoftCapslockOn) {
+      if (key.match(/^[a-z]$/)) {
+        key = key.toUpperCase();
+        charCode = key.charCodeAt(0);
+      }
+    } else {
+      if (key.match(/^[A-Z]$/)) {
+        key = key.toLowerCase();
+        charCode = key.charCodeAt(0);
+      }
+    }
+
+    // Some keys needs to be handled
+    if (key === " ") {
+      // space is handled by keypress
+      keyCode = 0;
+      charCode = 32;
+      type = "keypress";
+    } else if (key === "'") {
+      // unable to pass over single quote through stringified json.
+      // pass over singlequote string and handled in JS side.
+      key = "singlequote";
+    } else if (key === "\\") {
+      // escape for JS
+      key = "\\\\";
+    } else if (key === '"') {
+      // escape for JS
+      key = '\\"';
+    }
+
+    console.log("DOWN: ", JSON.stringify(this.down));
+
+    if (_isCapslockRemappedFrom && keyEvent.type === "keydown") {
+      Object.keys(modifiers).forEach(m => {
+        if (modifiers[m] === "capslockKey" && modMap[m] in this.down) {
+          toggleSoftCapslock();
         }
       });
-  }
+    }
 
-  onMessage(event) {
-    const { modifiers } = this.props;
-    this._handleDebug(event.nativeEvent.data);
-    const data = JSON.parse(event.nativeEvent.data);
-    console.log(data);
-    switch (data.postFor) {
-      case "keydown":
-        let charCode = data.keyEvent.charCode;
-        let keyCode = data.keyEvent.keyCode;
-        let key = data.keyEvent.key;
-        let type = data.keyEvent.type;
-        const repeat = data.keyEvent.repeat;
+    if (this.state.isCapsLockRemapped && this.down["CapsLock"]) {
+      newMods[modifiers.capslockKey] = true;
 
-        // For simultaneous key press
-        this.down[key] = keyCode;
-
-        // add hack only JS keydown
-        if (key === "CapsLock") {
-          this.isNativeCapslock = false;
-          this.lastKeyTimestamp = new Date().getTime(); // need first press
-        }
-
-        // HW keyboard send keyCode 229 when it's key repeat
-        // Need to overwrite with key
-        if (repeat === true && keyCode === 229) {
-          keyCode = key.charCodeAt(0);
-        }
-
-        // customized modifiers
-        const origMods = data.keyEvent.modifiers;
-        let newMods = Object.assign({}, origMods);
-        Object.keys(origMods).forEach(k => {
-          if (modifiers[k]) {
-            newMods[k] = newMods[k] || origMods[modifiers[k]];
-          }
-        });
-
-        // handle software capslock
-        if (newMods.shiftKey || this.state.isCapsLockOn) {
-          if (key.match(/^[a-z]$/)) {
-            key = key.toUpperCase();
-            charCode = key.charCodeAt(0);
-          }
-        } else {
-          if (key.match(/^[A-Z]$/)) {
-            key = key.toLowerCase();
-            charCode = key.charCodeAt(0);
-          }
-        }
-
-        // Some keys needs to be handled
-        if (key === " ") {
-          // space is handled by keypress
-          keyCode = 0;
-          charCode = 32;
-          type = "keypress";
-        } else if (key === "'") {
-          // unable to pass over single quote through stringified json.
-          // pass over singlequote string and handled in JS side.
-          key = "singlequote";
-        } else if (key === "\\") {
-          // escape for JS
-          key = "\\\\";
-        } else if (key === '"') {
-          // escape for JS
-          key = '\\"';
-        }
-
-        console.log("DOWN: ", JSON.stringify(this.down));
-
-        if (this.state.isCapsLockRemapped && this.down["CapsLock"]) {
-          newMods[modifiers.capslockKey] = true;
-
-          const pressedKeys = Object.keys(this.down);
-          pressedKeys.forEach(k => {
-            // ascii 32 to 126
-            if (/^[ -~]$/.test(k)) {
-              let event = Object.assign(
-                {
-                  type: type,
-                  key: key,
-                  keyCode: this.down[k],
-                  repeat: repeat
-                },
-                newMods
-              );
-              let eventStr = JSON.stringify(event);
-
-              // keyup handling
-              // handle capslock 1st keydown before simulating key
-              if (this.isNativeCapslock === false) {
-                if (/^[dhjklobfnpwxy]$/.test(k.toLowerCase())) {
-                  const now = new Date().getTime();
-                  if (
-                    this.lastKeyTimestamp &&
-                    now - this.lastKeyTimestamp > 500
-                  ) {
-                    delete this.down["CapsLock"]; // keyup
-                    this.lastKeyTimestamp = null;
-                  }
-                  this.lastKeyTimestamp = now;
-                } else {
-                  delete this.down["CapsLock"]; // keyup
-                }
-              }
-
-              this.webref.injectJavaScript(
-                `simulateKey(window.term.textarea, '${eventStr}')`
-              );
-            }
-          });
-          this.handleCapsLockFromJS("keydown", data.keyEvent);
-        } else {
+      const pressedKeys = Object.keys(this.down);
+      pressedKeys.forEach(k => {
+        // ascii 32 to 126
+        if (/^[ -~]$/.test(k)) {
           let event = Object.assign(
             {
               type: type,
               key: key,
-              keyCode: keyCode,
-              charCode: charCode,
+              keyCode: this.down[k],
               repeat: repeat
             },
             newMods
           );
           let eventStr = JSON.stringify(event);
+
+          // keyup handling
+          // handle capslock 1st keydown before simulating key
+          if (this.isNativeCapslock === false) {
+            if (/^[dhjklobfnpwxy]$/.test(k.toLowerCase())) {
+              const now = new Date().getTime();
+              if (this.lastKeyTimestamp && now - this.lastKeyTimestamp > 500) {
+                delete this.down["CapsLock"]; // keyup
+                this.lastKeyTimestamp = null;
+              }
+              this.lastKeyTimestamp = now;
+            } else {
+              delete this.down["CapsLock"]; // keyup
+            }
+          }
+
           this.webref.injectJavaScript(
             `simulateKey(window.term.textarea, '${eventStr}')`
           );
         }
-        break;
+      });
+      this.handleCapsLockFromJS("keydown", keyEvent);
+    } else {
+      let event = Object.assign(
+        {
+          type: type,
+          key: key,
+          keyCode: keyCode,
+          charCode: charCode,
+          repeat: repeat
+        },
+        newMods
+      );
+      let eventStr = JSON.stringify(event);
+      this.webref.injectJavaScript(
+        `simulateKey(window.term.textarea, '${eventStr}')`
+      );
+    }
+  }
 
+  onMessage(event) {
+    const { modifiers, isSoftCapslockOn } = this.props;
+    this._handleDebug(event.nativeEvent.data);
+    const data = JSON.parse(event.nativeEvent.data);
+    console.log(data);
+    switch (data.postFor) {
+      case "keydown":
+        this.handleKeys(data.keyEvent);
+        break;
       case "keyup":
         if (data.keyEvent.key === "CapsLock") {
           this.handleCapsLockFromJS("keyup", data.keyEvent);
