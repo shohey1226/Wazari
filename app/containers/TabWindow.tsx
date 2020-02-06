@@ -956,6 +956,7 @@ function findInPage(text){
 var isCapsLockOn = false;
 var isCapsLockRemapped = false;
 var down = false;
+var isLoaded = false;
 
 function init(initStr) {
   let initObj = JSON.parse(initStr);
@@ -1052,9 +1053,11 @@ function updateInputValue(key) {
   //sendTextValue(el.value);
 }
 
-window.document.addEventListener("keydown", onKeyPress, false);
-window.document.addEventListener("keyup", onKeyPress, false);
-
+if(isLoaded === false){
+  window.document.addEventListener("keydown", onKeyPress, false);
+  window.document.addEventListener("keyup", onKeyPress, false);
+  isLoaded = true;
+}
 
 window.ReactNativeWebView.postMessage(JSON.stringify({isLoading: false, postFor: "jsloading"}))
 true;
