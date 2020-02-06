@@ -37,22 +37,15 @@ KeyCommand *_activeModsCommand;
 - (id)init
 {
   NSLog(@"init DVAApplication now");
-//  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(activeModeReceived:) name:@"activeMode" object:nil];
-  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(browserKeymapReceived:) name:@"browserKeymap" object:nil];
-  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(inputKeymapReceived:) name:@"inputKeymap" object:nil];
-//  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(turnOnKeymapReceived:) name:@"turnOnKeymap" object:nil];
-//  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(turnOffKeymapReceived:) name:@"turnOffKeymap" object:nil];
-  
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(appKeymapReceived:) name:@"appKeymap" object:nil];
   [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(modsReceived:) name:@"mods" object:nil];
-  
   self = [super init];
   return self;
 }
 
 - (NSArray<NSString *> *)supportedEvents
 {
-  return @[@"activeMode", @"appKeymap", @"browserKeymap", @"mods"];
+  return @[@"appKeymap", @"mods"];
 }
 
 ///////////////////////////////////////////////////////////////////
@@ -169,43 +162,6 @@ This is main function for keymapping - API to call key notification to RN side.
 - (NSArray *)keyCommands {
   return _keyCommands;
 }
-
-
-/////////////////////////////////////////////////////
-
-
-//- (void)activeModeReceived:(NSNotification *)notification
-//{
-//  NSLog(@"Notification - You recieved mode!");
-//  _currentMode = notification.userInfo[@"modeName"];
-//  NSLog(@"mode: %@", _currentMode);
-//}
-
-
-
-- (void)browserKeymapReceived:(NSNotification *)notification
-{
-  NSLog(@"Notification - You recieved browserKeymap!");
-  _browserKeymap = notification.userInfo[@"browserKeymap"];
-}
-
-- (void)inputKeymapReceived:(NSNotification *)notification
-{
-  NSLog(@"Notification - You recieved inputKeymap!");
-  _inputKeymap = notification.userInfo[@"inputKeymap"];
-}
-
-//- (void) turnOnKeymapReceived:(NSNotification *)notification
-//{
-//   NSLog(@"Turn on keymap!");
-//  _keymapEnabled = YES;
-//}
-//
-//- (void) turnOffKeymapReceived:(NSNotification *)notification
-//{
-//   NSLog(@"Turn off keymap!");
-//  _keymapEnabled = NO;
-//}
 
 - (BOOL)canBecomeFirstResponder {
   return YES;

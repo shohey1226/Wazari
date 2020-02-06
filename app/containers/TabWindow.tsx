@@ -23,14 +23,13 @@ import {
   selectTab,
   updateSite,
   closeTab,
-  updateKeySwitch,
   updateWordsForPageFind,
   updateCapslock,
   toggleSoftCapslock
 } from "../actions/ui";
 import { addHistory } from "../actions/user";
 import { selectSites, selectActiveUrl } from "../selectors/ui";
-import { KeyMode, CapslockState } from "../types/index.d";
+import { CapslockState } from "../types/index.d";
 
 const { DAVKeyManager } = NativeModules;
 const DAVKeyManagerEmitter = new NativeEventEmitter(DAVKeyManager);
@@ -49,12 +48,10 @@ interface State {
 interface Props {
   dispatch: (any) => void;
   activeTabIndex: number;
-  keyMode: KeyMode;
   backToggled: boolean;
   forwardToggled: boolean;
   reloadToggled: boolean;
   excludedPatterns: Array<string>;
-  keySwitchOn: boolean;
   activeUrl: string;
   isActive: boolean;
   isCapsLockOn: boolean;
@@ -152,10 +149,8 @@ class TabWindow extends Component<Props, State, any> {
       backToggled,
       forwardToggled,
       reloadToggled,
-      keyMode,
       focusedPane,
       activeUrl,
-      keySwitchOn,
       isActive,
       activePaneId,
       wordsForPageFind,
@@ -428,13 +423,8 @@ class TabWindow extends Component<Props, State, any> {
   }
 
   handleAppActions = async event => {
-    const { dispatch, keyMode, isActive } = this.props;
-    if (
-      keyMode === KeyMode.Text &&
-      this.webref &&
-      isActive &&
-      this.state.isLoadingJSInjection === false
-    ) {
+    const { dispatch, isActive } = this.props;
+    if (this.webref && isActive && this.state.isLoadingJSInjection === false) {
       switch (event.action) {
         case "hitAHint":
           this.webref.injectJavaScript(`sVimHint.start()`);
@@ -608,7 +598,7 @@ class TabWindow extends Component<Props, State, any> {
   }
 
   render() {
-    const { url, keyMode, tabId } = this.props;
+    const { url, tabId } = this.props;
     const progressCustomStyles = {
       borderRadius: 0
     };
@@ -670,9 +660,7 @@ function mapStateToProps(state, ownProps) {
   const backToggled = state.ui.get("backToggled");
   const forwardToggled = state.ui.get("forwardToggled");
   const reloadToggled = state.ui.get("reloadToggled");
-  const keySwitchOn = state.ui.get("keySwitchOn");
   const excludedPatterns = state.user.get("excludedPatterns").toArray();
-  const keyMode = state.ui.get("keyMode");
   const wordsForPageFind = state.ui.get("wordsForPageFind");
   const capslockState = state.ui.get("capslockState");
   const isSoftCapslockOn = state.ui.get("isSoftCapslockOn");
@@ -703,12 +691,10 @@ function mapStateToProps(state, ownProps) {
     focusedPane,
     excludedPatterns,
     activeUrl,
-    keySwitchOn,
     activePaneId,
     wordsForPageFind,
     isActive,
     activeTabIndex,
-    keyMode,
     url,
     capslockState,
     isSoftCapslockOn

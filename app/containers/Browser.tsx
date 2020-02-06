@@ -20,7 +20,7 @@ import { selectSites } from "../selectors/ui";
 import { selectAppKeymap, selectModifiers } from "../selectors/keymap";
 import { addNewTab, selectTab, closeTab, updateCapslock } from "../actions/ui";
 import keymapper from "../utils/Keymapper";
-import { KeyMode, CapslockState } from "../types/index.d";
+import { CapslockState } from "../types/index.d";
 import Tab from "./Tab";
 
 const { DAVKeyManager } = NativeModules;
@@ -44,10 +44,8 @@ interface Props {
   activeTabIndex: number;
   keymap: any;
   modifiers: any;
-  keyMode: KeyMode;
   orientation: string;
   homeUrl: string;
-  keySwitchOn: boolean;
   paneId: any;
 }
 
@@ -76,7 +74,6 @@ class Browser extends Component<Props, State> {
       sites,
       activeTabIndex,
       homeUrl,
-      keyMode,
       modifiers,
       keymap
     } = this.props;
@@ -84,8 +81,6 @@ class Browser extends Component<Props, State> {
     if (sites.length === 0) {
       dispatch(addNewTab(homeUrl));
     }
-
-    this.setIOSMode(keyMode);
 
     DAVKeyManager.setAppKeymap(
       keymapper.convertToNativeFormat(keymap, modifiers)
@@ -110,48 +105,10 @@ class Browser extends Component<Props, State> {
     });
   }
 
-  /*
-  +----------+----------+-------------------+
-  | RN mode  | iOS mode |    iOS Keymap     |
-  +----------+----------+-------------------+
-  | search   | text     | app+browser+input |
-  | text     | text     | app+browser+input |
-  | direct   | n/a      | n/a turned-off    |
-  | terminal | input    | app+input         |
-  | browser  | browser  | app+browser       |
-  +----------+----------+-------------------+
-  */
-
-  setIOSMode(keyMode: KeyMode): void {
-    // switch (keyMode) {
-    //   // case KeyMode.Text:
-    //   //   DAVKeyManager.turnOnKeymap();
-    //   //   DAVKeyManager.setMode("text");
-    //   //   break;
-    //   // case KeyMode.Terminal:
-    //   //   DAVKeyManager.turnOnKeymap();
-    //   //   DAVKeyManager.setMode("input");
-    //   //   break;
-    //   case KeyMode.Direct:
-    //     //DAVKeyManager.turnOffKeymap();
-    //     break;
-    //   case KeyMode.Browser:
-    //     //DAVKeyManager.turnOnKeymap();
-    //     DAVKeyManager.setMode("browser");
-    //     break;
-    //   case KeyMode.Search:
-    //     //DAVKeyManager.turnOnKeymap();
-    //     DAVKeyManager.setMode("text");
-    //     break;
-    // }
-  }
-
   componentDidUpdate(prevProp: Props) {
     const {
       activeTabIndex,
       sites,
-      keyMode,
-      keySwitchOn,
       dispatch,
       activePaneId,
       paneId,
@@ -163,11 +120,6 @@ class Browser extends Component<Props, State> {
       if (this.state.activeIndex !== activeTabIndex) {
         this.tabsRef.goToPage(activeTabIndex);
       }
-    }
-
-    // Set iOS keymap!!!
-    if (prevProp.keyMode !== keyMode) {
-      this.setIOSMode(keyMode);
     }
 
     if (prevProp.activePaneId !== activePaneId) {
@@ -230,17 +182,12 @@ class Browser extends Component<Props, State> {
     const {
       dispatch,
       activeTabIndex,
-      keyMode,
       homeUrl,
       sites,
       activePaneId
     } = this.props;
-    if (
-      this.state.isActivePane &&
-      (keyMode === KeyMode.Terminal ||
-        keyMode === KeyMode.Text ||
-        keyMode === KeyMode.Browser)
-    ) {
+
+    if (this.state.isActivePane) {
       console.log("action at browser", event);
       switch (event.action) {
         case "newTab":
@@ -296,7 +243,7 @@ class Browser extends Component<Props, State> {
   }
 
   buildTabs() {
-    const { keyMode, sites, paneId } = this.props;
+    const { sites, paneId } = this.props;
     for (let i = 0; i < sites.length; i++) {
       const _id = sites[i].id;
       const _url = sites[i].url;
@@ -386,21 +333,17 @@ function mapStateToProps(state, ownProps) {
     "activeTabIndex"
   ]);
   const sites = selectSites(state, ownProps.paneId);
-  const keyMode = state.ui.get("keyMode");
   const orientation = state.ui.get("orientation");
   const isSoftCapslockOn = state.ui.get("isSoftCapslockOn");
   const homeUrl = state.user.get("homeUrl");
-  const keySwitchOn = state.ui.get("keySwitchOn");
 
   return {
     sites,
     keymap,
     modifiers,
     activeTabIndex,
-    keyMode,
     orientation,
     homeUrl,
-    keySwitchOn,
     activePaneId,
     paneIds,
     isSoftCapslockOn

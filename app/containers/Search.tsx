@@ -29,15 +29,11 @@ import {
   selectSites
 } from "../selectors/ui";
 import {
-  updateMode,
   updateFocusedPane,
-  updateKeySwitch,
   updateWordsForPageFind,
   toggleSoftCapslock
 } from "../actions/ui";
-import { addExcludedPattern, removeExcludedPattern } from "../actions/user";
 import { SearchEngine } from "../components/SearchEnginePicker";
-import { KeyMode } from "../types/index.d";
 import Modal from "react-native-modal";
 import { addNewTab, selectTab, toggleBack, toggleForward } from "../actions/ui";
 import Fuse from "fuse.js";
@@ -48,7 +44,6 @@ const DAVKeyManagerEmitter = new NativeEventEmitter(DAVKeyManager);
 interface IState {
   text: string;
   urlText: string;
-  previousKeyMode: KeyMode | null;
   selectionStart: number;
   selectionEnd: number;
   selectedItemIndex: number | null;
@@ -62,7 +57,6 @@ interface Props {
   dispatch: (any) => void;
   searchEngine: SearchEngine;
   homeUrl: string;
-  keyMode: KeyMode;
   orientation: string;
   activeUrl: string | null;
   activeSite: any | null;
@@ -86,7 +80,6 @@ class Search extends Component<Props, IState, any> {
     const site = props.activeSite;
     this.state = {
       text: "",
-      previousKeyMode: null,
       selectionStart: 0,
       selectionEnd: 0,
       selectedItemIndex: null,
@@ -102,7 +95,6 @@ class Search extends Component<Props, IState, any> {
   componentDidMount() {
     const { activeSite, activeUrl, history } = this.props;
     this.subscriptions.push;
-    //DAVKeyManagerEmitter.addListener("RNBrowserKeyEvent", this.handleActions)();
     this.props.searchIsFocused === true &&
       this.searchRef &&
       this.searchRef._root.focus();
@@ -132,7 +124,6 @@ class Search extends Component<Props, IState, any> {
       activeUrl,
       activeSite,
       focusedPane,
-      keyMode,
       searchIsFocused,
       history,
       sites
@@ -454,13 +445,7 @@ class Search extends Component<Props, IState, any> {
   }
 
   render() {
-    const {
-      searchEngine,
-      orientation,
-      keyMode,
-      browserKeymap,
-      modifiers
-    } = this.props;
+    const { searchEngine, orientation, browserKeymap, modifiers } = this.props;
     if (
       orientation === "LANDSCAPE" &&
       DeviceInfo.getDeviceType() === "Handset"

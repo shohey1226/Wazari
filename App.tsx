@@ -99,9 +99,6 @@ class App extends React.Component {
     DAVKeyManager.setAppKeymap(
       keymapper.convertToNativeFormat(appKeymap, modifiers)
     );
-    DAVKeyManager.setBrowserKeymap(
-      keymapper.convertToNativeFormat(browserKeymap, modifiers)
-    );
   };
 
   _orientationDidChange = orientation => {

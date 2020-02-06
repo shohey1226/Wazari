@@ -27,11 +27,11 @@ import {
   selectActiveSite,
   selectSites
 } from "../selectors/ui";
-import { updateMode, updateFocusedPane, updateKeySwitch } from "../actions/ui";
-import { addExcludedPattern, removeExcludedPattern } from "../actions/user";
+import { updateFocusedPane } from "../actions/ui";
+//import { addExcludedPattern, removeExcludedPattern } from "../actions/user";
 import { SearchEngine } from "../components/SearchEnginePicker";
 import Search from "./Search";
-import { KeyMode, CapslockState } from "../types/index.d";
+import { CapslockState } from "../types/index.d";
 import Modal from "react-native-modal";
 
 import {
@@ -51,7 +51,6 @@ interface IState {
   canGoBack: boolean;
   canGoForward: boolean;
   excludedPattern: string | null;
-  previousKeyMode: KeyMode | null;
   selectionStart: number;
   selectionEnd: number;
   searchModalIsVisiable: boolean;
@@ -62,13 +61,11 @@ interface Props {
   activeTabIndex: number;
   searchEngine: SearchEngine;
   homeUrl: string;
-  keyMode: KeyMode;
   orientation: string;
   activeUrl: string | null;
   activeSite: any | null;
   focusedPane: string;
   sites: any;
-  keySwitchOn: boolean;
   capslockState: CapslockState;
 }
 
@@ -82,7 +79,6 @@ class NavBar extends Component<Props, IState, any> {
       text: "",
       canGoBack: site && site.canGoBack ? site.canGoBack : false,
       canGoForward: site && site.canGoForward ? site.canGoForward : false,
-      previousKeyMode: null,
       selectionStart: 0,
       selectionEnd: 0,
       searchModalIsVisiable: false
@@ -108,8 +104,7 @@ class NavBar extends Component<Props, IState, any> {
       orientation,
       activeUrl,
       activeSite,
-      focusedPane,
-      keyMode
+      focusedPane
     } = this.props;
     if (
       activeSite &&
@@ -126,19 +121,6 @@ class NavBar extends Component<Props, IState, any> {
     if (orientation !== prevProp.orientation) {
       this.props.navigate("Home", { orientation: orientation });
     }
-
-    if (prevProp.focusedPane !== focusedPane) {
-      if (focusedPane === "search") {
-        dispatch(updateMode(KeyMode.Browser));
-        this.setState({ previousKeyMode: keyMode });
-      } else if (focusedPane === "browser") {
-        dispatch(updateMode(this.state.previousKeyMode));
-        this.setState({ previousKeyMode: KeyMode.Browser });
-      }
-    }
-
-    // console.log("prev", prevState.selectionStart);
-    // console.log("current", this.state.selectionStart);
   }
 
   onEndEditing() {
@@ -242,19 +224,19 @@ class NavBar extends Component<Props, IState, any> {
   };
 
   openSearch() {
-    const { dispatch, keyMode } = this.props;
+    const { dispatch } = this.props;
     dispatch(updateFocusedPane("search"));
     this.setState({ searchModalIsVisiable: true });
   }
 
   closeSearch() {
-    const { dispatch, keyMode } = this.props;
+    const { dispatch } = this.props;
     this.setState({ searchModalIsVisiable: false });
     dispatch(updateFocusedPane("browser"));
   }
 
   render() {
-    const { searchEngine, orientation, keyMode, activeUrl } = this.props;
+    const { searchEngine, orientation, activeUrl } = this.props;
     if (
       orientation === "LANDSCAPE" &&
       DeviceInfo.getDeviceType() === "Handset"
@@ -393,10 +375,8 @@ function mapStateToProps(state, ownProps) {
   const activeUrl = selectActiveUrl(state, activePaneId);
   const searchEngine = state.user.get("searchEngine");
   const homeUrl = state.user.get("homeUrl");
-  const keyMode = state.ui.get("keyMode");
   const orientation = state.ui.get("orientation");
   const focusedPane = state.ui.get("focusedPane");
-  const keySwitchOn = state.ui.get("keySwitchOn");
   const capslockState = state.ui.get("capslockState");
   return {
     keymap,
@@ -404,13 +384,11 @@ function mapStateToProps(state, ownProps) {
     activeTabIndex,
     searchEngine,
     homeUrl,
-    keyMode,
     orientation,
     activeUrl,
     activeSite,
     sites,
     focusedPane,
-    keySwitchOn,
     capslockState
   };
 }

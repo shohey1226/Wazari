@@ -20,7 +20,6 @@ import { selectSites } from "../selectors/ui";
 import { selectAppKeymap, selectModifiers } from "../selectors/keymap";
 import { addNewTab, selectTab, closeTab } from "../actions/ui";
 import keymapper from "../utils/Keymapper";
-import { KeyMode } from "../types/index.d";
 
 const { DAVKeyManager } = NativeModules;
 const DAVKeyManagerEmitter = new NativeEventEmitter(DAVKeyManager);
