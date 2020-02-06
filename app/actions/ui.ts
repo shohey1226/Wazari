@@ -109,9 +109,6 @@ export function updateSite(
   paneId: number
 ) {
   return (dispatch, getState) => {
-    const excludedPatterns = getState()
-      .user.get("excludedPatterns")
-      .toArray();
     dispatch(_updateSite(index, title, url, canGoBack, canGoForward, paneId));
   };
 }

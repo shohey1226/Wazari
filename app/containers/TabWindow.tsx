@@ -51,7 +51,6 @@ interface Props {
   backToggled: boolean;
   forwardToggled: boolean;
   reloadToggled: boolean;
-  excludedPatterns: Array<string>;
   activeUrl: string;
   isActive: boolean;
   isCapsLockOn: boolean;
@@ -660,7 +659,6 @@ function mapStateToProps(state, ownProps) {
   const backToggled = state.ui.get("backToggled");
   const forwardToggled = state.ui.get("forwardToggled");
   const reloadToggled = state.ui.get("reloadToggled");
-  const excludedPatterns = state.user.get("excludedPatterns").toArray();
   const wordsForPageFind = state.ui.get("wordsForPageFind");
   const capslockState = state.ui.get("capslockState");
   const isSoftCapslockOn = state.ui.get("isSoftCapslockOn");
@@ -689,7 +687,6 @@ function mapStateToProps(state, ownProps) {
     browserKeymap,
     modifiers,
     focusedPane,
-    excludedPatterns,
     activeUrl,
     activePaneId,
     wordsForPageFind,

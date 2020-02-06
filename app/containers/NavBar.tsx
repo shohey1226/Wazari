@@ -28,7 +28,6 @@ import {
   selectSites
 } from "../selectors/ui";
 import { updateFocusedPane } from "../actions/ui";
-//import { addExcludedPattern, removeExcludedPattern } from "../actions/user";
 import { SearchEngine } from "../components/SearchEnginePicker";
 import Search from "./Search";
 import { CapslockState } from "../types/index.d";
@@ -50,7 +49,6 @@ interface IState {
   text: string;
   canGoBack: boolean;
   canGoForward: boolean;
-  excludedPattern: string | null;
   selectionStart: number;
   selectionEnd: number;
   searchModalIsVisiable: boolean;
