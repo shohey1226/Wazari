@@ -21,6 +21,7 @@ import {
 } from "native-base";
 import MCIcon from "react-native-vector-icons/MaterialCommunityIcons";
 import Favicon from "../components/Favicon";
+import WVInput from "../components/WVInput";
 import { selectBrowserKeymap, selectModifiers } from "../selectors/keymap";
 import {
   selectActiveUrl,
@@ -28,14 +29,11 @@ import {
   selectSites
 } from "../selectors/ui";
 import {
-  updateMode,
   updateFocusedPane,
-  updateKeySwitch,
-  updateWordsForPageFind
+  updateWordsForPageFind,
+  toggleSoftCapslock
 } from "../actions/ui";
-import { addExcludedPattern, removeExcludedPattern } from "../actions/user";
 import { SearchEngine } from "../components/SearchEnginePicker";
-import { KeyMode } from "../types/index.d";
 import Modal from "react-native-modal";
 import { addNewTab, selectTab, toggleBack, toggleForward } from "../actions/ui";
 import Fuse from "fuse.js";
@@ -45,12 +43,13 @@ const DAVKeyManagerEmitter = new NativeEventEmitter(DAVKeyManager);
 
 interface IState {
   text: string;
-  previousKeyMode: KeyMode | null;
+  urlText: string;
   selectionStart: number;
   selectionEnd: number;
   selectedItemIndex: number | null;
   result: Array<any>;
   selectMode: boolean;
+  capsLockOn: boolean;
 }
 
 interface Props {
@@ -58,7 +57,6 @@ interface Props {
   dispatch: (any) => void;
   searchEngine: SearchEngine;
   homeUrl: string;
-  keyMode: KeyMode;
   orientation: string;
   activeUrl: string | null;
   activeSite: any | null;
@@ -82,21 +80,21 @@ class Search extends Component<Props, IState, any> {
     const site = props.activeSite;
     this.state = {
       text: "",
-      previousKeyMode: null,
       selectionStart: 0,
       selectionEnd: 0,
       selectedItemIndex: null,
       result: [],
-      selectMode: false
+      selectMode: false,
+      capsLockOn: false,
+      urlText: "",
+      action: "",
+      debug: ""
     };
   }
 
   componentDidMount() {
     const { activeSite, activeUrl, history } = this.props;
-    this.subscriptions.push(
-      DAVKeyManagerEmitter.addListener("RNKeyEvent", this.typing),
-      DAVKeyManagerEmitter.addListener("RNBrowserKeyEvent", this.handleActions)
-    );
+    this.subscriptions.push;
     this.props.searchIsFocused === true &&
       this.searchRef &&
       this.searchRef._root.focus();
@@ -126,7 +124,6 @@ class Search extends Component<Props, IState, any> {
       activeUrl,
       activeSite,
       focusedPane,
-      keyMode,
       searchIsFocused,
       history,
       sites
@@ -167,28 +164,15 @@ class Search extends Component<Props, IState, any> {
         if (result.length !== 0) {
           nextText = result[selectedItemIndex].item.url;
         }
-        this.setState({ text: nextText });
-
-        // cursor to end
-        setTimeout(() => {
-          this.searchRef.setNativeProps({
-            selection: {
-              start: nextText.length,
-              end: nextText.length
-            }
-          });
-          this.setState({
-            selectionStart: nextText.length,
-            selectionEnd: nextText.length
-          });
-        }, 100);
+        this.setState({ urlText: nextText, text: nextText });
       }
     }
   }
 
-  onEndEditing() {
+  onEndEditing(words) {
     const { dispatch, searchEngine, sites } = this.props;
-    if (this.state.text.length === 0) {
+    let text = words || this.state.text;
+    if (text === "") {
       if (this.state.selectMode) {
         setTimeout(() => {
           dispatch(
@@ -197,19 +181,17 @@ class Search extends Component<Props, IState, any> {
         }, 500);
       }
     } else {
-      const trimmedText = this.state.text.replace(/^\s+|\s+$/g, "");
+      const trimmedText = text.replace(/^\s+|\s+$/g, "");
       if (trimmedText === "") {
         this.searchRef && this.searchRef._root.blur();
         return;
-      } else if (/^http/.test(this.state.text)) {
-        dispatch(addNewTab(this.state.text));
+      } else if (/^http/.test(text)) {
+        dispatch(addNewTab(text));
       } else {
         if (searchEngine === SearchEngine.Google) {
-          dispatch(
-            addNewTab(`https://www.google.com/search?q=${this.state.text}`)
-          );
+          dispatch(addNewTab(`https://www.google.com/search?q=${text}`));
         } else if (searchEngine === SearchEngine.DuckDuckGo) {
-          dispatch(addNewTab(`https://duckduckgo.com/?q=${this.state.text}`));
+          dispatch(addNewTab(`https://duckduckgo.com/?q=${text}`));
         }
       }
       setTimeout(() => {
@@ -227,135 +209,6 @@ class Search extends Component<Props, IState, any> {
     const pattern = port ? `https?://${host}${port}/*` : `https?://${host}/*`;
     return pattern;
   }
-
-  handleActions = async event => {
-    const { dispatch, keyMode } = this.props;
-    if (
-      keyMode === KeyMode.Search &&
-      this.searchRef &&
-      this.props.searchIsFocused
-    ) {
-      switch (event.action) {
-        case "home":
-          this.searchRef.setNativeProps({ selection: { start: 0, end: 0 } });
-          this.setState({
-            selectionStart: 0,
-            selectionEnd: 0
-          });
-          break;
-        case "end":
-          this.searchRef.setNativeProps({
-            selection: {
-              start: this.state.text.length,
-              end: this.state.text.length
-            }
-          });
-          this.setState({
-            selectionStart: this.state.text.length,
-            selectionEnd: this.state.text.length
-          });
-          break;
-        case "deletePreviousChar":
-          if (0 < this.state.selectionStart) {
-            const first = this.state.text.slice(
-              0,
-              this.state.selectionStart - 1
-            );
-            const second = this.state.text.slice(
-              this.state.selectionStart,
-              this.state.text.length
-            );
-
-            setTimeout(() => {
-              let nextStart = this.state.selectionStart - 1;
-              this.setState({
-                text: first + second,
-                selectionStart: nextStart,
-                selectionEnd: nextStart
-              });
-              this.searchRef.setNativeProps({
-                selection: {
-                  start: nextStart + 1,
-                  end: nextStart + 1
-                }
-              });
-            }, 50);
-          }
-          break;
-        case "deleteNextChar":
-          if (this.state.text.length > this.state.selectionStart) {
-            const first = this.state.text.slice(0, this.state.selectionStart);
-            const second = this.state.text.slice(
-              this.state.selectionStart + 1,
-              this.state.text.length
-            );
-            this.setState({
-              text: first + second
-            });
-            setTimeout(() => {
-              this.searchRef.setNativeProps({
-                selection: {
-                  start: this.state.selectionStart,
-                  end: this.state.selectionEnd
-                }
-              });
-            }, 50);
-          }
-          break;
-        case "moveBackOneChar":
-          this.searchRef.setNativeProps({
-            selection: {
-              start: this.state.selectionStart - 1,
-              end: this.state.selectionEnd - 1
-            }
-          });
-          this.setState({
-            selectionStart: this.state.selectionStart - 1,
-            selectionEnd: this.state.selectionEnd - 1
-          });
-          break;
-        case "moveForwardOneChar":
-          if (this.state.text.length > this.state.selectionStart) {
-            this.searchRef.setNativeProps({
-              selection: {
-                start: this.state.selectionStart + 1,
-                end: this.state.selectionEnd + 1
-              }
-            });
-            this.setState({
-              selectionStart: this.state.selectionStart + 1,
-              selectionEnd: this.state.selectionEnd + 1
-            });
-          }
-          break;
-        case "deleteLine":
-          const newText = this.state.text.slice(0, this.state.selectionStart);
-          // For some reason, need setTimeout..
-          setTimeout(() => {
-            this.searchRef.setNativeProps({
-              selection: {
-                start: this.state.selectionStart,
-                end: this.state.selectionEnd
-              }
-            });
-          }, 50);
-          this.setState({
-            text: newText
-          });
-          break;
-        case "moveDownOneLine":
-          this.nextHistoryItem();
-          break;
-        case "moveUpOneLine":
-          this.previousHistoryItem();
-          break;
-        case "copy":
-          break;
-        case "paste":
-          break;
-      }
-    }
-  };
 
   nextHistoryItem() {
     const { history, sites } = this.props;
@@ -410,52 +263,6 @@ class Search extends Component<Props, IState, any> {
       selectedItemIndex: index
     });
   }
-
-  typing = data => {
-    const { dispatch, keyMode } = this.props;
-    if (this.props.searchIsFocused && keyMode === KeyMode.Search) {
-      // handle shift key to make it Uppercase
-      if (data.modifiers.shiftKey) {
-        if (data.key.match(/[a-z]/)) {
-          data.key = data.key.toUpperCase();
-        }
-      }
-
-      let text = this.state.text;
-      switch (data.key) {
-        case "Backspace":
-          this.handleActions({ action: "deletePreviousChar" });
-          return;
-        case "Up":
-          this.previousHistoryItem();
-          return;
-        case "Down":
-          this.nextHistoryItem();
-          return;
-        case "Left":
-          this.handleActions({ action: "moveBackOneChar" });
-          return;
-        case "Right":
-          this.handleActions({ action: "moveForwardOneChar" });
-          return;
-        case "Esc":
-          if (this.state.text !== "") {
-            dispatch(updateWordsForPageFind(this.state.text));
-          }
-          this.closingSearch();
-          return;
-      }
-      let newText =
-        this.state.text.slice(0, this.state.selectionStart) +
-        data.key +
-        this.state.text.slice(this.state.selectionStart);
-      this.setState({
-        text: newText,
-        selectionStart: this.state.selectionStart + 1,
-        selectionEnd: this.state.selectionStart + 1
-      });
-    }
-  };
 
   onPressHistoryItem(url: string) {
     this.setState({ text: url });
@@ -618,8 +425,27 @@ class Search extends Component<Props, IState, any> {
     this.props.closeSearch();
   }
 
+  performAction(name) {
+    console.log(name);
+  }
+
+  updateWords(words) {
+    console.log(words);
+    if (words.length === 0) {
+      this.setState({ text: "", selectMode: false });
+    } else {
+      this.setState({ text: words });
+    }
+  }
+
+  toggleSoftCapslock() {
+    const { dispatch } = this.props;
+    console.log("toggleSoftCapslock in search");
+    dispatch(toggleSoftCapslock());
+  }
+
   render() {
-    const { searchEngine, orientation, keyMode } = this.props;
+    const { searchEngine, orientation, browserKeymap, modifiers } = this.props;
     if (
       orientation === "LANDSCAPE" &&
       DeviceInfo.getDeviceType() === "Handset"
@@ -634,23 +460,21 @@ class Search extends Component<Props, IState, any> {
       >
         <Item>
           <Icon name="ios-search" style={{ paddingLeft: 10 }} />
-          <Input
-            ref={r => (this.searchRef = r as any)}
-            placeholder={`URL or Search with ${searchEngine}`}
-            onChangeText={text =>
-              this.setState({
-                text: text,
-                selectionStart: text.length,
-                selectionEnd: text.length
-              })
-            }
-            value={this.state.text}
-            autoCorrect={false}
+          <WVInput
+            keyup={v => this.setState({ text: v })}
+            updateCapsLockState={s => this.setState({ capsLockOn: s })}
+            modifiers={modifiers}
+            browserKeymap={browserKeymap}
+            performAction={this.performAction.bind(this)}
+            nextHistoryItem={this.nextHistoryItem.bind(this)}
+            previousHistoryItem={this.previousHistoryItem.bind(this)}
             onEndEditing={this.onEndEditing.bind(this)}
-            textContentType="URL"
-            autoCapitalize="none"
-            style={{ fontSize: 16 }}
+            updateWords={this.updateWords.bind(this)}
+            text={this.state.urlText}
+            toggleSoftCapslock={this.toggleSoftCapslock.bind(this)}
+            {...this.props}
           />
+
           <Button
             dark
             transparent
@@ -679,17 +503,23 @@ class Search extends Component<Props, IState, any> {
 function mapStateToProps(state, ownProps) {
   const history = state.user.get("history").toJS();
   const activePaneId = state.ui.get("activePaneId");
+  const isSoftCapslockOn = state.ui.get("isSoftCapslockOn");
   const sites = selectSites(state, activePaneId);
   const activeTabIndex = state.ui.getIn([
     "panes",
     activePaneId,
     "activeTabIndex"
   ]);
+  const modifiers = selectModifiers(state);
+  const browserKeymap = selectBrowserKeymap(state);
 
   return {
     history,
     sites,
-    activeTabIndex
+    activeTabIndex,
+    modifiers,
+    browserKeymap,
+    isSoftCapslockOn
   };
 }
 

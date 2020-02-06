@@ -1,10 +1,10 @@
 export const UPDATE_HOME = "UPDATE_HOME";
 export const UPDATE_SEARCH_ENGINE = "UPDATE_SEARCH_ENGINE";
-export const ADD_EXCLUDED_PATTERN = "ADD_EXCLUDED_PATTERN";
-export const REMOVE_EXCLUDED_PATTERN = "REMOVE_EXCLUDED_PATTERN";
-export const UPDATE_EXCLUDED_PATTERN = "UPDATE_EXCLUDED_PATTERN";
+// export const ADD_EXCLUDED_PATTERN = "ADD_EXCLUDED_PATTERN";
+// export const REMOVE_EXCLUDED_PATTERN = "REMOVE_EXCLUDED_PATTERN";
+// export const UPDATE_EXCLUDED_PATTERN = "UPDATE_EXCLUDED_PATTERN";
 export const UPDATE_HISTORY = "UPDATE_HISTORY";
-import { updateModeAndSwitch } from "./ui";
+//import { updateModeAndSwitch } from "./ui";
 import { List } from "immutable";
 
 export function updateHome(url: string) {
@@ -21,41 +21,41 @@ export function updateSearchEngine(engine: string) {
   };
 }
 
-export function addExcludedPattern(pattern: string) {
-  return (dispatch, getState) => {
-    dispatch(_addExcludedPattern(pattern));
-    dispatch(updateModeAndSwitch());
-  };
-}
+// export function addExcludedPattern(pattern: string) {
+//   return (dispatch, getState) => {
+//     dispatch(_addExcludedPattern(pattern));
+//     dispatch(updateModeAndSwitch());
+//   };
+// }
 
-function _addExcludedPattern(pattern: string) {
-  return {
-    type: ADD_EXCLUDED_PATTERN,
-    pattern: pattern
-  };
-}
+// function _addExcludedPattern(pattern: string) {
+//   return {
+//     type: ADD_EXCLUDED_PATTERN,
+//     pattern: pattern
+//   };
+// }
 
-export function removeExcludedPattern(pattern: string) {
-  return (dispatch, getState) => {
-    dispatch(_removeExcludedPattern(pattern));
-    dispatch(updateModeAndSwitch());
-  };
-}
+// export function removeExcludedPattern(pattern: string) {
+//   return (dispatch, getState) => {
+//     dispatch(_removeExcludedPattern(pattern));
+//     dispatch(updateModeAndSwitch());
+//   };
+// }
 
-function _removeExcludedPattern(pattern: string) {
-  return {
-    type: REMOVE_EXCLUDED_PATTERN,
-    pattern: pattern
-  };
-}
+// function _removeExcludedPattern(pattern: string) {
+//   return {
+//     type: REMOVE_EXCLUDED_PATTERN,
+//     pattern: pattern
+//   };
+// }
 
-export function updateExcludedPattern(origPattern: string, newPattern: string) {
-  return {
-    type: UPDATE_EXCLUDED_PATTERN,
-    origPattern: origPattern,
-    newPattern: newPattern
-  };
-}
+// export function updateExcludedPattern(origPattern: string, newPattern: string) {
+//   return {
+//     type: UPDATE_EXCLUDED_PATTERN,
+//     origPattern: origPattern,
+//     newPattern: newPattern
+//   };
+// }
 
 export function addHistory(url: string, title: string) {
   return (dispatch, getState) => {

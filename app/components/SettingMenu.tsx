@@ -4,8 +4,7 @@ import { List, ListItem, Text, Left, Right, Icon } from "native-base";
 
 export enum MenuItem {
   Key,
-  General,
-  ExcludedPatterns
+  General
 }
 
 export interface Props {
@@ -31,16 +30,6 @@ class SettingMenu extends Component<Props> {
         <ListItem onPress={() => this.props.clickMenuItem(MenuItem.General)}>
           <Left>
             <Text>General</Text>
-          </Left>
-          <Right>
-            <Icon name="arrow-forward" />
-          </Right>
-        </ListItem>
-        <ListItem
-          onPress={() => this.props.clickMenuItem(MenuItem.ExcludedPatterns)}
-        >
-          <Left>
-            <Text>Excluded Patterns</Text>
           </Left>
           <Right>
             <Icon name="arrow-forward" />

@@ -11,14 +11,17 @@ import { connect } from "react-redux";
 import { Button, Text, Container, Header, Icon } from "native-base";
 import ScrollableTabView from "react-native-scrollable-tab-view";
 import TabBar from "react-native-underline-tabbar";
+import { isEqual } from "lodash";
 import Favicon from "../components/Favicon";
+import WVTerm from "../components/WVTerm";
 import DeviceInfo from "react-native-device-info";
 import TabWindow from "./TabWindow";
 import { selectSites } from "../selectors/ui";
 import { selectAppKeymap, selectModifiers } from "../selectors/keymap";
-import { addNewTab, selectTab, closeTab } from "../actions/ui";
+import { addNewTab, selectTab, closeTab, updateCapslock } from "../actions/ui";
 import keymapper from "../utils/Keymapper";
-import { KeyMode } from "../types/index.d";
+import { CapslockState } from "../types/index.d";
+import Tab from "./Tab";
 
 const { DAVKeyManager } = NativeModules;
 const DAVKeyManagerEmitter = new NativeEventEmitter(DAVKeyManager);
@@ -26,11 +29,13 @@ const DAVKeyManagerEmitter = new NativeEventEmitter(DAVKeyManager);
 interface State {
   activeIndex: number;
   isActivePane: boolean;
+  siteIds: Array<number>;
 }
 
 type Site = {
   url: string;
   title: string;
+  id: number;
 };
 
 interface Props {
@@ -39,10 +44,9 @@ interface Props {
   activeTabIndex: number;
   keymap: any;
   modifiers: any;
-  keyMode: KeyMode;
   orientation: string;
   homeUrl: string;
-  keySwitchOn: boolean;
+  paneId: any;
 }
 
 /* Browser is whole browser controls each windows(tabs) */
@@ -51,13 +55,15 @@ class Browser extends Component<Props, State> {
   keyboardDidShowListener: any;
   keyboardDidHideListener: any;
   subscriptions: Array<any> = [];
-  tabViews: Array<any> = [];
+  // tabViews are used for cache purpose to avoid loading when tab is changed.
+  tabViews: any = {};
 
   constructor(props) {
     super(props);
     this.state = {
       activeIndex: props.activeTabIndex,
-      isActivePane: props.paneId === props.activePaneId
+      isActivePane: props.paneId === props.activePaneId,
+      siteIds: []
     };
     //this.onPressTab = this.onPressTab.bind(this);
   }
@@ -68,7 +74,6 @@ class Browser extends Component<Props, State> {
       sites,
       activeTabIndex,
       homeUrl,
-      keyMode,
       modifiers,
       keymap
     } = this.props;
@@ -76,8 +81,6 @@ class Browser extends Component<Props, State> {
     if (sites.length === 0) {
       dispatch(addNewTab(homeUrl));
     }
-
-    this.setIOSMode(keyMode);
 
     DAVKeyManager.setAppKeymap(
       keymapper.convertToNativeFormat(keymap, modifiers)
@@ -87,82 +90,30 @@ class Browser extends Component<Props, State> {
       DAVKeyManagerEmitter.addListener("RNAppKeyEvent", this.handleAppActions)
     );
 
-    // virtual keyboard is used
-    // this.keyboardDidShowListener = Keyboard.addListener(
-    //   "keyboardDidShow",
-    //   () => {
-    //     const { keyMode } = this.props;
-    //     keyMode !== KeyMode.Direct && dispatch(updateMode(KeyMode.Direct));
-    //   }
-    // );
-    // this.keyboardDidHideListener = Keyboard.addListener(
-    //   "keyboardDidHide",
-    //   () => {
-    //     const { keyMode } = this.props;
-    //     keyMode !== KeyMode.Direct && dispatch(updateMode(KeyMode.Text));
-    //   }
-    // );
+    this.buildTabs();
+
     if (activeTabIndex) {
       setTimeout(() => {
         this.tabsRef.goToPage(activeTabIndex);
-      }, 50);
+      }, 500);
     }
   }
 
   componentWillUnmount() {
-    // this.keyboardDidShowListener.remove();
-    // this.keyboardDidHideListener.remove();
     this.subscriptions.forEach(subscription => {
       subscription.remove();
     });
-  }
-
-  /*
-  +----------+----------+-------------------+
-  | RN mode  | iOS mode |    iOS Keymap     |
-  +----------+----------+-------------------+
-  | search   | text     | app+browser+input |
-  | text     | text     | app+browser+input |
-  | direct   | n/a      | n/a turned-off    |
-  | terminal | input    | app+input         |
-  | browser  | browser  | app+browser       |
-  +----------+----------+-------------------+
-  */
-
-  setIOSMode(keyMode: KeyMode): void {
-    switch (keyMode) {
-      case KeyMode.Text:
-        DAVKeyManager.turnOnKeymap();
-        DAVKeyManager.setMode("text");
-        break;
-      case KeyMode.Terminal:
-        DAVKeyManager.turnOnKeymap();
-        DAVKeyManager.setMode("input");
-        break;
-      case KeyMode.Direct:
-        DAVKeyManager.turnOffKeymap();
-        break;
-      case KeyMode.Browser:
-        DAVKeyManager.turnOnKeymap();
-        DAVKeyManager.setMode("browser");
-        break;
-      case KeyMode.Search:
-        DAVKeyManager.turnOnKeymap();
-        DAVKeyManager.setMode("text");
-        break;
-    }
   }
 
   componentDidUpdate(prevProp: Props) {
     const {
       activeTabIndex,
       sites,
-      keyMode,
-      keySwitchOn,
       dispatch,
       activePaneId,
       paneId,
-      paneIds
+      paneIds,
+      isSoftCapslockOn
     } = this.props;
 
     if (prevProp.activeTabIndex !== activeTabIndex) {
@@ -171,31 +122,72 @@ class Browser extends Component<Props, State> {
       }
     }
 
-    // Set iOS keymap!!!
-    if (prevProp.keyMode !== keyMode) {
-      this.setIOSMode(keyMode);
-    }
-
     if (prevProp.activePaneId !== activePaneId) {
       this.setState({ isActivePane: paneId === activePaneId });
     }
+
+    // Manage tabViews with site.id
+    if (!isEqual(sites, prevProp.sites)) {
+      if (sites.length > prevProp.sites.length) {
+        const prevSiteIds = prevProp.sites.map(ps => ps.id);
+        sites
+          .filter(s => !prevSiteIds.includes(s.id))
+          .forEach(s => this.addTabView(s));
+      } else if (sites.length < prevProp.sites.length) {
+        const siteIds = sites.map(ps => ps.id);
+        prevProp.sites
+          .filter(ps => !siteIds.includes(ps.id))
+          .forEach(ps => this.removeTabView(ps));
+      }
+    }
+
+    if (isSoftCapslockOn !== prevProp.isSoftCapslockOn) {
+      if (isSoftCapslockOn) {
+        dispatch(updateCapslock(CapslockState.SoftOn));
+      } else {
+        dispatch(updateCapslock(CapslockState.SoftOff));
+      }
+    }
+  }
+
+  addTabView(s) {
+    this.tabViews[s.id] = (
+      <TabWindow
+        key={`tab-${s.id}`}
+        tabLabel={{
+          label: "",
+          id: s.id,
+          onPressButton: () => this.pressCloseTab(s.id),
+          url: s.url
+        }}
+        url={s.url}
+        tabId={s.id}
+        {...this.props}
+      />
+    );
+
+    let siteIds = this.state.siteIds.slice();
+    siteIds.push(s.id);
+    this.setState({ siteIds: siteIds });
+  }
+
+  removeTabView(s) {
+    this.tabViews[s.id] && delete this.tabViews[s.id];
+    let siteIds = this.state.siteIds.slice();
+    siteIds.splice(siteIds.indexOf(s.id), 1);
+    this.setState({ siteIds: siteIds });
   }
 
   handleAppActions = async event => {
     const {
       dispatch,
       activeTabIndex,
-      keyMode,
       homeUrl,
       sites,
       activePaneId
     } = this.props;
-    if (
-      this.state.isActivePane &&
-      (keyMode === KeyMode.Terminal ||
-        keyMode === KeyMode.Text ||
-        keyMode === KeyMode.Browser)
-    ) {
+
+    if (this.state.isActivePane) {
       console.log("action at browser", event);
       switch (event.action) {
         case "newTab":
@@ -215,31 +207,23 @@ class Browser extends Component<Props, State> {
           dispatch(selectTab(prevIndex));
           break;
         case "closeTab":
-          this.pressCloseTab(activeTabIndex, activePaneId);
+          const _id = this.state.siteIds[activeTabIndex];
+          this.pressCloseTab(_id);
           break;
       }
     }
   };
 
-  // https://qiita.com/hirocueki2/items/137400e236189a0a6b3e
-  _truncate(str) {
-    let len = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff66-\uff9f]/.test(
-      str
-    )
-      ? 9
-      : 16;
-    return str.length <= len ? str : str.substr(0, len) + "...";
-  }
-
-  pressCloseTab(i) {
+  pressCloseTab(tabId: number) {
     const { dispatch, sites, activeTabIndex, paneId } = this.props;
-    dispatch(closeTab(i, paneId));
-    if (i === activeTabIndex) {
-      if (sites.length > i + 1) {
-        dispatch(selectTab(i));
+    const index = this.state.siteIds.indexOf(tabId);
+    dispatch(closeTab(index, paneId, activeTabIndex));
+    if (index === activeTabIndex) {
+      if (sites.length > index + 1) {
+        dispatch(selectTab(index));
       } else {
         setTimeout(() => {
-          dispatch(selectTab(i - 1));
+          dispatch(selectTab(index - 1));
         }, 50);
       }
     }
@@ -251,37 +235,40 @@ class Browser extends Component<Props, State> {
   // }
   onChangeTab(tab) {
     const { dispatch, activeTabIndex } = this.props;
+    console.log(tab, activeTabIndex);
     if (activeTabIndex !== tab.i) {
       dispatch(selectTab(tab.i));
     }
     this.setState({ activeIndex: tab.i });
   }
 
-  renderTabs() {
-    const { sites, keyMode, activeTabIndex, paneId } = this.props;
-    let tabs = [];
+  buildTabs() {
+    const { sites, paneId } = this.props;
     for (let i = 0; i < sites.length; i++) {
-      const tabTitle = sites[i].title
-        ? this._truncate(sites[i].title)
-        : this._truncate(sites[i].url);
-
-      tabs.push(
+      const _id = sites[i].id;
+      const _url = sites[i].url;
+      this.tabViews[_id] = (
         <TabWindow
+          key={`tab-${_id}`}
           tabLabel={{
-            label: tabTitle,
-            onPressButton: () => this.pressCloseTab(i),
-            url: sites[i].url
+            label: "",
+            id: _id,
+            onPressButton: () => this.pressCloseTab(_id)
           }}
-          url={sites[i].url}
-          tabNumber={i}
-          keyMode={keyMode}
-          isActive={activeTabIndex === i && this.state.isActivePane}
-          activeTabIndex={activeTabIndex}
+          url={_url}
+          tabId={_id}
+          paneId={paneId}
           {...this.props}
         />
       );
     }
-    return tabs;
+    this.setState({ siteIds: sites.map(s => s.id) });
+  }
+
+  renderTabs() {
+    return this.state.siteIds.map(id => {
+      return this.tabViews[id];
+    });
   }
 
   render() {
@@ -314,6 +301,7 @@ class Browser extends Component<Props, State> {
               onTabLayout
             ) => (
               <Tab
+                paneId={paneId}
                 key={page}
                 tab={tab}
                 page={page}
@@ -334,64 +322,6 @@ class Browser extends Component<Props, State> {
   }
 }
 
-const Tab = ({
-  tab,
-  page,
-  isTabActive,
-  onPressHandler,
-  onTabLayout,
-  styles
-}) => {
-  const { label, url, onPressButton } = tab;
-  const style = {
-    marginHorizontal: 1,
-    paddingVertical: 0.5
-  };
-  const containerStyle = {
-    paddingRight: 0,
-    paddingLeft: 12.5,
-    paddingVertical: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    height: 37.5
-  };
-  const textStyle = {
-    fontWeight: "600",
-    fontSize: 12,
-    marginLeft: 10,
-    marginRight: 10,
-    color: "white"
-  };
-  return (
-    <TouchableOpacity
-      style={style}
-      onPress={onPressHandler}
-      onLayout={onTabLayout}
-      key={page}
-    >
-      <View style={containerStyle}>
-        <Favicon url={url} />
-        <Text style={textStyle}>{label}</Text>
-        <Button
-          style={{ height: 37.5 }}
-          transparent
-          dark
-          onPress={() => onPressButton()}
-        >
-          <Icon
-            name="md-close"
-            style={{
-              paddingRight: 5,
-              fontSize: 13,
-              color: "#fff"
-            }}
-          />
-        </Button>
-      </View>
-    </TouchableOpacity>
-  );
-};
-
 function mapStateToProps(state, ownProps) {
   const keymap = selectAppKeymap(state);
   const modifiers = selectModifiers(state);
@@ -403,22 +333,20 @@ function mapStateToProps(state, ownProps) {
     "activeTabIndex"
   ]);
   const sites = selectSites(state, ownProps.paneId);
-  const keyMode = state.ui.get("keyMode");
   const orientation = state.ui.get("orientation");
+  const isSoftCapslockOn = state.ui.get("isSoftCapslockOn");
   const homeUrl = state.user.get("homeUrl");
-  const keySwitchOn = state.ui.get("keySwitchOn");
 
   return {
     sites,
     keymap,
     modifiers,
     activeTabIndex,
-    keyMode,
     orientation,
     homeUrl,
-    keySwitchOn,
     activePaneId,
-    paneIds
+    paneIds,
+    isSoftCapslockOn
   };
 }
 

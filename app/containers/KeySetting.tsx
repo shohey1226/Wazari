@@ -91,17 +91,8 @@ class KeySetting extends Component<Props, States> {
     // Update modifiers
     if (!equals(modifiers, prevProps.modifiers)) {
       DAVKeyManager.updateModifiers(modifiers);
-      DAVKeyManager.setBrowserKeymap(
-        keymapper.convertToNativeFormat(browserKeymap, modifiers)
-      );
       DAVKeyManager.setAppKeymap(
         keymapper.convertToNativeFormat(appKeymap, modifiers)
-      );
-    }
-
-    if (!isEqual(browserKeymap, prevProps.browserKeymap)) {
-      DAVKeyManager.setBrowserKeymap(
-        keymapper.convertToNativeFormat(browserKeymap, modifiers)
       );
     }
 

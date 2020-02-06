@@ -27,11 +27,11 @@ import {
   selectActiveSite,
   selectSites
 } from "../selectors/ui";
-import { updateMode, updateFocusedPane, updateKeySwitch } from "../actions/ui";
-import { addExcludedPattern, removeExcludedPattern } from "../actions/user";
+import { updateFocusedPane } from "../actions/ui";
+//import { addExcludedPattern, removeExcludedPattern } from "../actions/user";
 import { SearchEngine } from "../components/SearchEnginePicker";
 import Search from "./Search";
-import { KeyMode } from "../types/index.d";
+import { CapslockState } from "../types/index.d";
 import Modal from "react-native-modal";
 
 import {
@@ -39,7 +39,8 @@ import {
   selectTab,
   toggleBack,
   toggleForward,
-  toggleReload
+  toggleReload,
+  toggleSoftCapslock
 } from "../actions/ui";
 
 const { DAVKeyManager } = NativeModules;
@@ -50,7 +51,6 @@ interface IState {
   canGoBack: boolean;
   canGoForward: boolean;
   excludedPattern: string | null;
-  previousKeyMode: KeyMode | null;
   selectionStart: number;
   selectionEnd: number;
   searchModalIsVisiable: boolean;
@@ -61,13 +61,12 @@ interface Props {
   activeTabIndex: number;
   searchEngine: SearchEngine;
   homeUrl: string;
-  keyMode: KeyMode;
   orientation: string;
   activeUrl: string | null;
   activeSite: any | null;
   focusedPane: string;
   sites: any;
-  keySwitchOn: boolean;
+  capslockState: CapslockState;
 }
 
 class NavBar extends Component<Props, IState, any> {
@@ -80,7 +79,6 @@ class NavBar extends Component<Props, IState, any> {
       text: "",
       canGoBack: site && site.canGoBack ? site.canGoBack : false,
       canGoForward: site && site.canGoForward ? site.canGoForward : false,
-      previousKeyMode: null,
       selectionStart: 0,
       selectionEnd: 0,
       searchModalIsVisiable: false
@@ -106,8 +104,7 @@ class NavBar extends Component<Props, IState, any> {
       orientation,
       activeUrl,
       activeSite,
-      focusedPane,
-      keyMode
+      focusedPane
     } = this.props;
     if (
       activeSite &&
@@ -124,19 +121,6 @@ class NavBar extends Component<Props, IState, any> {
     if (orientation !== prevProp.orientation) {
       this.props.navigate("Home", { orientation: orientation });
     }
-
-    if (prevProp.focusedPane !== focusedPane) {
-      if (focusedPane === "search") {
-        dispatch(updateMode(KeyMode.Search));
-        this.setState({ previousKeyMode: keyMode });
-      } else if (focusedPane === "browser") {
-        dispatch(updateMode(this.state.previousKeyMode));
-        this.setState({ previousKeyMode: KeyMode.Browser });
-      }
-    }
-
-    // console.log("prev", prevState.selectionStart);
-    // console.log("current", this.state.selectionStart);
   }
 
   onEndEditing() {
@@ -187,18 +171,13 @@ class NavBar extends Component<Props, IState, any> {
   }
 
   onPressSetting() {
-    DAVKeyManager.turnOffKeymap();
+    //DAVKeyManager.turnOffKeymap();
     this.props.navigate({ routeName: "Setting" });
   }
 
-  onPressSwitch() {
-    const { dispatch, activeUrl, keySwitchOn } = this.props;
-    const pattern = this.urlToPattern(activeUrl);
-    if (keySwitchOn) {
-      dispatch(addExcludedPattern(pattern));
-    } else {
-      dispatch(removeExcludedPattern(pattern));
-    }
+  onPressCapslock() {
+    const { dispatch } = this.props;
+    dispatch(toggleSoftCapslock());
   }
 
   urlToPattern(url) {
@@ -209,32 +188,29 @@ class NavBar extends Component<Props, IState, any> {
     return pattern;
   }
 
-  switchIcon() {
-    const { activeUrl } = this.props;
-    if (this.props.keySwitchOn) {
-      if (/^https:\/\/www\.wazaterm\.com\/terminals\/\S+/.test(activeUrl)) {
-        return (
-          <MCIcon
-            name="toggle-switch"
-            style={{ color: "#ffd60a", fontSize: 22 }}
-          />
-        );
-      } else {
-        return (
-          <MCIcon
-            name="toggle-switch"
-            style={{ color: "#30d158", fontSize: 22 }}
-          />
-        );
-      }
-    } else {
-      return (
-        <MCIcon
-          name="toggle-switch-off"
-          style={{ color: "#aaa", fontSize: 22 }}
-        />
-      );
+  capslockIcon() {
+    const { capslockState } = this.props;
+    let color;
+    switch (capslockState) {
+      case CapslockState.hardOn:
+        color = "#ef5350";
+        break;
+      case CapslockState.hardOff:
+        color = "#ffcdd2";
+        break;
+      case CapslockState.SoftOff:
+        color = "#999";
+        break;
+      case CapslockState.SoftOn:
+        color = "#30d158";
+        break;
     }
+    return (
+      <MCIcon
+        name="caps-lock"
+        style={{ color: color, fontSize: 22, marginTop: 2.5 }}
+      />
+    );
   }
 
   handleAppActions = event => {
@@ -244,26 +220,23 @@ class NavBar extends Component<Props, IState, any> {
       case "focusOnSearch":
         this.openSearch();
         break;
-      case "toggleWazariInput":
-        this.onPressSwitch();
-        break;
     }
   };
 
   openSearch() {
-    const { dispatch, keyMode } = this.props;
+    const { dispatch } = this.props;
     dispatch(updateFocusedPane("search"));
     this.setState({ searchModalIsVisiable: true });
   }
 
   closeSearch() {
-    const { dispatch, keyMode } = this.props;
+    const { dispatch } = this.props;
     this.setState({ searchModalIsVisiable: false });
     dispatch(updateFocusedPane("browser"));
   }
 
   render() {
-    const { searchEngine, orientation, keyMode, activeUrl } = this.props;
+    const { searchEngine, orientation, activeUrl } = this.props;
     if (
       orientation === "LANDSCAPE" &&
       DeviceInfo.getDeviceType() === "Handset"
@@ -360,10 +333,10 @@ class NavBar extends Component<Props, IState, any> {
         <Button
           transparent
           light
-          onPress={() => this.onPressSwitch()}
+          onPress={() => this.onPressCapslock()}
           style={{ marginLeft: 5 }}
         >
-          {this.switchIcon()}
+          {this.capslockIcon()}
         </Button>
         <Button transparent light onPress={() => this.onPressAdd()}>
           <Icon name="md-add" />
@@ -402,23 +375,21 @@ function mapStateToProps(state, ownProps) {
   const activeUrl = selectActiveUrl(state, activePaneId);
   const searchEngine = state.user.get("searchEngine");
   const homeUrl = state.user.get("homeUrl");
-  const keyMode = state.ui.get("keyMode");
   const orientation = state.ui.get("orientation");
   const focusedPane = state.ui.get("focusedPane");
-  const keySwitchOn = state.ui.get("keySwitchOn");
+  const capslockState = state.ui.get("capslockState");
   return {
     keymap,
     modifiers,
     activeTabIndex,
     searchEngine,
     homeUrl,
-    keyMode,
     orientation,
     activeUrl,
     activeSite,
     sites,
     focusedPane,
-    keySwitchOn
+    capslockState
   };
 }
 

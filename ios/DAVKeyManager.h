@@ -9,4 +9,5 @@
 #import <React/RCTEventEmitter.h>
 
 @interface DAVKeyManager : RCTEventEmitter <RCTBridgeModule>
+- (void)modKeyPress: (NSString*)action;
 @end

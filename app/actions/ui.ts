@@ -1,4 +1,4 @@
-import { KeyMode } from "../types/index.d";
+import { CapslockState } from "../types/index.d";
 
 export const ADD_NEW_TAB = "ADD_NEW_TAB";
 export const SELECT_TAB = "SELECT_TAB";
@@ -8,15 +8,15 @@ export const TOGGLE_FORWARD = "TOGGLE_FORWARD";
 export const TOGGLE_BACK = "TOGGLE_BACK";
 export const TOGGLE_RELOAD = "TOGGLE_RELOAD";
 export const UPDATE_BACK_FORWARD = "UPDATE_BACK_FORWARD";
-export const UPDATE_MODE = "UPDATE_MODE";
 export const UPDATE_ORIENTATION = "UPDATE_ORIENTATION";
 export const UPDATE_FOUCUSED_PANE = "UPDATE_FOUCUSED_PANE";
-export const UPDATE_KEY_SWITCH = "UPDATE_KEY_SWITCH";
 export const ADD_PANE = "ADD_PANE";
 export const REMOVE_PANE = "REMOVE_PANE";
 export const SELECT_PANE = "SELECT_PANE";
 export const UPDATE_PANE_BLUEPRINT = "UPDATE_PANE_BLUEPRINT";
 export const UPDATE_WORDS_FOR_PAGE_FIND = "UPDATE_WORDS_FOR_PAGE_FIND";
+export const UPDATE_CAPSLOCK = "UPDATE_CAPSLOCK";
+export const TOGGLE_SOFT_CAPSLOCK = "TOGGLE_SOFT_CAPSLOCK";
 
 export function updateWordsForPageFind(words: string) {
   return {
@@ -58,93 +58,45 @@ function _addNewTab(url: string, paneId: number) {
   };
 }
 
-export function closeTab(index: number, paneId: number) {
+export function closeTab(
+  index: number,
+  paneId: number,
+  activeTabIndex: number
+) {
+  let nextActiveTabIndex = 0;
+  if (activeTabIndex === index) {
+    if (index > 0) {
+      nextActiveTabIndex = index - 1;
+    } else {
+      nextActiveTabIndex = 0;
+    }
+  } else {
+    if (index > activeTabIndex) {
+      nextActiveTabIndex = activeTabIndex;
+    } else {
+      nextActiveTabIndex = activeTabIndex - 1;
+    }
+  }
   return {
     type: CLOSE_TAB,
     index: index,
-    paneId: paneId
+    paneId: paneId,
+    activeTabIndex: nextActiveTabIndex
   };
 }
 
 export function selectTab(index) {
   return (dispatch, getState) => {
     const activePaneId = getState().ui.get("activePaneId");
-    const { mode, keySwitchOn } = _getModeAndSwitch(
-      activePaneId,
-      index,
-      getState()
-    );
-    dispatch(_selectTab(index, activePaneId, mode, keySwitchOn));
+    dispatch(_selectTab(index, activePaneId));
   };
 }
 
-function _selectTab(
-  index,
-  paneId: number,
-  mode: KeyMode,
-  keySwitchOn: boolean
-) {
+function _selectTab(index, paneId: number) {
   return {
     type: SELECT_TAB,
     index: index,
-    paneId: paneId,
-    mode: mode,
-    keySwitchOn: keySwitchOn
-  };
-}
-
-function _getModeAndSwitch(
-  activePaneId,
-  index,
-  state
-): { mode: KeyMode; keySwitchOn: boolean } {
-  const excludedPatterns = state.user.get("excludedPatterns").toArray();
-  const url = state.ui
-    .getIn(["panes", activePaneId, "sites"])
-    .getIn([index, "url"]);
-  const keySwitchOn = _isSwitchOn(url, excludedPatterns);
-  let mode = KeyMode.Text;
-  if (/^https:\/\/www\.wazaterm\.com\/terminals\/\S+/.test(url)) {
-    mode = KeyMode.Terminal;
-  } else if (!keySwitchOn) {
-    mode = KeyMode.Browser;
-  }
-  return { mode: mode, keySwitchOn: keySwitchOn };
-}
-
-function _isSwitchOn(url: string, excludedPatterns: Array<string>): boolean {
-  // wazaterm -
-  if (/^https:\/\/www\.wazaterm\.com\/terminals\/\S+/.test(url)) {
-    return true;
-  }
-  let switchOn = true;
-  let pattern: string | null = null;
-  for (let p of excludedPatterns) {
-    let regex = new RegExp(p);
-    if (regex.test(url)) {
-      switchOn = false;
-      pattern = p;
-      break;
-    }
-  }
-  return switchOn;
-}
-
-export function updateModeAndSwitch() {
-  return (dispatch, getState) => {
-    const activePaneId = getState().ui.get("activePaneId");
-    const activeTabIndex = getState().ui.getIn([
-      "panes",
-      activePaneId,
-      "activeTabIndex"
-    ]);
-    const { mode, keySwitchOn } = _getModeAndSwitch(
-      activePaneId,
-      activeTabIndex,
-      getState()
-    );
-    dispatch(updateMode(mode));
-    dispatch(updateKeySwitch(keySwitchOn));
+    paneId: paneId
   };
 }
 
@@ -160,25 +112,7 @@ export function updateSite(
     const excludedPatterns = getState()
       .user.get("excludedPatterns")
       .toArray();
-    const keySwitchOn = _isSwitchOn(url, excludedPatterns);
-    let mode = KeyMode.Text;
-    if (/^https:\/\/www\.wazaterm\.com\/terminals\/\S+/.test(url)) {
-      mode = KeyMode.Terminal;
-    } else if (!keySwitchOn) {
-      mode = KeyMode.Browser;
-    }
-    dispatch(
-      _updateSite(
-        index,
-        title,
-        url,
-        canGoBack,
-        canGoForward,
-        paneId,
-        mode,
-        keySwitchOn
-      )
-    );
+    dispatch(_updateSite(index, title, url, canGoBack, canGoForward, paneId));
   };
 }
 
@@ -188,9 +122,7 @@ function _updateSite(
   url: string,
   canGoBack: boolean,
   canGoForward: boolean,
-  paneId: number,
-  mode: KeyMode,
-  keySwitchOn: boolean
+  paneId: number
 ) {
   return {
     type: UPDATE_SITE,
@@ -199,23 +131,7 @@ function _updateSite(
     url: url,
     canGoBack: canGoBack,
     canGoForward: canGoForward,
-    paneId: paneId,
-    mode: mode,
-    keySwitchOn: keySwitchOn
-  };
-}
-
-export function updateMode(mode: KeyMode) {
-  return {
-    type: UPDATE_MODE,
-    mode: mode
-  };
-}
-
-export function updateKeySwitch(switchState: boolean) {
-  return {
-    type: UPDATE_KEY_SWITCH,
-    switchState: switchState
+    paneId: paneId
   };
 }
 
@@ -271,24 +187,17 @@ export function selectPane(paneId: number) {
   return (dispatch, getState) => {
     if (isValidPanes(getState().ui)) {
       const index = getState().ui.getIn(["panes", paneId, "activeTabIndex"]);
-      const { mode, keySwitchOn } = _getModeAndSwitch(
-        paneId,
-        index,
-        getState()
-      );
-      dispatch(_selectPane(paneId, mode, keySwitchOn));
+      dispatch(_selectPane(paneId));
     } else {
       console.log("pane state is not valid");
     }
   };
 }
 
-function _selectPane(paneId: number, mode, keySwitchOn) {
+function _selectPane(paneId: number) {
   return {
     type: SELECT_PANE,
-    paneId: paneId,
-    mode: mode,
-    keySwitchOn: keySwitchOn
+    paneId: paneId
   };
 }
 
@@ -296,6 +205,19 @@ export function updatePaneBlueprint(blueprint: Object) {
   return {
     type: UPDATE_PANE_BLUEPRINT,
     blueprint: blueprint
+  };
+}
+
+export function updateCapslock(capslockState: CapslockState) {
+  return {
+    type: UPDATE_CAPSLOCK,
+    capslockState: capslockState
+  };
+}
+
+export function toggleSoftCapslock() {
+  return {
+    type: TOGGLE_SOFT_CAPSLOCK
   };
 }
 
