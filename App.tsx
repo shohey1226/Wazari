@@ -27,7 +27,6 @@ import PaneRoot from "./app/containers/PaneRoot";
 import Setting from "./app/components/Setting";
 import KeySetting from "./app/containers/KeySetting";
 import GeneralSetting from "./app/containers/GeneralSetting";
-//import ExcludedPatternList from "./app/containers/ExcludedPatternList";
 import NavBar from "./app/containers/NavBar";
 import SettingBackButton from "./app/components/SettingBackButton";
 import LaunchScreen from "./app/components/LaunchScreen";
@@ -73,13 +72,8 @@ let RootStack = createStackNavigator({
       title: "General Setting"
     })
   }
-  // ExcludedPatternList: {
-  //   screen: ExcludedPatternList,
-  //   navigationOptions: () => ({
-  //     title: "Excluded Patterns"
-  //   })
-  // }
 });
+
 let Navigation = createAppContainer(RootStack);
 
 class App extends React.Component {
