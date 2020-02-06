@@ -151,23 +151,23 @@ function _isSwitchOn(url: string, excludedPatterns: Array<string>): boolean {
   return switchOn;
 }
 
-export function updateModeAndSwitch() {
-  return (dispatch, getState) => {
-    const activePaneId = getState().ui.get("activePaneId");
-    const activeTabIndex = getState().ui.getIn([
-      "panes",
-      activePaneId,
-      "activeTabIndex"
-    ]);
-    const { mode, keySwitchOn } = _getModeAndSwitch(
-      activePaneId,
-      activeTabIndex,
-      getState()
-    );
-    dispatch(updateMode(mode));
-    dispatch(updateKeySwitch(keySwitchOn));
-  };
-}
+// export function updateModeAndSwitch() {
+//   return (dispatch, getState) => {
+//     const activePaneId = getState().ui.get("activePaneId");
+//     const activeTabIndex = getState().ui.getIn([
+//       "panes",
+//       activePaneId,
+//       "activeTabIndex"
+//     ]);
+//     const { mode, keySwitchOn } = _getModeAndSwitch(
+//       activePaneId,
+//       activeTabIndex,
+//       getState()
+//     );
+//     dispatch(updateMode(mode));
+//     dispatch(updateKeySwitch(keySwitchOn));
+//   };
+// }
 
 export function updateSite(
   index: number,
