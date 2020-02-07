@@ -6,6 +6,7 @@ import {
   Text,
   Clipboard
 } from "react-native";
+import Loader from "./Loader";
 import { WebView } from "react-native-webview";
 import { isEqual } from "lodash";
 const { DAVKeyManager } = NativeModules;
@@ -305,7 +306,7 @@ class WVTerm extends Component<Props, IState, any> {
   }
 
   onMessage(event) {
-    const { modifiers, isSoftCapslockOn } = this.props;
+    const { modifiers, isSoftCapslockOn, onJSLoaded } = this.props;
     this._handleDebug(event.nativeEvent.data);
     const data = JSON.parse(event.nativeEvent.data);
     console.log(data);
@@ -315,14 +316,22 @@ class WVTerm extends Component<Props, IState, any> {
           Clipboard.setString(data.selection);
         }
         break;
+
       case "keydown":
         this.handleKeys(data.keyEvent);
         break;
+
       case "keyup":
         if (data.keyEvent.key === "CapsLock") {
           this.handleCapsLockFromJS("keyup", data.keyEvent);
         }
         this.down[data.keyEvent.key] && delete this.down[data.keyEvent.key];
+        break;
+
+      case "jsloading":
+        if (!data.isLoading) {
+          onJSLoaded();
+        }
         break;
     }
   }
@@ -357,7 +366,7 @@ class WVTerm extends Component<Props, IState, any> {
   }
 
   render() {
-    const { url } = this.props;
+    const { url, onLoadStart, onLoadProgress } = this.props;
     console.log(this.props);
     return (
       <View style={{ flex: 1 }}>
@@ -367,6 +376,11 @@ class WVTerm extends Component<Props, IState, any> {
           injectedJavaScript={injectingJs}
           originWhitelist={["*"]}
           source={{ uri: url }}
+          onLoadStart={() => onLoadStart()}
+          onLoadProgress={({ nativeEvent }) => {
+            onLoadProgress({ nativeEvent });
+          }}
+          renderLoading={() => <Loader />}
           onLoadEnd={this.onLoadEnd.bind(this)}
           onMessage={this.onMessage.bind(this)}
         />
@@ -464,6 +478,8 @@ function initFromRN(initStr){
   });
 
 }
+
+window.ReactNativeWebView.postMessage(JSON.stringify({isLoading: false, postFor: "jsloading"}))
 
 true;
 

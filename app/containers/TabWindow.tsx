@@ -507,6 +507,10 @@ class TabWindow extends Component<Props, State, any> {
     //const { nativeEvent } = syntheticEvent;
   }
 
+  onJSLoaded() {
+    this.setState({ isLoadingJSInjection: false });
+  }
+
   onMessage(event) {
     const { dispatch, sites, capslockState, isSoftCapslockOn } = this.props;
     const data = JSON.parse(event.nativeEvent.data);
@@ -582,7 +586,7 @@ class TabWindow extends Component<Props, State, any> {
     //const { dispatch, activeTabIndex } = this.props;
   }
 
-  renderTerminal() {
+  renderBody() {
     const { tabId, url } = this.props;
     console.log("renderTerminal url", url);
     if (/^https:\/\/www\.wazaterm\.com\/terminals\/\S+$/.test(url)) {
@@ -599,10 +603,43 @@ class TabWindow extends Component<Props, State, any> {
           nextAppState={this.state.nextAppState}
           toggleSoftCapslock={this.toggleCapslock.bind(this)}
           {...this.props}
+          onLoadStart={this.onLoadStart.bind(this)}
+          onJSLoaded={this.onJSLoaded.bind(this)}
+          onLoadProgress={({ nativeEvent }) => {
+            this.setState({ progress: nativeEvent.progress * 100 });
+          }}
         />
       );
     } else {
-      return null;
+      return (
+        <WebView
+          ref={r => (this.webref = r as any)}
+          source={{ uri: url }}
+          keyboardDisplayRequiresUserAction={false}
+          sharedCookiesEnabled={true}
+          useWebKit={true}
+          hideKeyboardAccessoryView={true}
+          onLoadStart={this.onLoadStart.bind(this)}
+          onLoadEnd={this.onLoadEnd.bind(this)}
+          onLoadProgress={({ nativeEvent }) => {
+            this.setState({ progress: nativeEvent.progress * 100 });
+          }}
+          onNavigationStateChange={this.onNavigationStateChange.bind(this)}
+          onMessage={this.onMessage.bind(this)}
+          renderLoading={() => <Loader />}
+          renderError={errorName => <Error name={errorName} />}
+          startInLoadingState={true}
+          allowsBackForwardNavigationGestures={true}
+          decelerationRate="fast"
+          injectedJavaScript={injectingJs
+            .replace("SVIM_PREDEFINE", sVim.sVimPredefine)
+            .replace("SVIM_GLOBAL", sVim.sVimGlobal)
+            .replace("SVIM_HELPER", sVim.sVimHelper)
+            .replace("SVIM_TAB", sVim.sVimTab)
+            .replace("SVIM_HINT", sVim.sVimHint)}
+          userAgent={this.state.userAgent}
+        />
+      );
     }
   }
 
@@ -625,35 +662,7 @@ class TabWindow extends Component<Props, State, any> {
               width={this.state.width}
             />
           ) : null}
-          {this.renderTerminal() || (
-            <WebView
-              ref={r => (this.webref = r as any)}
-              source={{ uri: url }}
-              keyboardDisplayRequiresUserAction={false}
-              sharedCookiesEnabled={true}
-              useWebKit={true}
-              hideKeyboardAccessoryView={true}
-              onLoadStart={this.onLoadStart.bind(this)}
-              onLoadEnd={this.onLoadEnd.bind(this)}
-              onLoadProgress={({ nativeEvent }) => {
-                this.setState({ progress: nativeEvent.progress * 100 });
-              }}
-              onNavigationStateChange={this.onNavigationStateChange.bind(this)}
-              onMessage={this.onMessage.bind(this)}
-              renderLoading={() => <Loader />}
-              renderError={errorName => <Error name={errorName} />}
-              startInLoadingState={true}
-              allowsBackForwardNavigationGestures={true}
-              decelerationRate="fast"
-              injectedJavaScript={injectingJs
-                .replace("SVIM_PREDEFINE", sVim.sVimPredefine)
-                .replace("SVIM_GLOBAL", sVim.sVimGlobal)
-                .replace("SVIM_HELPER", sVim.sVimHelper)
-                .replace("SVIM_TAB", sVim.sVimTab)
-                .replace("SVIM_HINT", sVim.sVimHint)}
-              userAgent={this.state.userAgent}
-            />
-          )}
+          {this.renderBody()}
         </View>
       );
     }
