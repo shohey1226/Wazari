@@ -1,5 +1,11 @@
 import React, { Component } from "react";
-import { NativeModules, NativeEventEmitter, View, Text } from "react-native";
+import {
+  NativeModules,
+  NativeEventEmitter,
+  View,
+  Text,
+  Clipboard
+} from "react-native";
 import { WebView } from "react-native-webview";
 import { isEqual } from "lodash";
 const { DAVKeyManager } = NativeModules;
@@ -304,6 +310,11 @@ class WVTerm extends Component<Props, IState, any> {
     const data = JSON.parse(event.nativeEvent.data);
     console.log(data);
     switch (data.postFor) {
+      case "copy":
+        if (data.selection && data.selection !== "") {
+          Clipboard.setString(data.selection);
+        }
+        break;
       case "keydown":
         this.handleKeys(data.keyEvent);
         break;
@@ -437,6 +448,17 @@ function initFromRN(initStr){
             repeat: e.repeat
           },
           postFor: e.type
+        })
+      );    
+  });
+
+  window.term.on('selection', () =>{
+    var sel = window.term.getSelection();
+    window.ReactNativeWebView &&
+      window.ReactNativeWebView.postMessage(
+        JSON.stringify({
+          postFor: 'copy', 
+          selection: sel
         })
       );    
   });

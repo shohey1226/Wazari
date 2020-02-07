@@ -394,7 +394,18 @@ class TabWindow extends Component<Props, State, any> {
       case "deleteLine":
         this.webref.injectJavaScript(`deleteLine()`);
         break;
+      case "copy":
+        this.webref.injectJavaScript(`copyToRN()`);
+        break;
+      case "paste":
+        this._getContent();
+        break;
     }
+  }
+
+  async _getContent() {
+    var content = await Clipboard.getString();
+    this.webref && this.webref.injectJavaScript(`pasteFromRN("${content}")`);
   }
 
   focusWindow() {
@@ -443,7 +454,6 @@ class TabWindow extends Component<Props, State, any> {
           this.webref.reload();
           break;
         case "zoomIn":
-          this.webref.injectJavaScript(`sVimTab.commands.zoomPageIn()`);
           break;
         case "zoomOut":
           this.webref.injectJavaScript(`sVimTab.commands.zoomPageOut()`);

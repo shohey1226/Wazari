@@ -241,6 +241,28 @@ function deleteLine() {
   el.setSelectionRange(caretPos, caretPos);
 }
 
+function copyToRN() {
+  var selObj = window.getSelection();
+  var selectedText = selObj.toString();
+  window.ReactNativeWebView.postMessage(
+    JSON.stringify({ selection: selectedText, postFor: "copy" })
+  );
+}
+
+function pasteFromRN(words) {
+  var el = document.activeElement;
+  if (!el) {
+    return;
+  }
+  var content = el.value;
+  var caretPos = el.selectionStart;
+  el.value =
+    content.substring(0, caretPos) +
+    words +
+    content.substring(caretPos, content.length);
+  el.setSelectionRange(caretPos + words.length, caretPos + words.length);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Main (or setup)
 ///////////////////////////////////////////////////////////////////////////////

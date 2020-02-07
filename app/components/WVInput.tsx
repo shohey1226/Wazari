@@ -1,5 +1,11 @@
 import React, { Component } from "react";
-import { NativeModules, NativeEventEmitter, View, Text } from "react-native";
+import {
+  NativeModules,
+  NativeEventEmitter,
+  View,
+  Text,
+  Clipboard
+} from "react-native";
 import { WebView } from "react-native-webview";
 import RNFS from "react-native-fs";
 import { isEqual } from "lodash";
@@ -292,7 +298,18 @@ class WVInput extends Component<Props, IState, any> {
       case "moveUpOneLine":
         this.props.previousHistoryItem();
         break;
+      case "copy":
+        this.webref.injectJavaScript(`copyToRN()`);
+        break;
+      case "paste":
+        this._getContent();
+        break;
     }
+  }
+
+  async _getContent() {
+    var content = await Clipboard.getString();
+    this.webref && this.webref.injectJavaScript(`pasteFromRN("${content}")`);
   }
 
   onMessage(event) {
@@ -332,6 +349,11 @@ class WVInput extends Component<Props, IState, any> {
       case "enterValue":
         this.setState({ words: "" });
         this.props.onEndEditing(data.words);
+        break;
+      case "copy":
+        if (data.selection && data.selection !== "") {
+          Clipboard.setString(data.selection);
+        }
         break;
     }
   }
