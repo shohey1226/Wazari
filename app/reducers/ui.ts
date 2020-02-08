@@ -16,7 +16,8 @@ import {
   UPDATE_PANE_BLUEPRINT,
   UPDATE_WORDS_FOR_PAGE_FIND,
   UPDATE_CAPSLOCK,
-  TOGGLE_SOFT_CAPSLOCK
+  TOGGLE_SOFT_CAPSLOCK,
+  UPDATE_WIDTH
 } from "../actions/ui";
 import { Map, fromJS, List } from "immutable";
 import { CapslockState } from "../types/index.d";
@@ -27,6 +28,7 @@ type Site = {
   canGoBack: boolean;
   canGoForward: boolean;
   updatedAt: number;
+  id: number;
 };
 
 export interface UiState extends Map<any, any> {
@@ -36,6 +38,7 @@ export interface UiState extends Map<any, any> {
   orientation: string;
   focusedPane: string;
   paneIds: Array<string>;
+  widthMap: { [paneId: string]: number };
   panes: {
     [key: string]: { activeTabIndex: number | null; sites: Array<Site> };
   };
@@ -55,6 +58,7 @@ const initialState: UiState = fromJS({
   activePaneId: null,
   paneBlueprint: {},
   panes: {},
+  widthMap: {},
   wordsForPageFind: "",
   isSoftCapslockOn: false
 });
@@ -72,6 +76,9 @@ export default function ui(state = initialState, action) {
       return state.set("forwardToggled", !state.get("forwardToggled"));
     case TOGGLE_RELOAD:
       return state.set("reloadToggled", !state.get("reloadToggled"));
+
+    case UPDATE_WIDTH:
+      return state.setIn(["widthMap", action.paneId], action.width);
 
     case ADD_NEW_TAB:
       return state.setIn(
@@ -147,7 +154,8 @@ export default function ui(state = initialState, action) {
           "paneIds",
           state.get("paneIds").filter(t => t !== action.paneId)
         )
-        .set("panes", state.get("panes").delete(action.paneId));
+        .set("panes", state.get("panes").delete(action.paneId))
+        .set("widthMap", state.get("widthMap").delete(action.paneId));
 
     case SELECT_PANE:
       return state.set("activePaneId", action.paneId);

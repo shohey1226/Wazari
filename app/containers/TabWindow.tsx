@@ -25,7 +25,8 @@ import {
   closeTab,
   updateWordsForPageFind,
   updateCapslock,
-  toggleSoftCapslock
+  toggleSoftCapslock,
+  updateWidth
 } from "../actions/ui";
 import { addHistory } from "../actions/user";
 import { selectSites, selectActiveUrl } from "../selectors/ui";
@@ -55,10 +56,14 @@ interface Props {
   isActive: boolean;
   isCapsLockOn: boolean;
   isSoftCapslockOn: boolean;
+  paneId: string;
+  currentWidth: number;
 }
 
 const USER_AGENT =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.1 Safari/605.1.15";
+const IPHONE_UA =
+  "Mozilla/5.0 (iPhone; CPU iPhone OS 13_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0 Mobile/15E148 Safari/604.1";
 
 class TabWindow extends Component<Props, State, any> {
   webref: WebView | null = null;
@@ -70,12 +75,16 @@ class TabWindow extends Component<Props, State, any> {
   constructor(props) {
     super(props);
     let { height, width } = Dimensions.get("window");
+    let _ua: string = USER_AGENT;
+    if (props.currentWidth && props.currentWidth < 415) {
+      _ua = IPHONE_UA;
+    }
     this.state = {
       isLoadingSVim: true,
       isLoadingJSInjection: true,
       width: width,
       progress: 0,
-      userAgent: DeviceInfo.isTablet() ? USER_AGENT : null,
+      userAgent: _ua,
       isCapsLockRemapped: props.modifiers["capslockKey"] !== "capslockKey",
       isCapsLockOn: false
     };
@@ -153,7 +162,8 @@ class TabWindow extends Component<Props, State, any> {
       isActive,
       activePaneId,
       wordsForPageFind,
-      isSoftCapslockOn
+      isSoftCapslockOn,
+      currentWidth
     } = this.props;
 
     // tab is chagned
@@ -588,7 +598,7 @@ class TabWindow extends Component<Props, State, any> {
 
   renderBody() {
     const { tabId, url } = this.props;
-    console.log("renderTerminal url", url);
+    //console.log("renderTerminal url", url);
     if (/^https:\/\/www\.wazaterm\.com\/terminals\/\S+$/.test(url)) {
       return (
         <WVTerm
@@ -643,6 +653,14 @@ class TabWindow extends Component<Props, State, any> {
     }
   }
 
+  onChangeLayout(event) {
+    const { dispatch, paneId, currentWidth } = this.props;
+    let { x, y, width, height } = event.nativeEvent.layout;
+    if (currentWidth !== width) {
+      dispatch(updateWidth(paneId, width));
+    }
+  }
+
   render() {
     const { url, tabId } = this.props;
     const progressCustomStyles = {
@@ -652,7 +670,7 @@ class TabWindow extends Component<Props, State, any> {
       return <View />;
     } else {
       return (
-        <View style={{ flex: 1 }}>
+        <View style={{ flex: 1 }} onLayout={this.onChangeLayout.bind(this)}>
           {this.state.isLoadingJSInjection ? (
             <ProgressBarAnimated
               {...progressCustomStyles}
@@ -699,6 +717,9 @@ function mapStateToProps(state, ownProps) {
     }
   }
 
+  const widthMap = state.ui.get("widthMap");
+  const currentWidth = widthMap ? widthMap.get(ownProps.paneId) : null;
+
   return {
     backToggled,
     forwardToggled,
@@ -713,7 +734,8 @@ function mapStateToProps(state, ownProps) {
     activeTabIndex,
     url,
     capslockState,
-    isSoftCapslockOn
+    isSoftCapslockOn,
+    currentWidth
   };
 }
 

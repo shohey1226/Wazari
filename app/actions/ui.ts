@@ -17,6 +17,7 @@ export const UPDATE_PANE_BLUEPRINT = "UPDATE_PANE_BLUEPRINT";
 export const UPDATE_WORDS_FOR_PAGE_FIND = "UPDATE_WORDS_FOR_PAGE_FIND";
 export const UPDATE_CAPSLOCK = "UPDATE_CAPSLOCK";
 export const TOGGLE_SOFT_CAPSLOCK = "TOGGLE_SOFT_CAPSLOCK";
+export const UPDATE_WIDTH = "UPDATE_WIDTH";
 
 export function updateWordsForPageFind(words: string) {
   return {
@@ -28,6 +29,14 @@ export function updateWordsForPageFind(words: string) {
 export function toggleForward() {
   return {
     type: TOGGLE_FORWARD
+  };
+}
+
+export function updateWidth(paneId: string, width: number) {
+  return {
+    type: UPDATE_WIDTH,
+    paneId: paneId,
+    width: width
   };
 }
 

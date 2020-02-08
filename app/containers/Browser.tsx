@@ -113,7 +113,8 @@ class Browser extends Component<Props, State> {
       activePaneId,
       paneId,
       paneIds,
-      isSoftCapslockOn
+      isSoftCapslockOn,
+      widthMap
     } = this.props;
 
     if (prevProp.activeTabIndex !== activeTabIndex) {
@@ -147,6 +148,18 @@ class Browser extends Component<Props, State> {
       } else {
         dispatch(updateCapslock(CapslockState.SoftOff));
       }
+    }
+
+    if (!isEqual(widthMap, prevProp.widthMap)) {
+      Object.keys(widthMap).forEach(_paneId => {
+        if (
+          paneId === _paneId &&
+          ((widthMap[_paneId] > 414 && prevProp.widthMap[_paneId] <= 414) ||
+            (widthMap[_paneId] <= 414 && prevProp.widthMap[_paneId] > 414))
+        ) {
+          this.rebuildTabs();
+        }
+      });
     }
   }
 
@@ -240,6 +253,27 @@ class Browser extends Component<Props, State> {
       dispatch(selectTab(tab.i));
     }
     this.setState({ activeIndex: tab.i });
+  }
+
+  rebuildTabs() {
+    const { sites } = this.props;
+    for (let i = 0; i < sites.length; i++) {
+      const _id = sites[i].id;
+      const _url = sites[i].url;
+      this.tabViews[_id] = (
+        <View
+          tabLabel={{
+            label: "",
+            id: _id,
+            onPressButton: () => this.pressCloseTab(_id)
+          }}
+        />
+      );
+    }
+    this.forceUpdate();
+    setTimeout(() => {
+      this.buildTabs();
+    }, 300);
   }
 
   buildTabs() {
@@ -336,6 +370,7 @@ function mapStateToProps(state, ownProps) {
   const orientation = state.ui.get("orientation");
   const isSoftCapslockOn = state.ui.get("isSoftCapslockOn");
   const homeUrl = state.user.get("homeUrl");
+  const widthMap = state.ui.get("widthMap").toObject();
 
   return {
     sites,
@@ -346,7 +381,8 @@ function mapStateToProps(state, ownProps) {
     homeUrl,
     activePaneId,
     paneIds,
-    isSoftCapslockOn
+    isSoftCapslockOn,
+    widthMap
   };
 }
 
