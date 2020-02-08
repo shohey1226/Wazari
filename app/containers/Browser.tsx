@@ -306,7 +306,14 @@ class Browser extends Component<Props, State> {
   }
 
   render() {
-    const { activeTabIndex, orientation, sites, paneIds, paneId } = this.props;
+    const {
+      activeTabIndex,
+      orientation,
+      sites,
+      paneIds,
+      paneId,
+      activePaneId
+    } = this.props;
 
     let height =
       sites.length < 2 ||
@@ -316,6 +323,10 @@ class Browser extends Component<Props, State> {
 
     return (
       <ScrollableTabView
+        style={{
+          borderTopWidth: paneIds.length === 1 ? 0 : 1,
+          borderTopColor: activePaneId === paneId ? "#ef5350" : "#222"
+        }}
         ref={r => (this.tabsRef = r as any)}
         renderTabBar={() => (
           <TabBar

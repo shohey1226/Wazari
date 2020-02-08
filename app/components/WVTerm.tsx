@@ -422,6 +422,10 @@ function initFromRN(initStr){
       return true;
     }
 
+    if(e.key === "Enter"){
+      return true;
+    }
+
     if(isCapsLockRemapped === true){
       window.ReactNativeWebView &&
         window.ReactNativeWebView.postMessage(
