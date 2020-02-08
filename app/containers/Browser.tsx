@@ -234,12 +234,14 @@ class Browser extends Component<Props, State> {
   //   dispatch(selectTab(index));
   // }
   onChangeTab(tab) {
-    const { dispatch, activeTabIndex } = this.props;
+    const { dispatch, activeTabIndex, activePaneId, paneId } = this.props;
     console.log(tab, activeTabIndex);
-    if (activeTabIndex !== tab.i) {
-      dispatch(selectTab(tab.i));
+    if (activePaneId === paneId) {
+      if (activeTabIndex !== tab.i) {
+        dispatch(selectTab(tab.i));
+      }
+      this.setState({ activeIndex: tab.i });
     }
-    this.setState({ activeIndex: tab.i });
   }
 
   buildTabs() {
