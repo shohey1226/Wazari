@@ -383,7 +383,9 @@ function mapStateToProps(state, ownProps) {
   const orientation = state.ui.get("orientation");
   const isSoftCapslockOn = state.ui.get("isSoftCapslockOn");
   const homeUrl = state.user.get("homeUrl");
-  const widthMap = state.ui.get("widthMap").toObject();
+  const widthMap = state.ui.has("widthMap")
+    ? state.ui.get("widthMap").toObject()
+    : {};
 
   return {
     sites,
