@@ -744,11 +744,11 @@ export default connect(mapStateToProps)(TabWindow);
 let injectingJs = `
 
 // https://github.com/react-native-community/react-native-webview/issues/447
-var viewPortTag=document.createElement('meta');
-viewPortTag.id="viewport";
-viewPortTag.name = "viewport";
-viewPortTag.content = "width=device-width, initial-scale=1;";
-document.getElementsByTagName('head')[0].appendChild(viewPortTag);
+// var viewPortTag=document.createElement('meta');
+// viewPortTag.id="viewport";
+// viewPortTag.name = "viewport";
+// viewPortTag.content = "width=device-width, initial-scale=1;";
+//document.getElementsByTagName('head')[0].appendChild(viewPortTag);
 
 SVIM_PREDEFINE
 SVIM_HELPER
