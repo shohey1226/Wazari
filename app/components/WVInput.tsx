@@ -200,7 +200,7 @@ class WVInput extends Component<Props, IState, any> {
               this.down["CapsLock"] &&
               this.isNativeCapslock === false
             ) {
-              if (/^[dhjklobfnpwxy]$/.test(key.toLowerCase())) {
+              if (/^[adhjklobfnpwxy]$/.test(key.toLowerCase())) {
                 const now = new Date().getTime();
                 if (
                   this.lastKeyTimestamp &&
