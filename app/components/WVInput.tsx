@@ -142,6 +142,13 @@ class WVInput extends Component<Props, IState, any> {
     else if (this.down["Escape"]) {
       this.props.closeSearch();
       return;
+      // Arrow down/up keys
+    } else if (this.down["ArrowDown"]) {
+      this.props.nextHistoryItem();
+      return;
+    } else if (this.down["ArrowUp"]) {
+      this.props.previousHistoryItem();
+      return;
     }
 
     // customized modifiers

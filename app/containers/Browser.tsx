@@ -220,8 +220,10 @@ class Browser extends Component<Props, State> {
           dispatch(selectTab(prevIndex));
           break;
         case "closeTab":
-          const _id = this.state.siteIds[activeTabIndex];
-          this.pressCloseTab(_id);
+          if (this.state.siteIds.length > 1) {
+            const _id = this.state.siteIds[activeTabIndex];
+            this.pressCloseTab(_id);
+          }
           break;
       }
     }
