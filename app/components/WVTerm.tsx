@@ -362,7 +362,10 @@ class WVTerm extends Component<Props, IState, any> {
       isCapsLockRemapped: this.state.isCapsLockRemapped
     });
     console.log(initStr);
-    this.webref.injectJavaScript(`initFromRN('${initStr}')`);
+    // window.term is not ready right after loaded. Need to wait a bit.
+    setTimeout(() => {
+      this.webref.injectJavaScript(`initFromRN('${initStr}')`);
+    }, 500);
   }
 
   render() {
